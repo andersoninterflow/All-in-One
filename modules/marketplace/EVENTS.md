@@ -1,0 +1,13 @@
+        # Events: Marketplace
+
+        Exchange: `all-in-one.domain`; routing keys:
+
+        - `marketplace.store.created`
+- `marketplace.product.created`
+- `marketplace.order.created`
+- `marketplace.order.paid`
+- `marketplace.order.delivered`
+
+        Eventos carregam `event_id`, `occurred_at`, `actor_user_id`, `user_id`,
+        `entity_id`, `correlation_id`, `schema_version` e payload minimizado.
+        Consumidores devem ser idempotentes.

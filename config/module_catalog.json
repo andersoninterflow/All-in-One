@@ -1,0 +1,230 @@
+{
+  "platform": "All-in-One",
+  "version": "0.1.0",
+  "apps": [
+    {"slug": "all-in-one-user", "scope": "Cadastro, identidade, wallet, marketplace, delivery, mobility, saude e historico."},
+    {"slug": "all-in-one-business", "scope": "Empresas, filiais, RBAC, ERP, WMS, TMS, CRM, financeiro e faturamento."},
+    {"slug": "all-in-one-riders", "scope": "Candidatura, veiculos, entregas, corridas, ganhos e ocorrencias."},
+    {"slug": "all-in-one-services", "scope": "Prestadores, visitas, orcamentos, contratos, escrow e avaliacoes."},
+    {"slug": "all-in-one-health", "scope": "Pacientes, profissionais, agenda, prontuario e telemedicina."},
+    {"slug": "all-in-one-mobility", "scope": "Corridas, transporte publico, tarifas, tickets, QR Code e NFC."}
+  ],
+  "modules": [
+    {
+      "slug": "identity",
+      "title": "Identity",
+      "description": "All-in-One ID, KYC, KYB, biometria, MFA, sessoes e consentimentos.",
+      "entities": ["users", "documents", "biometrics", "sessions", "identity_verifications", "consent_records"],
+      "events": ["identity.user.created", "identity.user.verified", "identity.user.duplicate_detected"],
+      "monetization": "Sem cobranca direta; habilita todas as receitas com identidade confiavel.",
+      "branch": "module/identity"
+    },
+    {
+      "slug": "business",
+      "title": "Business",
+      "description": "Matriz, filiais, documentos empresariais, aprovacao manual e memberships.",
+      "entities": ["companies", "branches", "company_documents", "user_company_memberships"],
+      "events": ["business.company.created", "business.company.submitted", "business.company.approved", "business.company.rejected"],
+      "monetization": "Planos SaaS por empresa, usuario, modulo, API e SLA.",
+      "branch": "module/business"
+    },
+    {
+      "slug": "permissions",
+      "title": "Permissions",
+      "description": "RBAC, ABAC, delegacoes e alcadas financeiras por entidade.",
+      "entities": ["roles", "permissions", "user_roles", "access_policies", "approval_limits"],
+      "events": ["business.user.invited", "business.role.assigned"],
+      "monetization": "Disponivel conforme plano Business contratado.",
+      "branch": "module/business"
+    },
+    {
+      "slug": "finance",
+      "title": "Finance Pay Billing Fiscal",
+      "description": "Wallet, ledger, Pix, split, escrow, cobranca, fiscal e conciliacao.",
+      "entities": ["wallets", "ledger_entries", "escrows", "splits", "invoices"],
+      "events": ["payment.escrow.created", "payment.escrow.released", "payment.refunded", "payment.split.executed"],
+      "monetization": "Taxas de transacao, split, recorrencia e plano financeiro.",
+      "branch": "module/finance"
+    },
+    {
+      "slug": "marketplace",
+      "title": "Marketplace",
+      "description": "Lojas aprovadas, catalogo, carrinho, checkout, pedidos e disputas.",
+      "entities": ["stores", "products", "carts", "orders", "reviews", "disputes"],
+      "events": ["marketplace.store.created", "marketplace.product.created", "marketplace.order.created", "marketplace.order.paid", "marketplace.order.delivered"],
+      "monetization": "Comissao de 8 a 15 por cento, ads, destaque e assinatura.",
+      "branch": "module/marketplace"
+    },
+    {
+      "slug": "stock",
+      "title": "Stock",
+      "description": "Dropshipping Global, fornecedores homologados, precificacao e fulfillment.",
+      "entities": ["suppliers", "catalog_products", "price_rules", "supplier_orders"],
+      "events": ["stock.product.imported", "stock.order.created"],
+      "monetization": "Markup proprio, margem da plataforma e taxa do fornecedor.",
+      "branch": "module/stock"
+    },
+    {
+      "slug": "delivery",
+      "title": "Delivery",
+      "description": "Food, coletas e fretes com calculo multimodal, seguro e rastreio.",
+      "entities": ["delivery_requests", "quotes", "assignments", "proofs", "insurance_options"],
+      "events": ["delivery.request.created", "delivery.rider.assigned", "delivery.picked_up", "delivery.completed", "delivery.cancelled"],
+      "monetization": "Comissao de 10 a 30 por cento, urgencia, seguro e adicionais.",
+      "branch": "module/delivery"
+    },
+    {
+      "slug": "riders",
+      "title": "Riders",
+      "description": "Candidatura vinculada ao All-in-One ID, documentos, veiculos e aprovacao.",
+      "entities": ["rider_profiles", "rider_documents", "vehicles", "rider_reviews"],
+      "events": ["rider.submitted", "rider.approved", "rider.rejected", "rider.vehicle.approved"],
+      "monetization": "Repasses e taxas definidos pelos modulos Delivery e Mobility.",
+      "branch": "module/delivery"
+    },
+    {
+      "slug": "services",
+      "title": "One Services",
+      "description": "Prestadores, visitas pagas, orcamentos, contratos, evidencias e anti-burla.",
+      "entities": ["providers", "visits", "quotes", "service_contracts", "evidence"],
+      "events": ["services.visit.created", "services.visit.completed", "services.quote.created", "services.contract.created", "services.contract.completed"],
+      "monetization": "Visita de 15 a 25 por cento, servico de 8 a 20 por cento e premium.",
+      "branch": "module/services"
+    },
+    {
+      "slug": "mobility",
+      "title": "Mobility",
+      "description": "Corridas, transporte publico, rotas, tickets, QR Code, NFC e ETA.",
+      "entities": ["rides", "routes", "stops", "tickets", "fare_rules"],
+      "events": ["mobility.ride.requested", "mobility.ride.accepted", "mobility.ride.completed", "mobility.ticket.purchased", "mobility.ticket.used"],
+      "monetization": "Comissao de 15 a 25 por cento, cancelamento, tickets e passes.",
+      "branch": "module/mobility"
+    },
+    {
+      "slug": "erp",
+      "title": "ERP",
+      "description": "Financeiro empresarial, compras, vendas, fiscal, controladoria e aprovacao.",
+      "entities": ["accounts", "payables", "receivables", "cost_centers", "fiscal_documents"],
+      "events": ["erp.invoice.created", "erp.payment.approved"],
+      "monetization": "Modulo SaaS Business contratado por entidade.",
+      "branch": "module/erp"
+    },
+    {
+      "slug": "wms",
+      "title": "WMS",
+      "description": "Armazens, bins, recebimento, separacao, lote, validade e inventario.",
+      "entities": ["warehouses", "bins", "inventory", "picking_waves", "shipments"],
+      "events": ["wms.inventory.received", "wms.shipment.dispatched"],
+      "monetization": "Modulo SaaS por deposito e volume operacional.",
+      "branch": "module/wms"
+    },
+    {
+      "slug": "tms",
+      "title": "TMS",
+      "description": "Transportadoras, frota, rotas, fretes, documentos e torre de controle.",
+      "entities": ["carriers", "freights", "routes", "proofs_of_delivery", "freight_audits"],
+      "events": ["tms.freight.created", "tms.delivery.proved"],
+      "monetization": "Modulo SaaS e taxas por operacao logistica.",
+      "branch": "module/tms"
+    },
+    {
+      "slug": "crm",
+      "title": "CRM",
+      "description": "Leads, oportunidades, propostas, campanhas e relacionamento.",
+      "entities": ["leads", "opportunities", "activities", "campaigns"],
+      "events": ["crm.lead.created", "crm.opportunity.won"],
+      "monetization": "Modulo SaaS por usuarios e automacoes.",
+      "branch": "module/crm"
+    },
+    {
+      "slug": "bpm",
+      "title": "BPM",
+      "description": "Processos, workflows, tarefas, SLA, escalonamento e automacao.",
+      "entities": ["processes", "workflow_instances", "tasks", "sla_policies"],
+      "events": ["bpm.process.started", "bpm.task.completed"],
+      "monetization": "Modulo SaaS por execucao e automacao.",
+      "branch": "module/bpm"
+    },
+    {
+      "slug": "document",
+      "title": "GED ECM",
+      "description": "Documentos, OCR, versoes, assinatura, retencao e indexacao.",
+      "entities": ["folders", "documents", "versions", "retention_policies"],
+      "events": ["document.uploaded", "document.signed"],
+      "monetization": "Armazenamento e assinatura adicionais.",
+      "branch": "module/document"
+    },
+    {
+      "slug": "hr",
+      "title": "HR HCM ATS LMS",
+      "description": "Colaboradores, folha, ponto, recrutamento, treinamento e saude ocupacional.",
+      "entities": ["employees", "payroll_runs", "candidates", "courses", "occupational_records"],
+      "events": ["hr.employee.created", "hr.payroll.closed"],
+      "monetization": "Modulo SaaS por colaborador.",
+      "branch": "module/hr"
+    },
+    {
+      "slug": "health",
+      "title": "Health",
+      "description": "Pacientes, prontuario, consulta, telemedicina, prescricao, leitos e convenios.",
+      "entities": ["patients", "appointments", "medical_records", "prescriptions", "beds"],
+      "events": ["health.appointment.created", "health.telemedicine.started", "health.prescription.issued"],
+      "monetization": "Plano setorial e faturamento medico conveniado.",
+      "branch": "module/health"
+    },
+    {
+      "slug": "vision",
+      "title": "Vision",
+      "description": "Dispositivos de camera, streams, gravacoes, deteccao e ocorrencias.",
+      "entities": ["devices", "streams", "recordings", "motion_alerts"],
+      "events": ["vision.motion.detected", "vision.incident.created"],
+      "monetization": "Plano por camera, retencao e analise IA.",
+      "branch": "module/vision"
+    },
+    {
+      "slug": "legal",
+      "title": "Legal",
+      "description": "Processos, contratos, prazos, audiencias, provisionamento e alertas.",
+      "entities": ["cases", "deadlines", "hearings", "legal_contracts"],
+      "events": ["legal.case.created", "legal.deadline.alerted"],
+      "monetization": "Modulo SaaS para juridico interno e escritorios.",
+      "branch": "module/legal"
+    },
+    {
+      "slug": "property",
+      "title": "Property",
+      "description": "Imoveis, unidades, locacoes, condominio, manutencao e votacao.",
+      "entities": ["properties", "units", "leases", "assemblies", "maintenance_orders"],
+      "events": ["property.lease.created", "property.maintenance.requested"],
+      "monetization": "Plano por unidade administrada e servicos.",
+      "branch": "module/property"
+    },
+    {
+      "slug": "bi",
+      "title": "BI",
+      "description": "Indicadores auditaveis, dashboards e exportacoes por entidade.",
+      "entities": ["datasets", "dashboards", "indicators", "exports"],
+      "events": ["bi.dataset.refreshed"],
+      "monetization": "Relatorios premium e armazenamento analitico.",
+      "branch": "module/business"
+    },
+    {
+      "slug": "ai_core",
+      "title": "AI Core",
+      "description": "Memoria autorizada, classificacao anti-burla, modelos e governanca.",
+      "entities": ["ai_memories", "moderation_decisions", "model_runs"],
+      "events": ["ai.moderation.completed", "ai.memory.updated"],
+      "monetization": "Consumo de IA e automacoes premium.",
+      "branch": "module/business"
+    },
+    {
+      "slug": "api_hub",
+      "title": "API Hub",
+      "description": "OAuth2, API keys, webhooks, escopos, sandbox e integracoes.",
+      "entities": ["api_clients", "api_keys", "webhooks", "integration_runs"],
+      "events": ["api.client.created", "api.webhook.delivered"],
+      "monetization": "Limites de API, conectores e SLA premium.",
+      "branch": "module/business"
+    }
+  ]
+}

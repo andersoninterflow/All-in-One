@@ -1,0 +1,37 @@
+# Banco de Dados
+
+## PostgreSQL
+
+As migracoes em `database/postgres/migrations/` criam os schemas:
+
+`identity`, `business`, `permissions`, `marketplace`, `stock`, `delivery`,
+`services`, `mobility`, `erp`, `wms`, `tms`, `crm`, `bpm`, `document`,
+`finance`, `billing`, `fiscal`, `hr`, `health`, `vision`, `legal`,
+`property`, `audit`, `compliance`, `notifications`, `api_hub`, `insurance`,
+`bi` e `ai_core`.
+
+Valores BRL usam `NUMERIC(18, 4)`; saldo/token NEX usa `NUMERIC(18, 8)`.
+Tabelas operacionais incluem UUID, `user_id`, status, timestamps, atores e
+metadata JSONB. O usuario raiz e a unica excecao natural a referenciar a si
+mesmo durante o cadastro.
+
+## Propriedade financeira
+
+- `finance.wallets` e unica por `(id, user_id)`.
+- `delivery.rider_profiles`, `identity.led_cards`, `finance.ledger_entries` e
+  `finance.escrows` referenciam a tupla wallet/proprietario.
+- `identity.users.default_wallet_id` e `primary_led_card_id` sao FKs
+  deferrable, permitindo criacao transacional sem quebrar integridade.
+
+## Imutabilidade
+
+`audit.logs`, `audit.event_deliveries` e `finance.ledger_entries` recebem
+trigger que rejeita `UPDATE` e `DELETE`. A outbox `audit.domain_events` pode
+marcar publicacao; cada tentativa de entrega e preservada separadamente.
+Correcoes financeiras devem ser novos lancamentos compensatorios.
+
+## MongoDB
+
+`database/mongodb/init/001_ai_social_telemetry.js` valida `ai_memory`,
+`social_videos`, `influencer_metrics` e `telemetry_logs`, com indices de
+usuario, geoespacial e expiracao por retencao.

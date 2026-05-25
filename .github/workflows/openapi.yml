@@ -2,6 +2,7 @@ name: OpenAPI
 
 on:
   push:
+    branches: [main]
     paths: ["modules/**/OPENAPI.yaml", ".github/workflows/openapi.yml"]
   pull_request:
     paths: ["modules/**/OPENAPI.yaml", ".github/workflows/openapi.yml"]

@@ -1,0 +1,60 @@
+        # Contrato: API Hub
+
+        ## Descricao
+
+        OAuth2, API keys, webhooks, escopos, sandbox e integracoes.
+
+        ## Entidades
+
+        - `api_clients`
+- `api_keys`
+- `webhooks`
+- `integration_runs`
+
+        ## APIs
+
+        - `GET /health`
+- `GET /version`
+- `GET /status`
+- `GET /metrics`
+- `POST /create`
+- `GET /{id}`
+- `PATCH /{id}`
+- `DELETE /{id}`
+- `GET /list`
+- `POST /approve`
+- `POST /reject`
+- `POST /audit`
+
+        ## Eventos
+
+        - `api.client.created`
+- `api.webhook.delivered`
+
+        ## Regras
+
+        - `user_id` e obrigatorio em todo recurso operacional e referencia `identity.users`.
+        - Exclusao e logica; registros financeiros, de aprovacao e auditoria nao sao apagados.
+        - Aprovacao e rejeicao exigem ator autenticado, justificativa e log imutavel.
+        - A empresa ou profissional deve estar aprovado antes de uma operacao publica.
+
+        ## Seguranca e permissoes
+
+        Mutacoes dependem de OAuth2/JWT ou API key no gateway e do escopo do
+        modulo. O runtime inicial representa o ator por `X-Actor-User-Id` e
+        registra auditoria; o gateway deve validar a credencial antes do repasse.
+
+        ## Monetizacao
+
+        Limites de API, conectores e SLA premium.
+
+        ## Integracoes e erros
+
+        Eventos sao entregues pelo barramento RabbitMQ. Respostas esperadas:
+        `401` ator ausente, `404` recurso inexistente e `422` regra de validacao
+        ou politica anti-burla violada.
+
+        ## Auditoria
+
+        `POST /audit` e todas as mutacoes geram evento destinado a `audit.logs`,
+        que e append-only no PostgreSQL.

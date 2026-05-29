@@ -1,52 +1,28 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
-from datetime import date, datetime
-from typing import Any, Iterator
+from typing import Any
 from uuid import uuid4
 
-import psycopg
-from psycopg import Connection, sql
-from psycopg.errors import UniqueViolation
-from psycopg.rows import dict_row
+from psycopg import Connection
 from psycopg.types.json import Jsonb
 
-from .store import DuplicateValueError
+from .postgres_store import BasePostgresStore, _date
 
 
-TABLES = {
-    "resumes": "jobs.resumes",
-    "employment_records": "jobs.employment_records",
-    "resume_documents": "jobs.resume_documents",
-    "job_postings": "jobs.job_postings",
-    "applications": "jobs.applications",
-    "resume_access_logs": "jobs.resume_access_logs",
-}
-SOFT_DELETABLE = frozenset({"resumes", "employment_records", "job_postings", "applications"})
-
-
-def _date(value: Any) -> Any:
-    if not value or isinstance(value, date):
-        return value
-    material = str(value)
-    if "/" in material:
-        return datetime.strptime(material, "%d/%m/%Y").date()
-    return date.fromisoformat(material)
-
-
-class JobsPostgresStore:
+class JobsPostgresStore(BasePostgresStore):
     """Production Jobs adapter backed by typed PostgreSQL relations and central audit/outbox."""
 
     module = "jobs"
     backend = "postgres_jobs_typed_store"
-
-    def __init__(self, dsn: str) -> None:
-        self.connection: Connection = psycopg.connect(dsn, row_factory=dict_row)
-
-    @staticmethod
-    def _table(resource_type: str) -> sql.Identifier:
-        schema_name, table_name = TABLES[resource_type].split(".", maxsplit=1)
-        return sql.Identifier(schema_name, table_name)
+    tables = {
+        "resumes": "jobs.resumes",
+        "employment_records": "jobs.employment_records",
+        "resume_documents": "jobs.resume_documents",
+        "job_postings": "jobs.job_postings",
+        "applications": "jobs.applications",
+        "resume_access_logs": "jobs.resume_access_logs",
+    }
+    soft_deletable = frozenset({"resumes", "employment_records", "job_postings", "applications"})
 
     def verify_active_business_recruiter(self, user_id: str, business_id: str) -> bool:
         row = self.connection.execute(
@@ -58,83 +34,6 @@ class JobsPostgresStore:
             (business_id, user_id),
         ).fetchone()
         return row is not None
-
-    @contextmanager
-    def transaction(self) -> Iterator[Connection]:
-        try:
-            yield self.connection
-            self.connection.commit()
-        except Exception:
-            self.connection.rollback()
-            raise
-
-    @staticmethod
-    def _payload(row: dict[str, Any]) -> dict[str, Any]:
-        return dict((row.get("metadata") or {}).get("runtime_payload", {}))
-
-    def _resource(self, resource_type: str, row: dict[str, Any] | None) -> dict[str, Any] | None:
-        if row is None:
-            return None
-        created_at = row.get("created_at") or row.get("accessed_at")
-        if created_at is None:
-            raise RuntimeError(f"PostgreSQL nao retornou timestamp para {resource_type}.")
-        return {
-            "id": str(row["id"]),
-            "module": self.module,
-            "resource_type": resource_type,
-            "user_id": str(row["user_id"]),
-            "entity_id": str(row.get("company_id") or row.get("business_id")) if row.get("company_id") or row.get("business_id") else None,
-            "status": row["status"],
-            "payload": self._payload(row),
-            "created_by": str(row["created_by"]) if row.get("created_by") else str(row["user_id"]),
-            "updated_by": str(row.get("updated_by") or row.get("created_by") or row["user_id"]),
-            "created_at": created_at.isoformat(),
-            "updated_at": (row.get("updated_at") or created_at).isoformat(),
-            "deleted_at": row.get("deleted_at").isoformat() if row.get("deleted_at") else None,
-            "idempotency_key": row.get("idempotency_key"),
-        }
-
-    @staticmethod
-    def _metadata(payload: dict[str, Any]) -> Jsonb:
-        return Jsonb({"runtime_payload": payload})
-
-    def find_idempotent(self, resource_type: str, key: str | None) -> dict[str, Any] | None:
-        if not key:
-            return None
-        row = self.connection.execute(
-            sql.SQL("SELECT * FROM {} WHERE idempotency_key = %s").format(self._table(resource_type)),
-            (key,),
-        ).fetchone()
-        return self._resource(resource_type, row)
-
-    def create(
-        self,
-        resource_type: str,
-        user_id: str,
-        entity_id: str | None,
-        status: str,
-        payload: dict[str, Any],
-        actor: str,
-        unique_fields: tuple[str, ...],
-        event: str,
-        idempotency_key: str | None,
-    ) -> dict[str, Any]:
-        del unique_fields
-        previous = self.find_idempotent(resource_type, idempotency_key)
-        if previous:
-            return previous
-        resource_id = str(uuid4())
-        try:
-            with self.transaction() as connection:
-                row = self._insert(connection, resource_type, resource_id, user_id, entity_id, status, payload, actor, idempotency_key)
-                item = self._resource(resource_type, row)
-                if item is None:
-                    raise RuntimeError("PostgreSQL nao retornou recurso Jobs criado.")
-                self._audit(connection, actor, "create", resource_type, resource_id, None, item, user_id, entity_id)
-                self._event(connection, event, actor, item)
-                return item
-        except UniqueViolation as exc:
-            raise DuplicateValueError(resource_type) from exc
 
     def _insert(
         self,
@@ -231,48 +130,6 @@ class JobsPostgresStore:
             ).fetchone()
         raise ValueError(f"Recurso Jobs desconhecido: {resource_type}")
 
-    def get(self, resource_type: str, resource_id: str) -> dict[str, Any] | None:
-        deleted = sql.SQL(" AND deleted_at IS NULL") if resource_type in SOFT_DELETABLE else sql.SQL("")
-        row = self.connection.execute(
-            sql.SQL("SELECT * FROM {} WHERE id = %s{}").format(self._table(resource_type), deleted),
-            (resource_id,),
-        ).fetchone()
-        return self._resource(resource_type, row)
-
-    def list(self, resource_type: str, user_id: str | None = None) -> list[dict[str, Any]]:
-        conditions = sql.SQL("deleted_at IS NULL") if resource_type in SOFT_DELETABLE else sql.SQL("TRUE")
-        parameters: list[Any] = []
-        if user_id:
-            conditions = conditions + sql.SQL(" AND user_id = %s")
-            parameters.append(user_id)
-        rows = self.connection.execute(
-            sql.SQL("SELECT * FROM {} WHERE {} ORDER BY created_at DESC").format(
-                self._table(resource_type), conditions
-            ),
-            parameters,
-        ).fetchall()
-        return [item for row in rows if (item := self._resource(resource_type, row)) is not None]
-
-    def update(
-        self,
-        item: dict[str, Any],
-        payload: dict[str, Any],
-        status: str,
-        actor: str,
-        action: str,
-        event: str | None = None,
-    ) -> dict[str, Any]:
-        before = {**item, "payload": dict(item["payload"])}
-        with self.transaction() as connection:
-            row = self._update(connection, item["resource_type"], item["id"], payload, status, actor)
-            updated = self._resource(item["resource_type"], row)
-            if updated is None:
-                raise RuntimeError("PostgreSQL nao retornou recurso Jobs atualizado.")
-            self._audit(connection, actor, action, item["resource_type"], item["id"], before, updated, item["user_id"], item["entity_id"])
-            if event:
-                self._event(connection, event, actor, updated)
-            return updated
-
     def _update(
         self, connection: Connection, resource_type: str, resource_id: str, payload: dict[str, Any], status: str, actor: str
     ) -> dict[str, Any]:
@@ -316,70 +173,3 @@ class JobsPostgresStore:
                 (payload.get("cover_letter"), status, metadata, actor, resource_id),
             ).fetchone()
         raise ValueError(f"Recurso Jobs imutavel ou desconhecido: {resource_type}")
-
-    def soft_delete(self, item: dict[str, Any], actor: str) -> None:
-        with self.transaction() as connection:
-            connection.execute(
-                sql.SQL(
-                    "UPDATE {} SET deleted_at = NOW(), updated_by = %s, updated_at = NOW() WHERE id = %s"
-                ).format(self._table(item["resource_type"])),
-                (actor, item["id"]),
-            )
-            self._audit(connection, actor, "soft_delete", item["resource_type"], item["id"], item, None, item["user_id"], item["entity_id"])
-
-    def audit_external(self, actor: str, action: str, resource_type: str, resource_id: str, data: dict[str, Any]) -> dict[str, Any]:
-        with self.transaction() as connection:
-            return self._audit(connection, actor, action, resource_type, resource_id, None, data, data.get("user_id"), data.get("business_id"))
-
-    def _audit(
-        self,
-        connection: Connection,
-        actor: str,
-        action: str,
-        resource_type: str,
-        resource_id: str,
-        before: Any,
-        after: Any,
-        user_id: str | None,
-        entity_id: str | None,
-    ) -> dict[str, Any]:
-        evidence = connection.execute(
-            """INSERT INTO audit.logs
-               (user_id, actor_user_id, actor_entity_id, action, module, resource_type, resource_id,
-                before_data, after_data, created_by)
-               VALUES (%s, %s, %s, %s, 'jobs', %s, %s, %s, %s, %s) RETURNING *""",
-            (user_id, actor, entity_id, action, resource_type, resource_id, Jsonb(before) if before else None, Jsonb(after), actor),
-        ).fetchone()
-        return dict(evidence)
-
-    def _event(self, connection: Connection, routing_key: str, actor: str, item: dict[str, Any]) -> None:
-        entity_id = item["entity_id"] if item["resource_type"] in {"job_postings", "resume_access_logs"} else None
-        connection.execute(
-            """INSERT INTO audit.domain_events
-               (user_id, actor_user_id, entity_id, routing_key, aggregate_type, aggregate_id, payload, created_by)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-            (item["user_id"], actor, entity_id, routing_key, item["resource_type"], item["id"], Jsonb(item["payload"]), actor),
-        )
-
-    def audit_log(self) -> list[dict[str, Any]]:
-        return [dict(row) for row in self.connection.execute(
-            "SELECT * FROM audit.logs WHERE module = 'jobs' ORDER BY created_at DESC"
-        ).fetchall()]
-
-    def outbox(self) -> list[dict[str, Any]]:
-        return [dict(row) for row in self.connection.execute(
-            "SELECT * FROM audit.domain_events WHERE routing_key LIKE 'jobs.%' ORDER BY created_at DESC"
-        ).fetchall()]
-
-    def metrics(self) -> tuple[int, int, int]:
-        records = sum(
-            self.connection.execute(
-                sql.SQL("SELECT COUNT(*) AS count FROM {}").format(self._table(resource_type))
-            ).fetchone()["count"]
-            for resource_type in TABLES
-        )
-        audits = self.connection.execute("SELECT COUNT(*) AS count FROM audit.logs WHERE module = 'jobs'").fetchone()["count"]
-        events = self.connection.execute(
-            "SELECT COUNT(*) AS count FROM audit.domain_events WHERE routing_key LIKE 'jobs.%'"
-        ).fetchone()["count"]
-        return records, audits, events

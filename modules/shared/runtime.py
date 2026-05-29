@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import os
 from pathlib import Path
 from typing import Any
@@ -93,6 +94,20 @@ def _database_path(module_name: str) -> str:
 
 
 def _store_for(module_name: str) -> Any:
+    env_var = f"ALL_IN_ONE_{module_name.upper()}_POSTGRES_DSN"
+    dsn = os.getenv(env_var)
+    if dsn:
+        class_name = f"{module_name.title().replace('_', '')}PostgresStore"
+        module_path = f".{module_name}_postgres_store"
+        try:
+            mod = importlib.import_module(module_path, package="modules.shared")
+            store_class = getattr(mod, class_name)
+            return store_class(dsn)
+        except (ImportError, AttributeError):
+            # Fallback para os que ja foram movidos para a classe base se houver erro
+            pass
+
+    # Fallbacks explicitos para os stores ja implementados
     if module_name == "jobs" and os.getenv("ALL_IN_ONE_JOBS_POSTGRES_DSN"):
         from .jobs_postgres_store import JobsPostgresStore
         return JobsPostgresStore(os.environ["ALL_IN_ONE_JOBS_POSTGRES_DSN"])

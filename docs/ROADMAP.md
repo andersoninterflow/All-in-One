@@ -1,5 +1,7 @@
 # Roadmap
 
+Plano operacional vivo: consulte `docs/EXECUTION_PLAN.md` para a ordem mandataria de execucao, percentuais por modulo, pendencias e criterios de beta.
+
 ## Entregue: motor de dominio 0.2.0
 
 - Estrutura dos apps e de 25 dominios, incluindo Jobs.

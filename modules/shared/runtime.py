@@ -105,6 +105,18 @@ def _store_for(module_name: str) -> Any:
     if module_name == "business" and os.getenv("ALL_IN_ONE_BUSINESS_POSTGRES_DSN"):
         from .business_postgres_store import BusinessPostgresStore
         return BusinessPostgresStore(os.environ["ALL_IN_ONE_BUSINESS_POSTGRES_DSN"])
+    if module_name == "marketplace" and os.getenv("ALL_IN_ONE_MARKETPLACE_POSTGRES_DSN"):
+        from .marketplace_postgres_store import MarketplacePostgresStore
+        return MarketplacePostgresStore(os.environ["ALL_IN_ONE_MARKETPLACE_POSTGRES_DSN"])
+    if module_name == "delivery" and os.getenv("ALL_IN_ONE_DELIVERY_POSTGRES_DSN"):
+        from .delivery_postgres_store import DeliveryPostgresStore
+        return DeliveryPostgresStore(os.environ["ALL_IN_ONE_DELIVERY_POSTGRES_DSN"])
+    if module_name == "services" and os.getenv("ALL_IN_ONE_SERVICES_POSTGRES_DSN"):
+        from .services_postgres_store import ServicesPostgresStore
+        return ServicesPostgresStore(os.environ["ALL_IN_ONE_SERVICES_POSTGRES_DSN"])
+    if module_name == "mobility" and os.getenv("ALL_IN_ONE_MOBILITY_POSTGRES_DSN"):
+        from .mobility_postgres_store import MobilityPostgresStore
+        return MobilityPostgresStore(os.environ["ALL_IN_ONE_MOBILITY_POSTGRES_DSN"])
     if module_name == "api_hub" and os.getenv("ALL_IN_ONE_API_HUB_POSTGRES_DSN"):
         from .api_hub_postgres_store import ApiHubPostgresStore
         return ApiHubPostgresStore(os.environ["ALL_IN_ONE_API_HUB_POSTGRES_DSN"])

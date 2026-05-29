@@ -102,6 +102,12 @@ def _store_for(module_name: str) -> Any:
     if module_name == "finance" and os.getenv("ALL_IN_ONE_FINANCE_POSTGRES_DSN"):
         from .finance_postgres_store import FinancePostgresStore
         return FinancePostgresStore(os.environ["ALL_IN_ONE_FINANCE_POSTGRES_DSN"])
+    if module_name == "business" and os.getenv("ALL_IN_ONE_BUSINESS_POSTGRES_DSN"):
+        from .business_postgres_store import BusinessPostgresStore
+        return BusinessPostgresStore(os.environ["ALL_IN_ONE_BUSINESS_POSTGRES_DSN"])
+    if module_name == "api_hub" and os.getenv("ALL_IN_ONE_API_HUB_POSTGRES_DSN"):
+        from .api_hub_postgres_store import ApiHubPostgresStore
+        return ApiHubPostgresStore(os.environ["ALL_IN_ONE_API_HUB_POSTGRES_DSN"])
     return SQLiteStore(module_name, _database_path(module_name))
 
 

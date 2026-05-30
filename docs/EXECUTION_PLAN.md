@@ -25,7 +25,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 
 Objetivo: impedir regressao enquanto o projeto avanca.
 
-Status: 95%
+Status: 98%
 
 Entregas esperadas:
 - Manter `main` limpo e sincronizado com `origin` e `fork`.
@@ -34,13 +34,14 @@ Entregas esperadas:
 - Selecionar automaticamente a opcao `2` em prompts interativos durante este processo.
 
 Pendencias:
-- Automatizar verificacao de divergencia entre `origin/main`, `fork/main` e local no CI.
+- Executar o gate de divergencia em ambiente com PowerShell Core disponivel e
+  credenciais remotas configuradas.
 - Adicionar gate que falhe se existirem artefatos gerados nao commitados.
 
 Proximos passos naturais:
-1. Criar script `scripts/check_git_sync.ps1`.
-2. Rodar o script no fechamento de cada incremento.
-3. Incluir o gate em workflow CI.
+1. Rodar `scripts/check_git_sync.ps1` no fechamento de cada incremento.
+2. Corrigir credenciais locais de push para `origin` ou `fork`.
+3. Adicionar verificacao de artefatos gerados nao commitados.
 
 ### Fase 1 - Estabilizacao Docker e runtime local
 
@@ -58,15 +59,13 @@ Entregas ja existentes:
 - `/health` validado em `localhost:8100` a `localhost:8112` com stores PostgreSQL.
 
 Pendencias:
-- Criar gate CI para rodar compose/healthcheck em ambiente limpo.
 - Reduzir tempo de rebuild dos containers Python.
+- Acompanhar primeira execucao do workflow `compose-health.yml` no GitHub.
 
 Proximos passos naturais:
-1. Criar script `scripts/validate_compose_health.ps1`.
-2. Executar compose em banco limpo e validar migrations 001-012.
-3. Integrar o gate ao CI.
-4. Otimizar Dockerfiles com cache de dependencias.
-5. Registrar evidencias por execucao em `STATUS.md`.
+1. Executar compose em banco limpo e validar migrations 001-013.
+2. Otimizar Dockerfiles com cache de dependencias.
+3. Registrar evidencias por execucao em `STATUS.md`.
 
 ### Fase 2 - Banco de dados e stores PostgreSQL
 

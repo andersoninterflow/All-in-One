@@ -1,5 +1,38 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-30 Sincronizacao GitHub E Gates Operacionais
+
+### Concluido neste ciclo
+
+- GitHub verificado contra os remotos `origin` e `fork`; ambos apontam para `main` em `6f3ddf9`, sem commits novos na nuvem para trazer ao checkout local.
+- Checkout local preservado com os 2 commits do memorando ja criados anteriormente, ficando a frente da nuvem ate que credenciais GitHub estejam disponiveis para push HTTPS.
+- Gate de divergencia Git criado em `scripts/check_git_sync.ps1`, com deteccao de merge/rebase em andamento, arvore suja e comparacao `behind/ahead` por remoto.
+- Gate Docker Compose criado em `scripts/validate_compose_health.ps1`, validando `docker compose config`, subida do ambiente e `/health` das 13 APIs FastAPI principais.
+- Workflows CI adicionados em `.github/workflows/git-sync.yml` e `.github/workflows/compose-health.yml`.
+- `scripts/validate_repository.py` atualizado para exigir os novos workflows de sincronizacao e Compose health.
+- `docs/OPERATIONS.md` atualizado com a operacao dos gates automatizados.
+- Teste E2E de Identity ajustado para ser opt-in quando o servico HTTP real nao estiver ativo, pulando explicitamente em ambiente sem Docker Compose em vez de falhar por conexao recusada.
+
+### Validacoes executadas
+
+- `python3 scripts/validate_repository.py`: aprovado.
+- `python3 scripts/validate_openapi.py`: aprovado.
+- `python3 -m compileall -q scripts platform_test_support.py`: aprovado.
+- `docker compose -f infra/docker/docker-compose.yml config --quiet`: aprovado.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q modules/identity/tests/test_e2e_identity.py`: 1 teste ignorado corretamente por servico E2E indisponivel.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 111 testes aprovados, 29 ignorados, 2 avisos Pydantic.
+
+### Pendencias rastreadas
+
+- Executar `scripts/check_git_sync.ps1` e `scripts/validate_compose_health.ps1` em ambiente com PowerShell Core disponivel; este shell local nao possui `pwsh`/`powershell`.
+- Resolver credenciais GitHub locais para permitir `git push origin HEAD:main` ou `git push fork HEAD:main`.
+- Investigar aviso ambiental do pytest Windows no cleanup de `pytest-current`, que ocorre apos a suite concluir com status verde.
+
+### Git
+
+- Branch local `main` verificada contra `origin/main` e `fork/main`.
+- Push automatico continua bloqueado por ausencia de login GitHub no CLI local (`gh auth status`: nao autenticado; `git push`: `could not read Username for 'https://github.com'`).
+
 ## STATUS OPERACIONAL - 2026-05-30 Memorando ABNT De Progresso E Mercado
 
 ### Concluido neste ciclo

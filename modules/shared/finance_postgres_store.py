@@ -300,5 +300,7 @@ class FinancePostgresStore:
     def metrics(self) -> tuple[int, int, int]:
         count = self.connection.execute("SELECT COUNT(*) FROM finance.wallets").fetchone()["count"]
         audits = self.connection.execute("SELECT COUNT(*) FROM audit.logs WHERE module = 'finance'").fetchone()["count"]
-        events = self.connection.execute("SELECT COUNT(*) FROM audit.domain_events WHERE routing_key LIKE 'payment.%'").fetchone()["count"]
+        events = self.connection.execute(
+            "SELECT COUNT(*) FROM audit.domain_events WHERE routing_key LIKE 'payment.%' OR routing_key LIKE 'finance.%'"
+        ).fetchone()["count"]
         return count, audits, events

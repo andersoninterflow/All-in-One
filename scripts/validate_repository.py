@@ -77,7 +77,16 @@ def main() -> int:
     ]:
         if needle not in migrations:
             fail(f"Controle SQL ausente: {needle}", errors)
-    for workflow in ["ci.yml", "security.yml", "database.yml", "openapi.yml", "autocommit.yml", "automerge.yml"]:
+    for workflow in [
+        "ci.yml",
+        "security.yml",
+        "database.yml",
+        "openapi.yml",
+        "autocommit.yml",
+        "automerge.yml",
+        "compose-health.yml",
+        "git-sync.yml",
+    ]:
         if not (ROOT / ".github" / "workflows" / workflow).is_file():
             fail(f"Workflow ausente: {workflow}", errors)
     if not (ROOT / "workers" / "outbox_dispatcher" / "main.py").is_file():

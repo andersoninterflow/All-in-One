@@ -296,7 +296,7 @@ class ApiHubPostgresStore:
 
     def outbox(self) -> list[dict[str, Any]]:
         return [dict(row) for row in self.connection.execute(
-            "SELECT * FROM audit.domain_events WHERE routing_key LIKE 'api.%' ORDER BY created_at DESC"
+            "SELECT * FROM audit.domain_events WHERE routing_key LIKE 'api.%' OR routing_key LIKE 'api_hub.%' ORDER BY created_at DESC"
         ).fetchall()]
 
     def metrics(self) -> tuple[int, int, int]:
@@ -308,6 +308,6 @@ class ApiHubPostgresStore:
         )
         audits = self.connection.execute("SELECT COUNT(*) AS count FROM audit.logs WHERE module = 'api_hub'").fetchone()["count"]
         events = self.connection.execute(
-            "SELECT COUNT(*) AS count FROM audit.domain_events WHERE routing_key LIKE 'api.%'"
+            "SELECT COUNT(*) AS count FROM audit.domain_events WHERE routing_key LIKE 'api.%' OR routing_key LIKE 'api_hub.%'"
         ).fetchone()["count"]
         return records, audits, events

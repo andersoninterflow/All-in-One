@@ -1,0 +1,30 @@
+name: Compose Health
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infra/docker/docker-compose.yml"
+      - "modules/**"
+      - "workers/**"
+      - "database/postgres/migrations/**"
+      - "scripts/validate_compose_health.ps1"
+      - ".github/workflows/compose-health.yml"
+  pull_request:
+    paths:
+      - "infra/docker/docker-compose.yml"
+      - "modules/**"
+      - "workers/**"
+      - "database/postgres/migrations/**"
+      - "scripts/validate_compose_health.ps1"
+      - ".github/workflows/compose-health.yml"
+
+jobs:
+  compose-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Docker Compose health
+        shell: pwsh
+        run: ./scripts/validate_compose_health.ps1 -TimeoutSeconds 360 -DownAfter

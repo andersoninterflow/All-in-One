@@ -2,16 +2,26 @@ import pytest
 import httpx
 import uuid
 import asyncio
+import os
 from datetime import datetime
 
-# Configurações de teste (ajustar conforme ambiente)
-BASE_URL = "http://localhost:8101" # Porta do container identity no docker-compose
+# Porta do container identity no docker-compose. O teste E2E permanece opt-in
+# para nao falhar em ambientes sem compose ativo.
+BASE_URL = os.environ.get("IDENTITY_E2E_URL", "http://localhost:8101")
 
 def test_identity_e2e_flow():
     asyncio.run(_test_identity_e2e_flow())
 
 
 async def _test_identity_e2e_flow():
+    async with httpx.AsyncClient(base_url=BASE_URL, timeout=3.0) as client:
+        try:
+            health_resp = await client.get("/health")
+        except httpx.HTTPError as exc:
+            pytest.skip(f"Identity E2E indisponivel em {BASE_URL}: {exc}")
+        if health_resp.status_code != 200:
+            pytest.skip(f"Identity E2E indisponivel em {BASE_URL}: HTTP {health_resp.status_code}")
+
     user_email = f"test_{uuid.uuid4().hex[:8]}@allinone.com"
     user_password = "SecurePassword123!"
     user_id = str(uuid.uuid4())

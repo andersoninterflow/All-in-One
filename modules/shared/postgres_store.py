@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Any, Iterator, Protocol
 from uuid import uuid4
 
@@ -33,11 +34,98 @@ class BasePostgresStore:
 
     def __init__(self, dsn: str) -> None:
         self.connection: Connection = psycopg.connect(dsn, row_factory=dict_row)
+        self._column_cache: dict[str, set[str]] = {}
 
     def _table(self, resource_type: str) -> sql.Identifier:
         full_name = self.tables[resource_type]
         schema_name, table_name = full_name.split(".", maxsplit=1)
         return sql.Identifier(schema_name, table_name)
+
+    def _table_columns(self, resource_type: str) -> set[str]:
+        full_name = self.tables[resource_type]
+        if full_name not in self._column_cache:
+            schema_name, table_name = full_name.split(".", maxsplit=1)
+            rows = self.connection.execute(
+                """SELECT column_name
+                   FROM information_schema.columns
+                   WHERE table_schema = %s AND table_name = %s""",
+                (schema_name, table_name),
+            ).fetchall()
+            self._column_cache[full_name] = {row["column_name"] for row in rows}
+        return self._column_cache[full_name]
+
+    @staticmethod
+    def _column_value(value: Any) -> Any:
+        if isinstance(value, (dict, list)):
+            return Jsonb(value)
+        if isinstance(value, float):
+            return Decimal(str(value))
+        return value
+
+    def _insert_generic(
+        self,
+        connection: Connection,
+        resource_type: str,
+        resource_id: str,
+        user_id: str,
+        entity_id: str | None,
+        status: str,
+        payload: dict[str, Any],
+        actor: str,
+        idempotency_key: str | None,
+    ) -> dict[str, Any]:
+        columns = self._table_columns(resource_type)
+        values: dict[str, Any] = {
+            "id": resource_id,
+            "user_id": user_id,
+            "status": status,
+            "metadata": self._metadata(payload),
+            "created_by": actor,
+            "updated_by": actor,
+            "idempotency_key": idempotency_key,
+        }
+        if entity_id:
+            for candidate in ("company_id", "business_id", "entity_id", "store_id", "warehouse_id"):
+                if candidate in columns and candidate not in payload:
+                    values[candidate] = entity_id
+                    break
+        for key, value in payload.items():
+            if key in columns and key not in values:
+                values[key] = self._column_value(value)
+        filtered = {key: value for key, value in values.items() if key in columns}
+        return connection.execute(
+            sql.SQL("INSERT INTO {} ({}) VALUES ({}) RETURNING *").format(
+                self._table(resource_type),
+                sql.SQL(", ").join(sql.Identifier(column) for column in filtered),
+                sql.SQL(", ").join(sql.Placeholder() for _ in filtered),
+            ),
+            tuple(filtered.values()),
+        ).fetchone()
+
+    def _update_generic(
+        self,
+        connection: Connection,
+        resource_type: str,
+        resource_id: str,
+        payload: dict[str, Any],
+        status: str,
+        actor: str,
+    ) -> dict[str, Any]:
+        columns = self._table_columns(resource_type)
+        values: dict[str, Any] = {"status": status, "metadata": self._metadata(payload), "updated_by": actor}
+        for key, value in payload.items():
+            if key in columns and key not in {"id", "user_id", "created_at", "created_by"}:
+                values[key] = self._column_value(value)
+        set_sql = [sql.SQL("{} = %s").format(sql.Identifier(column)) for column in values]
+        if "updated_at" in columns:
+            set_sql.append(sql.SQL("updated_at = NOW()"))
+        return connection.execute(
+            sql.SQL("UPDATE {} SET {} WHERE id = %s RETURNING *").format(
+                self._table(resource_type),
+                sql.SQL(", ").join(set_sql),
+            ),
+            (*values.values(), resource_id),
+        ).fetchone()
 
     @contextmanager
     def transaction(self) -> Iterator[Connection]:
@@ -91,6 +179,8 @@ class BasePostgresStore:
     def find_idempotent(self, resource_type: str, key: str | None) -> dict[str, Any] | None:
         if not key:
             return None
+        if "idempotency_key" not in self._table_columns(resource_type):
+            return None
         row = self.connection.execute(
             sql.SQL("SELECT * FROM {} WHERE idempotency_key = %s").format(self._table(resource_type)),
             (key,),
@@ -143,7 +233,7 @@ class BasePostgresStore:
     def list(self, resource_type: str, user_id: str | None = None) -> list[dict[str, Any]]:
         conditions = sql.SQL("deleted_at IS NULL") if resource_type in self.soft_deletable else sql.SQL("TRUE")
         parameters: list[Any] = []
-        if user_id:
+        if user_id and "user_id" in self._table_columns(resource_type):
             conditions = conditions + sql.SQL(" AND user_id = %s")
             parameters.append(user_id)
         rows = self.connection.execute(
@@ -230,8 +320,6 @@ class BasePostgresStore:
 
     def outbox(self) -> list[dict[str, Any]]:
         routing_prefix = f"{self.module}.%"
-        # Especial para api_hub que usa routing key api.*
-        if self.module == "api_hub": routing_prefix = "api.%"
         # Especial para finance que usa payment.*
         if self.module == "finance": routing_prefix = "payment.%"
 
@@ -251,7 +339,6 @@ class BasePostgresStore:
         ).fetchone()["count"]
         
         routing_prefix = f"{self.module}.%"
-        if self.module == "api_hub": routing_prefix = "api.%"
         if self.module == "finance": routing_prefix = "payment.%"
 
         events = self.connection.execute(

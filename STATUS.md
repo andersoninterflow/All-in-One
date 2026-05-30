@@ -1,5 +1,31 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-30 Memorando ABNT De Progresso E Mercado
+
+### Concluido neste ciclo
+
+- Status de progresso consolidado em memorando tecnico-comercial no arquivo `docs/memorando_status_mercado_abnt.md`.
+- PDF em formato ABNT simplificado gerado em `docs/memorando_status_mercado_abnt.pdf`.
+- Levantamento de modulos, servicos e microservicos atualizado com percentual de conclusao, estado tecnico, pendencias e proximos passos naturais.
+- Analise comercial incluida com concorrentes no mercado brasileiro, precos publicos/faixas de referencia, estrategia de atracao de clientes e sugestao de precos All-in-One pelo menos 20% abaixo das referencias nacionais quando havia preco publico comparavel.
+- Gerador local sem dependencias externas criado em `scripts/generate_abnt_memo_pdf.py` para reproduzir o PDF a partir do Markdown.
+
+### Fontes de mercado consultadas
+
+- Conta Azul, Bling, RD Station CRM, Nuvemshop, Yampi, iFood, Loggi, Uber para Empresas, iClinic, Feegow, Gupy e Solides.
+- Quando o concorrente opera com preco sob consulta, o memorando registra a limitacao e usa recomendacao por paridade funcional, sem tratar estimativa como tabela publica.
+
+### Pendencias rastreadas
+
+- Revisar o memorando apos a proxima rodada de validacao tecnica dos stores PostgreSQL.
+- Complementar precos sob consulta com cotacoes comerciais reais quando houver contato com fornecedores/concorrentes.
+- Converter a estrategia comercial em backlog de go-to-market por modulo.
+
+### Git
+
+- Commit local seletivo criado para os artefatos do memorando.
+- Push automatico bloqueado por ausencia de credenciais GitHub no ambiente (`could not read Username for 'https://github.com'`).
+
 ## STATUS OPERACIONAL - 2026-05-30 Estabilizacao Docker Runtime Validada
 
 ### Concluido neste ciclo

@@ -100,7 +100,7 @@ def _store_for(module_name: str) -> Any:
         class_name = f"{module_name.title().replace('_', '')}PostgresStore"
         module_path = f".{module_name}_postgres_store"
         try:
-            mod = importlib.import_module(module_path, package="modules.shared")
+            mod = importlib.import_module(module_path, package=__package__ or "shared")
             store_class = getattr(mod, class_name)
             return store_class(dsn)
         except (ImportError, AttributeError):

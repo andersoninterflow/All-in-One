@@ -11,10 +11,10 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Git e sincronizacao remota | 100% | `local main`, `origin/main` e `fork/main` alinhados | Fluxo de entrega remoto esta operacional. |
 | Contratos de microservicos | 100% | 25 modulos com OpenAPI, contratos, Dockerfile, docs e testes base | Superficie contratual completa para evoluir. |
 | PostgreSQL estrutural | 80% | 12 migrations SQL e stores para 25 modulos | Schema amplo existe; falta prova real por modulo. |
-| Runtime FastAPI modular | 70% | Runtime comum, autorizacao, auditoria, outbox e carregamento dinamico por DSN | Base pronta; falta estabilizar todos os containers e DSNs. |
+| Runtime FastAPI modular | 85% | Runtime comum, autorizacao, auditoria, outbox e carregamento dinamico por DSN validado em containers | Base local estabilizada; falta ampliar testes E2E por jornada. |
 | Mensageria/outbox | 75% | RabbitMQ, dispatcher e testes criticos ja validados | Precisa ampliar cobertura para eventos de todos os modulos. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
-| Docker local | 70% | Postgres, RabbitMQ, MongoDB, Redis e varios servicos sobem | `api-hub` reiniciando; alguns servicos essenciais nao estavam ativos no ultimo `ps`. |
+| Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 35% | 6 apps catalogados e plano Stitch com 25 projetos/177 telas | Ainda falta app funcional real e testes E2E. |
 | Integracoes externas | 20% | Contratos e pontos de extensao existem | KYC/KYB, Pix/PSP, fiscal, CTPS oficial, Stitch remoto e provedores dependem de credenciais/homologacao. |
 | Producao/compliance | 20% | Docs e politicas iniciais | Faltam LGPD/DPIA, pentest, carga, DR, backup/restore e observabilidade produtiva. |
@@ -25,7 +25,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 
 Objetivo: impedir regressao enquanto o projeto avanca.
 
-Status: 90%
+Status: 95%
 
 Entregas esperadas:
 - Manter `main` limpo e sincronizado com `origin` e `fork`.
@@ -46,27 +46,27 @@ Proximos passos naturais:
 
 Objetivo: todos os servicos essenciais precisam subir de forma previsivel.
 
-Status: 70%
+Status: 100%
 
 Entregas ja existentes:
 - `postgres`, `rabbitmq`, `mongodb` e `redis` sobem.
 - Migrations rodam via servico `migrations`.
-- Varios microservicos FastAPI sobem no compose.
+- 13 microservicos FastAPI sobem no compose com healthcheck HTTP.
+- `api-hub`, `identity`, `finance`, `jobs` e `outbox-dispatcher` permanecem ativos.
+- `depends_on` padronizado para aguardar migrations em modulos PostgreSQL.
+- `ALL_IN_ONE_*_POSTGRES_DSN` injetado no compose para stores PostgreSQL tipados.
+- `/health` validado em `localhost:8100` a `localhost:8112` com stores PostgreSQL.
 
 Pendencias:
-- Corrigir `api-hub`, que estava em estado `Restarting`.
-- Fazer `identity`, `finance`, `jobs` e `outbox-dispatcher` aparecerem ativos e saudaveis no `docker compose ps`.
-- Adicionar healthcheck HTTP para cada microservico.
-- Padronizar `depends_on` para aguardar `migrations` quando o modulo usar PostgreSQL.
-- Injetar `ALL_IN_ONE_*_POSTGRES_DSN` no compose para todos os modulos que ja possuem store PostgreSQL.
+- Criar gate CI para rodar compose/healthcheck em ambiente limpo.
+- Reduzir tempo de rebuild dos containers Python.
 
 Proximos passos naturais:
-1. Coletar logs de `api-hub`.
-2. Corrigir import, dependency, env ou migration que estiver causando restart.
-3. Atualizar `infra/docker/docker-compose.yml` com DSNs por modulo.
-4. Subir compose limpo.
-5. Validar `/health` ou endpoint equivalente de todos os servicos.
-6. Registrar evidencias em `STATUS.md`.
+1. Criar script `scripts/validate_compose_health.ps1`.
+2. Executar compose em banco limpo e validar migrations 001-012.
+3. Integrar o gate ao CI.
+4. Otimizar Dockerfiles com cache de dependencias.
+5. Registrar evidencias por execucao em `STATUS.md`.
 
 ### Fase 2 - Banco de dados e stores PostgreSQL
 
@@ -204,7 +204,7 @@ Proximos passos naturais:
 
 | Modulo | Conclusao | Estado | Pendencia principal | Proximo passo |
 | --- | ---: | --- | --- | --- |
-| `identity` | 78% | Contrato, runtime, PostgreSQL especializado e KYC/MFA modelado | KYC/KYB/liveness reais | Teste E2E de cadastro, sessao, consentimento e verificacao |
+| `identity` | 86% | Contrato, runtime, PostgreSQL especializado, cadastro/login/KYC/MFA E2E e container healthy | KYC/KYB/liveness reais | Homologar provedor KYC/KYB e ampliar testes negativos |
 | `business` | 74% | Companies, memberships, idempotencia e store tipado | Fluxo KYB e aprovacao operacional | Testar onboarding empresa e convite de usuario |
 | `permissions` | 64% | RBAC/ABAC modelado e store gerado | Enforcement profundo em todos endpoints | Criar matriz de permissoes e testes negativos |
 | `finance` | 72% | Wallet, ledger, escrow e store tipado | PSP/Pix/split/fiscal reais | Testar ledger append-only e reconciliacao sandbox |
@@ -215,7 +215,7 @@ Proximos passos naturais:
 | `services` | 68% | Prestadores e contratos com store tipado | Anti-burla e escrow | Jornada visita -> orcamento -> contrato |
 | `mobility` | 68% | Rides, tickets e fare rules com store tipado | ETA, QR/NFC e tarifas reais | Jornada corrida e ticket |
 | `jobs` | 84% | Mais maduro: CTPS/cofre/outbox/testes | Homologacao CTPS oficial e E2E amplo | Fluxo candidato -> vaga -> recrutador |
-| `api_hub` | 70% | API keys/webhooks e SQL refinado | Container reiniciando, OAuth2 real | Corrigir restart e testar API key/webhook |
+| `api_hub` | 78% | API keys/webhooks, SQL refinado e container healthy | OAuth2 real e testes de gateway/webhook | Testar API key, webhook assinado e rate limit |
 | `erp` | 60% | Fiscal/accounting modelado e store gerado | Fluxos contabeis reais | Tipar store ERP e testar payables/receivables |
 | `wms` | 60% | Armazem/inventario modelados | Operacao real de estoque | Tipar store WMS e testar recebimento/picking |
 | `tms` | 60% | Fretes/transportadoras modelados | Torre de controle e POD | Tipar store TMS e testar frete |
@@ -248,12 +248,11 @@ O projeto entra em beta quando todos os itens abaixo estiverem verdes:
 
 Sequencia recomendada:
 
-1. Corrigir Docker e `api-hub`.
-2. Ativar `identity`, `finance`, `jobs` e `outbox-dispatcher` no compose.
-3. Adicionar DSNs para todos os stores PostgreSQL.
-4. Criar teste matriz de stores PostgreSQL.
-5. Corrigir stores gerados que falharem contra Postgres.
-6. Rodar migrations e testes em ambiente limpo.
+1. Criar teste matriz de stores PostgreSQL.
+2. Corrigir stores gerados que falharem contra Postgres.
+3. Rodar migrations e testes em ambiente limpo.
+4. Implementar gate CI de compose/healthcheck.
+5. Testar API key, webhook assinado e rate limit no API Hub.
+6. Implementar primeira jornada E2E `identity -> wallet -> marketplace order`.
 7. Atualizar `STATUS.md`.
 8. Sincronizar Git.
-

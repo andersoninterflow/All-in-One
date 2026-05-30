@@ -1,16 +1,21 @@
 import pytest
 import httpx
 import uuid
+import asyncio
 from datetime import datetime
 
 # Configurações de teste (ajustar conforme ambiente)
 BASE_URL = "http://localhost:8101" # Porta do container identity no docker-compose
 
-@pytest.mark.asyncio
-async def test_identity_e2e_flow():
+def test_identity_e2e_flow():
+    asyncio.run(_test_identity_e2e_flow())
+
+
+async def _test_identity_e2e_flow():
     user_email = f"test_{uuid.uuid4().hex[:8]}@allinone.com"
     user_password = "SecurePassword123!"
     user_id = str(uuid.uuid4())
+    document_cpf = f"CPF-{uuid.uuid4().hex[:12]}"
 
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
         # 1. Registro de Usuário
@@ -19,7 +24,7 @@ async def test_identity_e2e_flow():
             "full_name": "Test User E2E",
             "email": user_email,
             "password_hash": user_password,
-            "document_cpf": "123.456.789-00",
+            "document_cpf": document_cpf,
             "terms_accepted_at": datetime.now().isoformat(),
             "lgpd_consent_at": datetime.now().isoformat()
         }
@@ -67,5 +72,4 @@ async def test_identity_e2e_flow():
         print("✓ MFA Setup iniciado")
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(test_identity_e2e_flow())
+    asyncio.run(_test_identity_e2e_flow())

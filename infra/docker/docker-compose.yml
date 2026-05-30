@@ -9,11 +9,19 @@ x-module-common: &module-common
       condition: service_healthy
     rabbitmq:
       condition: service_healthy
+    migrations:
+      condition: service_completed_successfully
   networks: [platform]
   environment:
     ALL_IN_ONE_STORAGE_DIR: /data
   volumes:
     - domain-data:/data
+  healthcheck:
+    test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()\""]
+    interval: 10s
+    timeout: 5s
+    retries: 12
+    start_period: 20s
 
 services:
   postgres:
@@ -82,6 +90,21 @@ services:
     build:
       context: ../..
       dockerfile: modules/api_hub/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_API_HUB_POSTGRES_DSN: ${ALL_IN_ONE_API_HUB_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+      ALL_IN_ONE_REDIS_URL: ${ALL_IN_ONE_REDIS_URL:-redis://redis:6379/0}
+      IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL:-http://identity:8000}
+      FINANCE_SERVICE_URL: ${FINANCE_SERVICE_URL:-http://finance:8000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      migrations:
+        condition: service_completed_successfully
     ports: ["8100:8000"]
 
   identity:
@@ -123,6 +146,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/marketplace/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_MARKETPLACE_POSTGRES_DSN: ${ALL_IN_ONE_MARKETPLACE_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8103:8000"]
 
   delivery:
@@ -130,6 +156,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/delivery/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_DELIVERY_POSTGRES_DSN: ${ALL_IN_ONE_DELIVERY_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8104:8000"]
 
   services:
@@ -137,6 +166,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/services/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_SERVICES_POSTGRES_DSN: ${ALL_IN_ONE_SERVICES_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8105:8000"]
 
   mobility:
@@ -144,6 +176,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/mobility/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_MOBILITY_POSTGRES_DSN: ${ALL_IN_ONE_MOBILITY_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8106:8000"]
 
   erp:
@@ -151,6 +186,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/erp/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_ERP_POSTGRES_DSN: ${ALL_IN_ONE_ERP_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8107:8000"]
 
   wms:
@@ -158,6 +196,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/wms/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_WMS_POSTGRES_DSN: ${ALL_IN_ONE_WMS_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8108:8000"]
 
   tms:
@@ -165,6 +206,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/tms/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_TMS_POSTGRES_DSN: ${ALL_IN_ONE_TMS_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8109:8000"]
 
   crm:
@@ -172,6 +216,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/crm/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_CRM_POSTGRES_DSN: ${ALL_IN_ONE_CRM_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8110:8000"]
 
   health:
@@ -179,6 +226,9 @@ services:
     build:
       context: ../..
       dockerfile: modules/health/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_HEALTH_POSTGRES_DSN: ${ALL_IN_ONE_HEALTH_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8111:8000"]
 
   jobs:

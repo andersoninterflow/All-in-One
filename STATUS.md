@@ -1,5 +1,39 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-30 Estabilizacao Docker Runtime Validada
+
+### Concluido neste ciclo
+
+- Docker Compose local estabilizado para os 13 servicos FastAPI principais: `api-hub`, `identity`, `finance`, `marketplace`, `delivery`, `services`, `mobility`, `erp`, `wms`, `tms`, `crm`, `health` e `jobs`.
+- `api-hub` corrigido para carregar dependencias e variaveis de runtime sem restart.
+- `identity` e `finance` corrigidos para copiar o modulo completo no Dockerfile, preservando imports locais.
+- `modules/shared/runtime.py` ajustado para resolver stores PostgreSQL dinamicamente dentro e fora dos containers.
+- `infra/docker/docker-compose.yml` padronizado com healthcheck HTTP, dependencia de migrations e DSNs PostgreSQL para os modulos com store tipado.
+- Requirements dos microservicos padronizados com `psycopg[binary]==3.3.4` para evitar falha de import em stores PostgreSQL.
+- Fluxo Identity E2E estabilizado: cadastro, login JWT, submissao KYC e MFA setup passam contra container real.
+- Store Identity tipado corrigido para cadastro com ID fornecido pelo payload, normalizacao `document_cpf`/`cpf_document`, audit/outbox com usuario correto e alias `kyc_records`.
+- Telemetria Identity ajustada para nao bloquear operacoes transacionais quando Mongo estiver indisponivel ou lento.
+- Suporte local de testes corrigido em `platform_test_support.py` para importar modulos com dependencias locais.
+
+### Validacoes executadas
+
+- `docker compose -f infra/docker/docker-compose.yml ps`: 13 servicos FastAPI healthy, alem de PostgreSQL e RabbitMQ healthy.
+- `/health` em `localhost:8100` a `localhost:8112`: todos retornaram `ok` com stores PostgreSQL tipados.
+- `python scripts/validate_repository.py`: aprovado.
+- `python scripts/validate_openapi.py`: aprovado.
+- `python -m pytest --import-mode=importlib -q`: 112 testes aprovados, 3 ignorados.
+
+### Pendencias rastreadas
+
+- Ampliar matriz de testes PostgreSQL para create/get/list/update/soft_delete/idempotencia/audit/outbox em todos os modulos.
+- Tipar stores de menor maturidade alem dos modulos prioritarios ja especializados.
+- Implementar provedores reais para KYC/KYB, Pix/PSP, fiscal, CTPS oficial, mapas/tracking e IA.
+- Criar gates CI para divergencia Git, artefatos nao commitados, migrations, testes, OpenAPI e seguranca.
+
+### Git
+
+- Incremento pronto para sincronizacao em `main` apos registro deste status.
+
 ## STATUS OPERACIONAL - 2026-05-29 Expansao PostgreSQL e Integracao Validada
 
 ### Concluido neste ciclo

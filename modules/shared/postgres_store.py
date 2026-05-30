@@ -71,16 +71,17 @@ class BasePostgresStore:
         if resource_type == "companies":
             entity_id = row["id"]
 
+        row_user_id = row.get("user_id") or row["id"]
         return {
             "id": str(row["id"]),
             "module": self.module,
             "resource_type": resource_type,
-            "user_id": str(row["user_id"]),
+            "user_id": str(row_user_id),
             "entity_id": str(entity_id) if entity_id else None,
             "status": row["status"],
             "payload": self._payload(row),
-            "created_by": str(row["created_by"]) if row.get("created_by") else str(row["user_id"]),
-            "updated_by": str(row.get("updated_by") or row.get("created_by") or row["user_id"]),
+            "created_by": str(row["created_by"]) if row.get("created_by") else str(row_user_id),
+            "updated_by": str(row.get("updated_by") or row.get("created_by") or row_user_id),
             "created_at": created_at.isoformat(),
             "updated_at": (row.get("updated_at") or created_at).isoformat(),
             "deleted_at": row.get("deleted_at").isoformat() if row.get("deleted_at") else None,

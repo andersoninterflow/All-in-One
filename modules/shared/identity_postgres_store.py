@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import uuid4
 
 from psycopg import Connection
+from psycopg.errors import UniqueViolation
 from psycopg.types.json import Jsonb
 
 from .postgres_store import BasePostgresStore
+from .store import DuplicateValueError
 
 
 class IdentityPostgresStore(BasePostgresStore):
@@ -19,9 +22,42 @@ class IdentityPostgresStore(BasePostgresStore):
         "biometrics": "identity.biometrics",
         "sessions": "identity.sessions",
         "identity_verifications": "identity.identity_verifications",
+        "kyc_records": "identity.identity_verifications",
         "consent_records": "identity.consent_records",
     }
-    soft_deletable = frozenset({"users", "documents", "biometrics", "sessions", "identity_verifications", "consent_records"})
+    soft_deletable = frozenset({"users", "documents", "biometrics", "sessions", "identity_verifications", "kyc_records", "consent_records"})
+
+    def create(
+        self,
+        resource_type: str,
+        user_id: str,
+        entity_id: str | None,
+        status: str,
+        payload: dict[str, Any],
+        actor: str,
+        unique_fields: tuple[str, ...],
+        event: str,
+        idempotency_key: str | None,
+    ) -> dict[str, Any]:
+        if resource_type != "users":
+            return super().create(resource_type, user_id, entity_id, status, payload, actor, unique_fields, event, idempotency_key)
+
+        previous = self.find_idempotent(resource_type, idempotency_key)
+        if previous:
+            return previous
+
+        resource_id = str(payload.get("id") or user_id or uuid4())
+        try:
+            with self.transaction() as connection:
+                row = self._insert(connection, resource_type, resource_id, resource_id, entity_id, status, payload, resource_id, idempotency_key)
+                item = self._resource(resource_type, row)
+                if item is None:
+                    raise RuntimeError("PostgreSQL nao retornou usuario Identity criado.")
+                self._audit(connection, resource_id, "create", resource_type, item["id"], None, item, item["user_id"], entity_id)
+                self._event(connection, event, resource_id, item)
+                return item
+        except UniqueViolation as exc:
+            raise DuplicateValueError(resource_type) from exc
 
     def _insert(
         self,
@@ -77,12 +113,12 @@ class IdentityPostgresStore(BasePostgresStore):
                     payload["ip_address"], payload["expires_at"], status, metadata, actor, actor, idempotency_key,
                 ),
             ).fetchone()
-        if resource_type == "identity_verifications":
+        if resource_type in {"identity_verifications", "kyc_records"}:
             return connection.execute(
                 """INSERT INTO identity.identity_verifications
                    (id, user_id, verification_type, status, metadata, created_by, updated_by, idempotency_key)
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
-                (resource_id, user_id, payload["verification_type"], status, metadata, actor, actor, idempotency_key),
+                (resource_id, user_id, payload.get("verification_type", "kyc"), status, metadata, actor, actor, idempotency_key),
             ).fetchone()
         if resource_type == "consent_records":
             return connection.execute(
@@ -112,7 +148,7 @@ class IdentityPostgresStore(BasePostgresStore):
                    WHERE id = %s RETURNING *""",
                 (payload.get("revoked_at"), status, metadata, actor, resource_id),
             ).fetchone()
-        if resource_type in {"documents", "biometrics", "identity_verifications", "consent_records"}:
+        if resource_type in {"documents", "biometrics", "identity_verifications", "kyc_records", "consent_records"}:
             return connection.execute(
                 sql.SQL("UPDATE {} SET status = %s, metadata = %s, updated_by = %s, updated_at = NOW() WHERE id = %s RETURNING *").format(self._table(resource_type)),
                 (status, metadata, actor, resource_id),

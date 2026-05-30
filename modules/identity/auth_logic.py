@@ -38,8 +38,8 @@ MONGO_URL = os.getenv("ALL_IN_ONE_MONGO_URL", "mongodb://localhost:27017")
 MONGO_DB = os.getenv("MONGO_INITDB_DATABASE", "all_in_one")
 
 class LoginRequest(BaseModel):
-    email: str = Field(..., example="usuario@exemplo.com")
-    password: str = Field(..., example="senha_segura_123")
+    email: str = Field(..., json_schema_extra={"example": "usuario@exemplo.com"})
+    password: str = Field(..., json_schema_extra={"example": "senha_segura_123"})
 
 class TokenResponse(BaseModel):
     access_token: str

@@ -33,6 +33,21 @@
 - Branch local continua a frente da nuvem ate liberacao de credenciais de push.
 - `.vscode/` permanece nao versionado e foi preservado fora dos commits.
 
+## STATUS OPERACIONAL - 2026-05-30 Limpeza Pydantic Identity
+
+### Concluido neste ciclo
+
+- Campos `LoginRequest.email` e `LoginRequest.password` em `modules/identity/auth_logic.py` migrados de `Field(example=...)` para `json_schema_extra`, removendo avisos de depreciacao do Pydantic v2.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_identity_jobs_domain.py modules/api_hub/tests/test_gateway_security.py`: 10 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 115 testes aprovados, 29 ignorados, sem avisos Pydantic.
+
+### Pendencias rastreadas
+
+- O pytest em Windows ainda emite `PermissionError` no callback de limpeza de `pytest-current` depois da suite verde; nao altera o codigo de saida dos testes.
+
 ## STATUS OPERACIONAL - 2026-05-30 Sincronizacao GitHub E Gates Operacionais
 
 ### Concluido neste ciclo

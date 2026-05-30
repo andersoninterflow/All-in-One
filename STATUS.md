@@ -1,5 +1,35 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-30 Resolucao Worktree E Jornada User Marketplace
+
+### Concluido neste ciclo
+
+- Worktree auxiliar `all-in-one-auto-sync` corrigido: ponte `.git` normalizada para caminho WSL valido e merge pendente removido por alinhamento ao `origin/main`.
+- Backup do branch auxiliar antigo preservado em `codex/all-in-one-current-sync-backup-20260530` antes do alinhamento.
+- Branch auxiliar `codex/all-in-one-current-sync` atualizado para rastrear `origin/main` e sair do estado `unmerged`.
+- `main`, `origin/main`, `fork/main` e o worktree auxiliar alinhados no commit `8d0360a`.
+- Primeira jornada E2E local de produto criada em `tests/test_user_marketplace_journey.py`.
+- Jornada cobre cadastro Identity, criacao de wallet Finance, consulta de wallets, criacao de escrow, criacao de pedido Marketplace, transicao de pedido para `paid` e verificacao de evento `marketplace.order.paid` na outbox.
+
+### Validacoes executadas
+
+- `git status` no worktree principal: limpo e alinhado com `origin/main`.
+- `git status` no worktree auxiliar: limpo e alinhado com `origin/main`.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_user_marketplace_journey.py`: 1 teste aprovado.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 116 testes aprovados, 29 ignorados.
+- `python3 scripts/validate_repository.py`: aprovado.
+- `python3 scripts/validate_openapi.py`: aprovado.
+
+### Pendencias rastreadas
+
+- Ampliar jornadas E2E para `business -> jobs -> candidate access` e demais apps.
+- Resolver aviso ambiental do pytest Windows no cleanup de `pytest-current`, que ocorre apos a suite verde e nao muda o codigo de saida.
+
+### Git
+
+- Sincronizacao remota concluida para `origin/main` e `fork/main`.
+- Novo incremento de jornada pronto para commit e push automatico.
+
 ## STATUS OPERACIONAL - 2026-05-30 API Hub E Gate De Artefatos
 
 ### Concluido neste ciclo

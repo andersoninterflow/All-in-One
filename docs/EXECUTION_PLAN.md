@@ -133,7 +133,7 @@ Proximos passos naturais:
 
 Objetivo: transformar microservicos em jornadas de produto.
 
-Status: 35%
+Status: 38%
 
 Apps e prioridades:
 - `all-in-one-user`: cadastro, wallet, busca, compra, delivery, jobs.
@@ -146,14 +146,15 @@ Apps e prioridades:
 Pendencias:
 - Implementar interfaces funcionais reais.
 - Ligar cada app aos endpoints FastAPI.
-- Criar Playwright E2E por jornada.
+- Criar Playwright E2E por jornada; a primeira jornada contratual local
+  `identity -> wallet -> marketplace order` ja esta coberta por pytest.
 - Sincronizar design Stitch remoto com credencial rotacionada.
 
 Proximos passos naturais:
 1. Corrigir/validar plano Stitch local.
 2. Definir shell frontend por app.
-3. Implementar jornada `identity -> wallet -> marketplace order` primeiro.
-4. Implementar jornada `business -> jobs -> candidate access` depois.
+3. Implementar jornada `business -> jobs -> candidate access`.
+4. Expandir a jornada `identity -> wallet -> marketplace order` para Playwright desktop/mobile quando houver shell frontend.
 5. Rodar testes E2E desktop/mobile.
 
 ### Fase 5 - Integracoes externas homologadas
@@ -252,6 +253,6 @@ Sequencia recomendada:
 3. Rodar migrations e testes em ambiente limpo.
 4. Implementar gate CI de compose/healthcheck.
 5. Testar OAuth2 real, webhooks de saida e rate limit Redis no API Hub.
-6. Implementar primeira jornada E2E `identity -> wallet -> marketplace order`.
+6. Implementar jornada E2E `business -> jobs -> candidate access`.
 7. Atualizar `STATUS.md`.
 8. Sincronizar Git.

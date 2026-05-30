@@ -1,0 +1,109 @@
+import asyncio
+import hashlib
+import hmac
+import sys
+from types import SimpleNamespace
+
+from fastapi import HTTPException, Request
+from fastapi.testclient import TestClient
+
+from platform_test_support import ROOT
+
+
+def _load_api_hub(monkeypatch):
+    import importlib.util
+
+    monkeypatch.setenv("ALL_IN_ONE_API_KEYS", "test-key:test-client:gateway:read;denied-key:denied:jobs:read")
+    monkeypatch.setenv("ALL_IN_ONE_WEBHOOK_SECRET", "test-secret")
+    path = ROOT / "modules" / "api_hub" / "main.py"
+    module_dir = str(path.parent)
+    if module_dir not in sys.path:
+        sys.path.insert(0, module_dir)
+    spec = importlib.util.spec_from_file_location("all_in_one_api_hub_gateway_security", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_api_key_check_accepts_configured_key(monkeypatch):
+    module = _load_api_hub(monkeypatch)
+
+    async def noop_rate_limiter(request: Request):
+        return None
+
+    module.app.dependency_overrides[module.rate_limiter] = noop_rate_limiter
+    client = TestClient(module.app)
+
+    response = client.get("/gateway/api-key/check", headers={"X-API-Key": "test-key"})
+
+    assert response.status_code == 200
+    assert response.json()["client_id"] == "test-client"
+    assert response.json()["scopes"] == ["gateway:read"]
+
+
+def test_api_key_check_rejects_missing_invalid_and_unscoped_keys(monkeypatch):
+    module = _load_api_hub(monkeypatch)
+
+    async def noop_rate_limiter(request: Request):
+        return None
+
+    module.app.dependency_overrides[module.rate_limiter] = noop_rate_limiter
+    client = TestClient(module.app)
+
+    assert client.get("/gateway/api-key/check").status_code == 401
+    assert client.get("/gateway/api-key/check", headers={"X-API-Key": "wrong"}).status_code == 401
+    assert client.get("/gateway/api-key/check", headers={"X-API-Key": "denied-key"}).status_code == 403
+
+
+def test_webhook_signature_verification(monkeypatch):
+    module = _load_api_hub(monkeypatch)
+    client = TestClient(module.app)
+    body = b'{"event":"api.webhook.delivered"}'
+    digest = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
+
+    accepted = client.post(
+        "/gateway/webhooks/verify",
+        content=body,
+        headers={"X-All-In-One-Signature": f"sha256={digest}", "Content-Type": "application/json"},
+    )
+    rejected = client.post(
+        "/gateway/webhooks/verify",
+        content=body,
+        headers={"X-All-In-One-Signature": "sha256=invalid", "Content-Type": "application/json"},
+    )
+
+    assert accepted.status_code == 200
+    assert accepted.json()["algorithm"] == "hmac-sha256"
+    assert rejected.status_code == 401
+
+
+def test_rate_limiter_blocks_after_limit(monkeypatch):
+    module = _load_api_hub(monkeypatch)
+
+    class FakePipeline:
+        def incr(self, key):
+            return self
+
+        def expire(self, key, window):
+            return self
+
+        async def execute(self):
+            return [101, True]
+
+    class FakeRedis:
+        async def get(self, key):
+            return "100"
+
+        def pipeline(self):
+            return FakePipeline()
+
+    monkeypatch.setattr(module, "redis_client", FakeRedis())
+    request = SimpleNamespace(client=SimpleNamespace(host="127.0.0.1"))
+
+    try:
+        asyncio.run(module.rate_limiter(request))
+    except HTTPException as exc:
+        assert exc.status_code == 429
+    else:
+        raise AssertionError("rate_limiter deveria bloquear quando limite estiver esgotado")

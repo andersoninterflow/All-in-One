@@ -149,6 +149,49 @@ paths:
       responses:
         '200':
           description: Transactional outbox domain events
+  /gateway/status:
+    get:
+      security: []
+      responses:
+        '200':
+          description: Gateway operational status
+  /gateway/api-key/check:
+    get:
+      security: []
+      parameters:
+        - name: X-API-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: API key accepted by edge gateway
+        '401':
+          description: API key missing or invalid
+        '403':
+          description: API key scope denied
+  /gateway/webhooks/verify:
+    post:
+      security: []
+      parameters:
+        - name: X-All-In-One-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Webhook signature accepted
+        '401':
+          description: Webhook signature invalid
 components:
   securitySchemes:
     bearerAuth:

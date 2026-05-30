@@ -89,6 +89,9 @@ def main() -> int:
     ]:
         if not (ROOT / ".github" / "workflows" / workflow).is_file():
             fail(f"Workflow ausente: {workflow}", errors)
+    for script in ["check_git_sync.ps1", "validate_compose_health.ps1", "check_generated_artifacts.ps1"]:
+        if not (ROOT / "scripts" / script).is_file():
+            fail(f"Gate operacional ausente: {script}", errors)
     if not (ROOT / "workers" / "outbox_dispatcher" / "main.py").is_file():
         fail("Worker da outbox RabbitMQ ausente.", errors)
     if not STITCH_MANIFEST.is_file():

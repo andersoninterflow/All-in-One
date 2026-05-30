@@ -1,5 +1,38 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-30 API Hub E Gate De Artefatos
+
+### Concluido neste ciclo
+
+- GitHub verificado novamente: `origin/main` e `fork/main` permanecem alinhados em `6f3ddf9`; nao havia commits novos na nuvem para aplicar localmente.
+- API Hub avancado com validacao de API key em `/gateway/api-key/check`, configurada por `ALL_IN_ONE_API_KEYS`.
+- API Hub avancado com verificacao de assinatura HMAC SHA-256 em `/gateway/webhooks/verify`, configurada por `ALL_IN_ONE_WEBHOOK_SECRET`.
+- `rate_limiter` mantido com Redis quando disponivel e modo degradado para ambientes locais sem pacote `redis`, permitindo carregar e testar rotas nao dependentes de Redis real.
+- Validador JWT do gateway passou a reportar `503` quando a dependencia `jwt` nao estiver instalada, sem impedir rotas abertas/API key/webhook em testes locais.
+- Contrato OpenAPI do API Hub atualizado com rotas de gateway, API key e webhook assinado.
+- Testes de gateway adicionados em `modules/api_hub/tests/test_gateway_security.py`, cobrindo API key valida, API key ausente/invalida/sem escopo, webhook assinado e bloqueio de rate limit.
+- Gate de artefatos gerados criado em `scripts/check_generated_artifacts.ps1` e incluido no workflow `.github/workflows/ci.yml`.
+- `scripts/validate_repository.py` atualizado para exigir os gates operacionais versionados.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q modules/api_hub/tests/test_gateway_security.py`: 4 testes aprovados.
+- `python3 scripts/validate_repository.py`: aprovado.
+- `python3 scripts/validate_openapi.py`: aprovado.
+- `python3 -m compileall -q modules/api_hub scripts platform_test_support.py`: aprovado.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 115 testes aprovados, 29 ignorados, 2 avisos Pydantic.
+
+### Pendencias rastreadas
+
+- Executar `scripts/check_generated_artifacts.ps1` em ambiente com PowerShell Core disponivel; este shell local nao possui `pwsh`/`powershell`.
+- Instalar/autenticar GitHub CLI ou credencial HTTPS para permitir push local dos commits ja criados.
+- Substituir exemplos Pydantic `Field(example=...)` por `json_schema_extra` em `modules/identity/auth_logic.py`.
+
+### Git
+
+- Branch local continua a frente da nuvem ate liberacao de credenciais de push.
+- `.vscode/` permanece nao versionado e foi preservado fora dos commits.
+
 ## STATUS OPERACIONAL - 2026-05-30 Sincronizacao GitHub E Gates Operacionais
 
 ### Concluido neste ciclo

@@ -12,6 +12,8 @@ apos aprovacao manual das alteracoes financeiras, de identidade ou saude.
   divergencia entre a branch local e os remotos configurados.
 - `scripts/validate_compose_health.ps1`: valida `docker compose config`, sobe o
   ambiente local e confirma `/health` nas 13 APIs FastAPI principais.
+- `scripts/check_generated_artifacts.ps1`: executa scaffold/validadores e falha
+  se algum artefato gerado alterar a arvore de trabalho sem commit.
 - `.github/workflows/git-sync.yml`: executa a verificacao de sincronizacao da
   `main` em eventos de push e sob demanda.
 - `.github/workflows/compose-health.yml`: executa o healthcheck Docker Compose

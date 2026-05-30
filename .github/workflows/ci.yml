@@ -18,6 +18,9 @@ jobs:
       - run: python scripts/scaffold_modules.py --check
       - run: python scripts/validate_repository.py
       - run: python scripts/validate_openapi.py
+      - name: Generated artifacts gate
+        shell: pwsh
+        run: ./scripts/check_generated_artifacts.ps1
       - run: python -m compileall -q modules scripts platform_test_support.py
       - run: python -m pytest --import-mode=importlib
       - run: docker build --file modules/identity/Dockerfile --tag all-in-one/identity:ci .

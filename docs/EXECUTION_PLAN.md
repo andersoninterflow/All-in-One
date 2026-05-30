@@ -214,7 +214,7 @@ Proximos passos naturais:
 | `services` | 68% | Prestadores e contratos com store tipado | Anti-burla e escrow | Jornada visita -> orcamento -> contrato |
 | `mobility` | 68% | Rides, tickets e fare rules com store tipado | ETA, QR/NFC e tarifas reais | Jornada corrida e ticket |
 | `jobs` | 84% | Mais maduro: CTPS/cofre/outbox/testes | Homologacao CTPS oficial e E2E amplo | Fluxo candidato -> vaga -> recrutador |
-| `api_hub` | 78% | API keys/webhooks, SQL refinado e container healthy | OAuth2 real e testes de gateway/webhook | Testar API key, webhook assinado e rate limit |
+| `api_hub` | 82% | API keys/webhooks, SQL refinado, rotas gateway de API key/webhook e testes de rate limit | OAuth2 real e testes de proxy com servicos vivos | Testar OAuth2 real, assinatura de webhooks de saida e rate limit com Redis real |
 | `erp` | 60% | Fiscal/accounting modelado e store gerado | Fluxos contabeis reais | Tipar store ERP e testar payables/receivables |
 | `wms` | 60% | Armazem/inventario modelados | Operacao real de estoque | Tipar store WMS e testar recebimento/picking |
 | `tms` | 60% | Fretes/transportadoras modelados | Torre de controle e POD | Tipar store TMS e testar frete |
@@ -251,7 +251,7 @@ Sequencia recomendada:
 2. Corrigir stores gerados que falharem contra Postgres.
 3. Rodar migrations e testes em ambiente limpo.
 4. Implementar gate CI de compose/healthcheck.
-5. Testar API key, webhook assinado e rate limit no API Hub.
+5. Testar OAuth2 real, webhooks de saida e rate limit Redis no API Hub.
 6. Implementar primeira jornada E2E `identity -> wallet -> marketplace order`.
 7. Atualizar `STATUS.md`.
 8. Sincronizar Git.

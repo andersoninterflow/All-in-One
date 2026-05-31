@@ -12,7 +12,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Contratos de microservicos | 100% | 25 modulos com OpenAPI, contratos, Dockerfile, docs e testes base | Superficie contratual completa para evoluir. |
 | PostgreSQL estrutural | 81% | 15 migrations SQL e stores para 25 modulos, incluindo ledger Gold Valley append-only | Schema amplo existe; falta prova real por modulo. |
 | Runtime FastAPI modular | 86% | Runtime comum, autorizacao, auditoria, outbox, catalogo Valley regionalizado e carregamento dinamico por DSN validado em containers | Base local estabilizada; falta ampliar testes E2E por jornada. |
-| Mensageria/outbox | 84% | RabbitMQ, dispatcher com correlation_id e retry/backoff observavel, testes criticos e payload seguro para eventos Valley/catalogo validados | Precisa ampliar cobertura para eventos de todos os modulos e dashboards. |
+| Mensageria/outbox | 86% | RabbitMQ, dispatcher com correlation_id, retry/backoff observavel e metricas Prometheus text, testes criticos e payload seguro para eventos Valley/catalogo validados | Precisa ampliar cobertura para eventos de todos os modulos e dashboards. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 63% | 9 apps catalogados, catalogo Valley backend regionalizado, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
@@ -110,7 +110,7 @@ Proximos passos naturais:
 
 Objetivo: garantir comunicacao assincroma confiavel e rastreavel.
 
-Status: 80%
+Status: 86%
 
 Entregas ja existentes:
 - `audit.domain_events`.
@@ -125,15 +125,18 @@ Entregas ja existentes:
 - Falhas do dispatcher registram `failed_retryable`, mantem eventos pendentes e
   atualizam `retry_count`, `retry_delay_seconds`, `next_retry_at` e ultimo erro
   em `audit.domain_events.metadata`.
+- Worker da outbox expoe metricas Prometheus text por `--metrics`, cobrindo
+  pendentes, retries vencidos, publicados, falhas retryable, maior retry e idade
+  do pendente mais antigo.
 
 Pendencias:
 - Validar eventos de todos os modulos.
-- Dashboards e alertas de outbox parada, fila acumulada e erro de publish.
+- Dashboards e alertas reais de outbox parada, fila acumulada e erro de publish.
 
 Proximos passos naturais:
 1. Criar fixtures de evento por modulo.
 2. Rodar dispatcher contra eventos reais de cada dominio.
-3. Adicionar metricas Prometheus/OpenTelemetry.
+3. Conectar metricas Prometheus text a dashboards/alertas.
 4. Criar runbook de incidentes de fila.
 
 ### Fase 4 - Jornadas E2E por app

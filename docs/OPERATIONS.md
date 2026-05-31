@@ -37,6 +37,21 @@ Alertas operacionais devem observar eventos pendentes com `next_retry_at`
 vencido, crescimento de `retry_count` e ausencia de entregas
 `publisher_confirmed`.
 
+Para coletar as metricas em formato Prometheus text, execute:
+
+```bash
+python -m workers.outbox_dispatcher.main --metrics
+```
+
+Metricas expostas:
+
+- `all_in_one_outbox_pending`: eventos pendentes ainda nao publicados.
+- `all_in_one_outbox_due`: eventos pendentes prontos para nova tentativa.
+- `all_in_one_outbox_published_total`: eventos publicados.
+- `all_in_one_outbox_failed_retryable_total`: tentativas retryable falhas.
+- `all_in_one_outbox_max_retry_count`: maior contador de retry observado.
+- `all_in_one_outbox_oldest_pending_age_seconds`: idade do pendente mais antigo.
+
 ## Incidentes
 
 Revogue sessoes/API keys, preserve trilha imutavel, suspenda publicacao ou

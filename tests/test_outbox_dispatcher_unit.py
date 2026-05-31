@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from modules.shared.outbox_dispatcher import OutboxSettings, publication_message, retry_observation
+from modules.shared.outbox_dispatcher import OutboxMetrics, OutboxSettings, prometheus_metrics, publication_message, retry_observation
 
 
 def test_jobs_document_publication_uses_safe_allowlist() -> None:
@@ -207,3 +207,23 @@ def test_retry_observation_truncates_error_for_metadata() -> None:
 
     assert metadata["retry_count"] == 2
     assert len(metadata["last_error"]) == 500
+
+
+def test_prometheus_metrics_exposes_outbox_operational_signals() -> None:
+    text = prometheus_metrics(
+        OutboxMetrics(
+            pending=7,
+            due=3,
+            published=11,
+            failed_retryable=2,
+            max_retry_count=5,
+            oldest_pending_age_seconds=42.5,
+        )
+    )
+
+    assert "all_in_one_outbox_pending 7\n" in text
+    assert "all_in_one_outbox_due 3\n" in text
+    assert "all_in_one_outbox_published_total 11\n" in text
+    assert "all_in_one_outbox_failed_retryable_total 2\n" in text
+    assert "all_in_one_outbox_max_retry_count 5\n" in text
+    assert "all_in_one_outbox_oldest_pending_age_seconds 42.5\n" in text

@@ -36,6 +36,11 @@ Configuracoes:
 - `ALL_IN_ONE_OUTBOX_RETRY_MAX_SECONDS`: teto de backoff em segundos; padrao
   `300`.
 
+O worker tambem pode emitir metricas Prometheus text via
+`python -m workers.outbox_dispatcher.main --metrics`, incluindo pendentes,
+eventos prontos para retry, publicados, tentativas falhas, maior retry e idade
+do pendente mais antigo.
+
 A entrega e `at-least-once`: se o broker confirmar e a transacao PostgreSQL
 falhar depois, a mensagem pode reaparecer. Consumidores deduplicam por
 `event_id`.

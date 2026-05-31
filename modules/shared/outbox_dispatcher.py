@@ -133,6 +133,16 @@ class DispatchSummary:
     failed: int = 0
 
 
+@dataclass(frozen=True)
+class OutboxMetrics:
+    pending: int = 0
+    due: int = 0
+    published: int = 0
+    failed_retryable: int = 0
+    max_retry_count: int = 0
+    oldest_pending_age_seconds: float = 0.0
+
+
 def publication_message(event: dict[str, Any]) -> dict[str, Any]:
     source_payload = event.get("payload") or {}
     safe_fields = SAFE_PAYLOAD_FIELDS.get(event["aggregate_type"], frozenset())
@@ -147,6 +157,18 @@ def publication_message(event: dict[str, Any]) -> dict[str, Any]:
         "payload": {key: source_payload[key] for key in sorted(safe_fields) if key in source_payload},
         "occurred_at": event["created_at"].isoformat(),
     }
+
+
+def prometheus_metrics(metrics: OutboxMetrics) -> str:
+    values = {
+        "all_in_one_outbox_pending": metrics.pending,
+        "all_in_one_outbox_due": metrics.due,
+        "all_in_one_outbox_published_total": metrics.published,
+        "all_in_one_outbox_failed_retryable_total": metrics.failed_retryable,
+        "all_in_one_outbox_max_retry_count": metrics.max_retry_count,
+        "all_in_one_outbox_oldest_pending_age_seconds": metrics.oldest_pending_age_seconds,
+    }
+    return "".join(f"{name} {value}\n" for name, value in values.items())
 
 
 def retry_observation(event: dict[str, Any], error: Exception, settings: OutboxSettings, now: datetime | None = None) -> dict[str, Any]:
@@ -213,6 +235,41 @@ class OutboxDispatcher:
             "message_id": message_id,
             "publisher_confirmed": True,
         }
+
+    def collect_metrics(self) -> OutboxMetrics:
+        with psycopg.connect(self.settings.postgres_dsn, row_factory=dict_row) as connection:
+            row = connection.execute(
+                """SELECT
+                       COUNT(*) FILTER (WHERE status = 'pending' AND published_at IS NULL) AS pending,
+                       COUNT(*) FILTER (
+                           WHERE status = 'pending'
+                             AND published_at IS NULL
+                             AND (
+                                 metadata->>'next_retry_at' IS NULL
+                                 OR (metadata->>'next_retry_at')::timestamptz <= NOW()
+                             )
+                       ) AS due,
+                       COUNT(*) FILTER (WHERE status = 'published' OR published_at IS NOT NULL) AS published,
+                       COALESCE(MAX((metadata->>'retry_count')::integer), 0) AS max_retry_count,
+                       COALESCE(
+                           EXTRACT(EPOCH FROM (NOW() - MIN(created_at) FILTER (WHERE status = 'pending' AND published_at IS NULL))),
+                           0
+                       ) AS oldest_pending_age_seconds
+                   FROM audit.domain_events"""
+            ).fetchone()
+            failed = connection.execute(
+                """SELECT COUNT(*) AS failed_retryable
+                   FROM audit.event_deliveries
+                   WHERE delivery_status = 'failed_retryable'"""
+            ).fetchone()
+        return OutboxMetrics(
+            pending=int(row["pending"] or 0),
+            due=int(row["due"] or 0),
+            published=int(row["published"] or 0),
+            failed_retryable=int(failed["failed_retryable"] or 0),
+            max_retry_count=int(row["max_retry_count"] or 0),
+            oldest_pending_age_seconds=float(row["oldest_pending_age_seconds"] or 0),
+        )
 
     def publish_batch(self) -> DispatchSummary:
         summary = DispatchSummary()

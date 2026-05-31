@@ -1,5 +1,33 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Metricas Prometheus Da Outbox
+
+### Concluido neste ciclo
+
+- Dispatcher da outbox ganhou coleta de metricas operacionais via `collect_metrics()`.
+- Worker `workers.outbox_dispatcher.main` agora aceita `--metrics` e imprime Prometheus text.
+- Metricas expostas: pendentes, pendentes prontos para retry, publicados, tentativas `failed_retryable`, maior `retry_count` e idade do pendente mais antigo.
+- `docs/EVENTS.md` e `docs/OPERATIONS.md` documentam coleta e sinais de alerta.
+- `docs/EXECUTION_PLAN.md` atualiza Mensageria/outbox para 86% e troca a pendencia generica de metricas por dashboards/alertas reais.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest -q tests/test_outbox_dispatcher_unit.py tests/test_outbox_rabbitmq_integration.py`: 9 testes aprovados, 2 ignorados por dependerem de DSN PostgreSQL/RabbitMQ de integracao.
+- `python3 -m compileall -q modules/shared/outbox_dispatcher.py workers/outbox_dispatcher/main.py tests/test_outbox_dispatcher_unit.py`: aprovado.
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos, 9 apps e controles centrais.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `.venv/Scripts/python.exe -m pytest -q`: 148 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Conectar as metricas Prometheus text a dashboards/alertas reais por ambiente.
+- Validar eventos reais de todos os modulos com dispatcher em PostgreSQL/RabbitMQ vivo.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Retry Observavel Da Outbox
 
 ### Concluido neste ciclo

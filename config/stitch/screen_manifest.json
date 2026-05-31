@@ -3,7 +3,7 @@
   "strategy": "one_stitch_project_per_microservice",
   "source": "config/module_catalog.json",
   "project_count": 25,
-  "screen_count": 177,
+  "screen_count": 179,
   "screen_generation": {
     "standard": [
       "overview",
@@ -49,13 +49,13 @@
     {
       "module": "marketplace",
       "project_name": "All-in-One - Marketplace",
-      "screen_count": 8,
+      "screen_count": 9,
       "special_screens": []
     },
     {
       "module": "stock",
       "project_name": "All-in-One - Stock",
-      "screen_count": 6,
+      "screen_count": 7,
       "special_screens": []
     },
     {

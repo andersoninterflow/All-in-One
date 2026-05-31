@@ -1,6 +1,6 @@
 # Stock
 
-Dropshipping Global, fornecedores homologados, precificacao e fulfillment.
+Dropshipping Global corporativo Valley, fornecedores homologados, catalogo Stock e descontos progressivos por Pepitas.
 
 ## Responsabilidade
 
@@ -10,7 +10,7 @@ cabecalho `X-Actor-User-Id`, salvo o autorregistro inicial em Identity.
 
 ## Entidades
 
-`suppliers`, `catalog_products`, `price_rules`, `supplier_orders`.
+`suppliers`, `catalog_products`, `price_rules`, `supplier_orders`, `discount_quotes`.
 
 ## Execucao
 

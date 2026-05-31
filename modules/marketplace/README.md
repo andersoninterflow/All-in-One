@@ -1,6 +1,6 @@
 # Marketplace
 
-Lojas aprovadas, catalogo, carrinho, checkout, pedidos e disputas.
+Lojas locais aprovadas, estoque fisico local, catalogo, checkout, pedidos e concessao manual de Pepitas.
 
 ## Responsabilidade
 
@@ -10,7 +10,7 @@ cabecalho `X-Actor-User-Id`, salvo o autorregistro inicial em Identity.
 
 ## Entidades
 
-`stores`, `products`, `carts`, `orders`, `reviews`, `disputes`.
+`stores`, `products`, `carts`, `orders`, `reviews`, `disputes`, `pepita_grants`.
 
 ## Execucao
 

@@ -2,7 +2,7 @@
 
         ## Descricao
 
-        Lojas aprovadas, catalogo, carrinho, checkout, pedidos e disputas.
+        Lojas locais aprovadas, estoque fisico local, catalogo, checkout, pedidos e concessao manual de Pepitas.
 
         ## Entidades
 
@@ -12,6 +12,7 @@
 - `orders`
 - `reviews`
 - `disputes`
+- `pepita_grants`
 
         ## APIs
 
@@ -45,6 +46,7 @@
 - `marketplace.order.created`
 - `marketplace.order.paid`
 - `marketplace.order.delivered`
+- `valley.pepitas.granted`
 
         ## Regras
 

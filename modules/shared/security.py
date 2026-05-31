@@ -22,6 +22,9 @@ class Actor:
     mfa_verified: bool
     business_id: UUID | None = None
     business_status: str | None = None
+    business_plan: str | None = None
+    business_cnpj: str | None = None
+    valley_master_account: bool = False
 
 
 def actor_from_headers(
@@ -31,6 +34,9 @@ def actor_from_headers(
     x_mfa_verified: str = Header(default="false", alias="X-MFA-Verified"),
     x_business_id: UUID | None = Header(default=None, alias="X-Business-Id"),
     x_business_status: str | None = Header(default=None, alias="X-Business-Status"),
+    x_business_plan: str | None = Header(default=None, alias="X-Business-Plan"),
+    x_business_cnpj: str | None = Header(default=None, alias="X-Business-CNPJ"),
+    x_valley_master_account: str = Header(default="false", alias="X-Valley-Master-Account"),
     x_gateway_timestamp: str | None = Header(default=None, alias="X-Gateway-Timestamp"),
     x_gateway_signature: str | None = Header(default=None, alias="X-Gateway-Signature"),
 ) -> Actor:
@@ -45,6 +51,9 @@ def actor_from_headers(
         x_mfa_verified.casefold() == "true",
         x_business_id,
         x_business_status.casefold() if x_business_status else None,
+        x_business_plan.casefold() if x_business_plan else None,
+        _digits_only(x_business_cnpj) if x_business_cnpj else None,
+        x_valley_master_account.casefold() == "true",
     )
     if os.getenv("ALL_IN_ONE_ENV", "development").casefold() == "production":
         _verify_gateway_signature(actor, x_gateway_timestamp, x_gateway_signature)
@@ -71,6 +80,9 @@ def _verify_gateway_signature(actor: Actor, timestamp: str | None, signature: st
             str(actor.mfa_verified).lower(),
             str(actor.business_id or ""),
             actor.business_status or "",
+            actor.business_plan or "",
+            actor.business_cnpj or "",
+            str(actor.valley_master_account).lower(),
             timestamp,
         ]
     )
@@ -99,3 +111,35 @@ def demand_active_business_recruiter(
     demand_role(actor, RECRUITER_ROLES, action)
     if required_scope not in actor.scopes and "jobs:manage" not in actor.scopes:
         raise HTTPException(status_code=403, detail="Escopo Business Jobs ausente.")
+
+
+def _digits_only(value: str) -> str:
+    return "".join(character for character in value if character.isdigit())
+
+
+def demand_active_business(actor: Actor, action: str = "operar no Valley Business") -> None:
+    if actor.business_id is None or actor.business_status != "active":
+        raise HTTPException(status_code=403, detail="Acesso exclusivo a empresa ativa no All-in-One Business.")
+    demand_role(actor, frozenset({"owner", "administrator", "merchant", "store_manager", "auditor"}), action)
+
+
+def demand_valley_master_stock(actor: Actor) -> None:
+    if actor.valley_master_account or "valley_master" in actor.roles or "stock:global:import" in actor.scopes:
+        return
+    raise HTTPException(status_code=403, detail="Modulo Stock global exclusivo da conta mestre corporativa Valley.")
+
+
+def enforce_essential_plan(actor: Actor, payload: dict[str, object]) -> None:
+    if actor.business_plan != "essential":
+        return
+    if not actor.business_cnpj:
+        raise HTTPException(status_code=403, detail="Plano Essencial exige CNPJ autenticado no contexto Business.")
+    blocked = payload.get("external_integrations") or payload.get("integration_provider") or payload.get("external_provider")
+    if blocked:
+        raise HTTPException(status_code=403, detail="Integracoes externas bloqueadas no Plano Essencial.")
+    payload_cnpj = payload.get("cnpj") or payload.get("document_cnpj")
+    if payload_cnpj and _digits_only(str(payload_cnpj)) != actor.business_cnpj:
+        raise HTTPException(status_code=403, detail="Plano Essencial permite apenas o CNPJ autenticado da propria unidade.")
+    root_cnpj = payload.get("root_cnpj")
+    if root_cnpj and _digits_only(str(root_cnpj)) != actor.business_cnpj:
+        raise HTTPException(status_code=403, detail="Plano Essencial nao permite matriz/filiais no mesmo cadastro.")

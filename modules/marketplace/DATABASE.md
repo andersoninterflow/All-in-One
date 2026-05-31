@@ -10,6 +10,7 @@
 - `marketplace.orders`
 - `marketplace.reviews`
 - `marketplace.disputes`
+- `marketplace.pepita_grants`
 
         Todo registro operacional inclui UUID, `user_id`, status, timestamps,
         atores de criacao/atualizacao e `metadata JSONB`. A implementacao inicial

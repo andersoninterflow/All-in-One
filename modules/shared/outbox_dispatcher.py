@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
@@ -100,6 +100,8 @@ class OutboxSettings:
     exchange: str = "all-in-one.domain"
     batch_size: int = 100
     poll_seconds: float = 1.0
+    retry_base_seconds: int = 5
+    retry_max_seconds: int = 300
 
     @classmethod
     def from_environment(cls) -> "OutboxSettings":
@@ -119,6 +121,8 @@ class OutboxSettings:
             exchange=os.getenv("ALL_IN_ONE_OUTBOX_EXCHANGE", "all-in-one.domain"),
             batch_size=max(1, int(os.getenv("ALL_IN_ONE_OUTBOX_BATCH_SIZE", "100"))),
             poll_seconds=max(0.1, float(os.getenv("ALL_IN_ONE_OUTBOX_POLL_SECONDS", "1"))),
+            retry_base_seconds=max(1, int(os.getenv("ALL_IN_ONE_OUTBOX_RETRY_BASE_SECONDS", "5"))),
+            retry_max_seconds=max(1, int(os.getenv("ALL_IN_ONE_OUTBOX_RETRY_MAX_SECONDS", "300"))),
         )
 
 
@@ -142,6 +146,22 @@ def publication_message(event: dict[str, Any]) -> dict[str, Any]:
         "entity_id": str(event["entity_id"]) if event.get("entity_id") else None,
         "payload": {key: source_payload[key] for key in sorted(safe_fields) if key in source_payload},
         "occurred_at": event["created_at"].isoformat(),
+    }
+
+
+def retry_observation(event: dict[str, Any], error: Exception, settings: OutboxSettings, now: datetime | None = None) -> dict[str, Any]:
+    metadata = event.get("metadata") or {}
+    retry_count = int(metadata.get("retry_count") or 0) + 1
+    delay_seconds = min(settings.retry_max_seconds, settings.retry_base_seconds * (2 ** (retry_count - 1)))
+    observed_at = now or datetime.now(UTC)
+    next_retry_at = observed_at + timedelta(seconds=delay_seconds)
+    return {
+        "retry_count": retry_count,
+        "retry_delay_seconds": delay_seconds,
+        "next_retry_at": next_retry_at.isoformat(),
+        "last_error_type": type(error).__name__,
+        "last_error": str(error)[:500],
+        "retryable": True,
     }
 
 
@@ -203,7 +223,12 @@ class OutboxDispatcher:
                     event = connection.execute(
                         """SELECT *
                            FROM audit.domain_events
-                           WHERE published_at IS NULL AND status = 'pending'
+                           WHERE published_at IS NULL
+                             AND status = 'pending'
+                             AND (
+                                 metadata->>'next_retry_at' IS NULL
+                                 OR (metadata->>'next_retry_at')::timestamptz <= NOW()
+                             )
                            ORDER BY created_at, id
                            FOR UPDATE SKIP LOCKED
                            LIMIT 1"""
@@ -215,6 +240,7 @@ class OutboxDispatcher:
                         response_metadata = self._publish_event(event)
                     except Exception as error:
                         self.close()
+                        response_metadata = retry_observation(event, error, self.settings)
                         connection.execute(
                             """INSERT INTO audit.event_deliveries
                                (user_id, event_id, destination, delivery_status, response_metadata, created_by)
@@ -223,9 +249,15 @@ class OutboxDispatcher:
                                 event["user_id"],
                                 event["id"],
                                 self.settings.exchange,
-                                Jsonb({"error_type": type(error).__name__, "retryable": True}),
+                                Jsonb(response_metadata),
                                 event["created_by"],
                             ),
+                        )
+                        connection.execute(
+                            """UPDATE audit.domain_events
+                               SET metadata = COALESCE(metadata, '{}'::jsonb) || %s
+                               WHERE id = %s""",
+                            (Jsonb(response_metadata), event["id"]),
                         )
                         summary.failed += 1
                         stop_after_failure = True

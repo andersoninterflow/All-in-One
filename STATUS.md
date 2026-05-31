@@ -1,5 +1,34 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Retry Observavel Da Outbox
+
+### Concluido neste ciclo
+
+- Dispatcher da outbox passou a filtrar eventos `pending` por `next_retry_at`, evitando republicacao antes da janela de backoff.
+- Falhas de publicacao continuam registrando entrega append-only `failed_retryable`.
+- Evento original permanece `pending` e recebe em `metadata`: `retry_count`, `retry_delay_seconds`, `next_retry_at`, `last_error_type`, `last_error` e `retryable`.
+- Backoff exponencial configuravel por `ALL_IN_ONE_OUTBOX_RETRY_BASE_SECONDS` e `ALL_IN_ONE_OUTBOX_RETRY_MAX_SECONDS`.
+- `docs/EVENTS.md` e `docs/OPERATIONS.md` documentam o comportamento operacional e os sinais de alerta.
+- `docs/EXECUTION_PLAN.md` atualiza Mensageria/outbox para 84% e remove a pendencia de retry/backoff observavel.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest -q tests/test_outbox_dispatcher_unit.py tests/test_outbox_rabbitmq_integration.py`: 8 testes aprovados, 2 ignorados por dependerem de DSN PostgreSQL/RabbitMQ de integracao.
+- `python3 -m compileall -q modules/shared/outbox_dispatcher.py tests/test_outbox_dispatcher_unit.py`: aprovado.
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos, 9 apps e controles centrais.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `.venv/Scripts/python.exe -m pytest -q`: 147 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Criar dashboards e alertas reais para fila acumulada, eventos com `next_retry_at` vencido e crescimento de `retry_count`.
+- Validar eventos reais de todos os modulos com o dispatcher em ambiente PostgreSQL/RabbitMQ vivo.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Correlacao De Eventos E Auditoria
 
 ### Concluido neste ciclo

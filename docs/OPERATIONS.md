@@ -24,6 +24,19 @@ apos aprovacao manual das alteracoes financeiras, de identidade ou saude.
 Auditoria critica e ledger sao append-only. Eventos devem manter
 `correlation_id`; logs de aplicacao nao devem expor dados sensiveis.
 
+## Outbox
+
+O dispatcher publica eventos `pending` e registra cada tentativa em
+`audit.event_deliveries`. Falhas ficam `failed_retryable`, preservam o evento
+como `pending` e atualizam `audit.domain_events.metadata` com `retry_count`,
+`retry_delay_seconds`, `next_retry_at`, `last_error_type` e `last_error`.
+
+Use `ALL_IN_ONE_OUTBOX_RETRY_BASE_SECONDS` e
+`ALL_IN_ONE_OUTBOX_RETRY_MAX_SECONDS` para ajustar o backoff por ambiente.
+Alertas operacionais devem observar eventos pendentes com `next_retry_at`
+vencido, crescimento de `retry_count` e ausencia de entregas
+`publisher_confirmed`.
+
 ## Incidentes
 
 Revogue sessoes/API keys, preserve trilha imutavel, suspenda publicacao ou

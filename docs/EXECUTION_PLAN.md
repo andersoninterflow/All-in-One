@@ -12,7 +12,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Contratos de microservicos | 100% | 25 modulos com OpenAPI, contratos, Dockerfile, docs e testes base | Superficie contratual completa para evoluir. |
 | PostgreSQL estrutural | 81% | 15 migrations SQL e stores para 25 modulos, incluindo ledger Gold Valley append-only | Schema amplo existe; falta prova real por modulo. |
 | Runtime FastAPI modular | 86% | Runtime comum, autorizacao, auditoria, outbox, catalogo Valley regionalizado e carregamento dinamico por DSN validado em containers | Base local estabilizada; falta ampliar testes E2E por jornada. |
-| Mensageria/outbox | 82% | RabbitMQ, dispatcher, correlation_id por requisicao, testes criticos e payload seguro para eventos Valley/catalogo validados | Precisa ampliar cobertura para eventos de todos os modulos. |
+| Mensageria/outbox | 84% | RabbitMQ, dispatcher com correlation_id e retry/backoff observavel, testes criticos e payload seguro para eventos Valley/catalogo validados | Precisa ampliar cobertura para eventos de todos os modulos e dashboards. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 63% | 9 apps catalogados, catalogo Valley backend regionalizado, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
@@ -71,7 +71,7 @@ Proximos passos naturais:
 
 Objetivo: trocar o contrato local por persistencia PostgreSQL real, auditavel e testada.
 
-Status: 80%
+Status: 84%
 
 Entregas ja existentes:
 - 15 migrations PostgreSQL.
@@ -122,10 +122,12 @@ Entregas ja existentes:
   margem, markup ou endereco sensivel.
 - Mutacoes HTTP aceitam `X-Correlation-Id`, geram UUID quando ausente e gravam
   `correlation_id` em auditoria/outbox SQLite e eventos PostgreSQL.
+- Falhas do dispatcher registram `failed_retryable`, mantem eventos pendentes e
+  atualizam `retry_count`, `retry_delay_seconds`, `next_retry_at` e ultimo erro
+  em `audit.domain_events.metadata`.
 
 Pendencias:
 - Validar eventos de todos os modulos.
-- Criar retry/backoff observavel por falha.
 - Dashboards e alertas de outbox parada, fila acumulada e erro de publish.
 
 Proximos passos naturais:

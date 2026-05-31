@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from modules.shared.outbox_dispatcher import publication_message
+from modules.shared.outbox_dispatcher import OutboxSettings, publication_message, retry_observation
 
 
 def test_jobs_document_publication_uses_safe_allowlist() -> None:
@@ -175,3 +175,35 @@ def test_valley_catalog_publication_uses_safe_payload() -> None:
     assert "internal_margin_brl" not in message["payload"]
     assert "supplier_cost_brl" not in message["payload"]
     assert "street_address" not in message["payload"]
+
+
+def test_retry_observation_uses_exponential_backoff_with_cap() -> None:
+    settings = OutboxSettings(
+        postgres_dsn="postgresql://example",
+        rabbitmq_url="amqp://example",
+        retry_base_seconds=10,
+        retry_max_seconds=45,
+    )
+    now = datetime(2026, 5, 31, 12, 0, tzinfo=timezone.utc)
+
+    first = retry_observation({"metadata": {}}, RuntimeError("broker offline"), settings, now)
+    assert first["retry_count"] == 1
+    assert first["retry_delay_seconds"] == 10
+    assert first["next_retry_at"] == "2026-05-31T12:00:10+00:00"
+    assert first["last_error_type"] == "RuntimeError"
+    assert first["retryable"] is True
+
+    capped = retry_observation({"metadata": {"retry_count": 4}}, RuntimeError("still offline"), settings, now)
+    assert capped["retry_count"] == 5
+    assert capped["retry_delay_seconds"] == 45
+    assert capped["next_retry_at"] == "2026-05-31T12:00:45+00:00"
+
+
+def test_retry_observation_truncates_error_for_metadata() -> None:
+    settings = OutboxSettings(postgres_dsn="postgresql://example", rabbitmq_url="amqp://example")
+    long_error = RuntimeError("x" * 600)
+
+    metadata = retry_observation({"metadata": {"retry_count": 1}}, long_error, settings)
+
+    assert metadata["retry_count"] == 2
+    assert len(metadata["last_error"]) == 500

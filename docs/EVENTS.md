@@ -24,6 +24,18 @@ publisher confirm antes de marcar `published_at` e `status = 'published'`.
 Falhas geram entrega `failed_retryable` append-only e deixam o evento pendente
 para nova tentativa.
 
+O retry usa backoff exponencial observavel em `audit.domain_events.metadata`.
+Cada falha atualiza `retry_count`, `retry_delay_seconds`, `next_retry_at`,
+`last_error_type` e `last_error`, alem de gravar a tentativa em
+`audit.event_deliveries`. Eventos com `next_retry_at` futuro nao sao
+selecionados pelo dispatcher ate a janela vencer.
+
+Configuracoes:
+
+- `ALL_IN_ONE_OUTBOX_RETRY_BASE_SECONDS`: atraso inicial em segundos; padrao `5`.
+- `ALL_IN_ONE_OUTBOX_RETRY_MAX_SECONDS`: teto de backoff em segundos; padrao
+  `300`.
+
 A entrega e `at-least-once`: se o broker confirmar e a transacao PostgreSQL
 falhar depois, a mensagem pode reaparecer. Consumidores deduplicam por
 `event_id`.

@@ -8,6 +8,7 @@
 - Migration PostgreSQL `015_valley_gold_ledger.sql` adicionada com tabela append-only, idempotencia unica, checks de credito/debito e trigger contra `UPDATE`/`DELETE`.
 - Runtime comum passou a exigir `X-Idempotency-Key` para lancamentos Gold Valley e bloquear automacao de concessao de Pepitas.
 - Validacao de dominio Gold Valley criada para aceitar credito positivo de compra, debito negativo por concessao manual de Pepitas e ajuste manual controlado.
+- Endpoint `GET /valley/gold/balance` criado no Finance para expor saldo Gold derivado exclusivamente da soma do ledger, sem saldo mutavel como fonte de verdade.
 - Dispatcher de outbox recebeu allowlist segura para `valley.gold.ledger.posted`, sem publicar taxa interna, anotacao privada ou payload nao revisado.
 - Contratos e docs do modulo Finance atualizados com a nova entidade, evento e regra append-only.
 
@@ -23,7 +24,6 @@
 
 - Conectar `valley_gold_ledger_entries` a fluxo operacional de compra de Gold com PSP/Pix real.
 - Debitar Gold automaticamente somente como consequencia auditada da concessao manual de Pepitas, preservando a decisao humana do lojista.
-- Expor saldo derivado de Gold por soma de ledger, sem gravar saldo mutavel como fonte de verdade.
 - Criar telas Valley Business para compra de Gold, historico append-only e concessao manual de Pepitas.
 
 ### Git

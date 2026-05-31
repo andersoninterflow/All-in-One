@@ -28,6 +28,7 @@
 - `POST /resources/{resource_type}/{resource_id}/actions/{action}`
 - `GET /audit/events`
 - `GET /events/outbox`
+- `GET /valley/gold/balance`
 - `POST /create`
 - `GET /{id}`
 - `PATCH /{id}`

@@ -55,6 +55,35 @@ def test_valley_gold_ledger_is_append_only_idempotent_and_emits_event() -> None:
     assert repeated.status_code == 201
     assert repeated.json()["id"] == entry["id"]
 
+    debit = finance.post(
+        "/resources/valley_gold_ledger_entries",
+        headers={
+            **actor_headers(merchant_id, business_id=business_id),
+            "X-Idempotency-Key": f"gold-debit-valid-{uuid4()}",
+        },
+        json={
+            "user_id": merchant_id,
+            "entity_id": business_id,
+            "payload": {
+                "merchant_business_id": business_id,
+                "entry_type": "pepita_grant_debit",
+                "amount_gold_delta": -100,
+                "reference_type": "pepita_grant",
+                "reference_id": str(uuid4()),
+            },
+        },
+    )
+    assert debit.status_code == 201
+
+    balance = finance.get(
+        "/valley/gold/balance",
+        headers=actor_headers(merchant_id, business_id=business_id),
+    )
+    assert balance.status_code == 200
+    assert balance.json()["balance_gold"] == 900
+    assert balance.json()["entry_count"] == 2
+    assert balance.json()["derived"] is True
+
     patched = finance.patch(
         f"/resources/valley_gold_ledger_entries/{entry['id']}",
         headers=actor_headers(merchant_id, business_id=business_id),

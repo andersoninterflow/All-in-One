@@ -6,7 +6,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from shared.runtime import create_module_app
-from shared.security import Actor, actor_from_headers
+from shared.security import Actor, actor_from_headers, demand_active_business
 from finance_models import TransferRequest, PixRequest, EscrowRequest
 
 app = create_module_app("finance")
@@ -78,3 +78,21 @@ async def get_user_wallets(user_id: str, actor: Actor = Depends(actor_from_heade
     store = app.extra["store"]
     return store.list("wallets", user_id)
 
+@app.get("/valley/gold/balance")
+async def valley_gold_balance(actor: Actor = Depends(actor_from_headers)):
+    demand_active_business(actor, "consultar saldo Gold Valley")
+    store = app.extra["store"]
+    entries = store.list("valley_gold_ledger_entries", str(actor.user_id))
+    business_id = str(actor.business_id)
+    relevant_entries = [
+        entry for entry in entries
+        if str(entry["payload"].get("merchant_business_id")) == business_id
+    ]
+    balance = sum(int(entry["payload"]["amount_gold_delta"]) for entry in relevant_entries)
+    return {
+        "merchant_business_id": business_id,
+        "balance_gold": balance,
+        "entry_count": len(relevant_entries),
+        "source": "finance.valley_gold_ledger_entries",
+        "derived": True,
+    }

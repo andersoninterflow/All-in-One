@@ -21,7 +21,6 @@
             "args": [
                 "-m",
                 "pytest",
-                "--import-mode=importlib",
                 "-q"
             ],
             "group": "test",

@@ -22,5 +22,5 @@ jobs:
         shell: pwsh
         run: ./scripts/check_generated_artifacts.ps1
       - run: python -m compileall -q modules scripts platform_test_support.py
-      - run: python -m pytest --import-mode=importlib
+      - run: python -m pytest
       - run: docker build --file modules/identity/Dockerfile --tag all-in-one/identity:ci .

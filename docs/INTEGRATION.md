@@ -42,6 +42,26 @@ Ela implementa adapters deterministicos para:
 Os contratos sao validados por `tests/test_integration_sandbox_adapters.py`.
 Nenhum adapter sandbox deve realizar chamada externa nem exigir segredo real.
 
+## Endpoints sandbox locais
+
+Os adapters tambem ficam expostos por rotas administrativas dos modulos, sempre
+exigindo `X-Actor-Roles` com papel aceito por compliance/operacao:
+
+- Identity/Riders/Services: `POST /integrations/sandbox/kyc/person`;
+- Business: `POST /integrations/sandbox/kyb/business`;
+- Finance: `POST /integrations/sandbox/psp/pix/authorize`,
+  `POST /integrations/sandbox/psp/escrows` e
+  `POST /integrations/sandbox/psp/escrows/release`;
+- ERP: `POST /integrations/sandbox/fiscal/invoices`;
+- Jobs: `POST /integrations/sandbox/ctps/classify`;
+- Delivery/Mobility/TMS: `POST /integrations/sandbox/maps/route`;
+- Health: `POST /integrations/sandbox/health/consents`;
+- API Hub: `POST /integrations/sandbox/api-hub/webhooks/sign` e
+  `POST /integrations/sandbox/api-hub/api-key/verify`;
+- Stock: `POST /integrations/sandbox/suppliers/products`.
+
+As rotas sao validadas por `tests/test_integration_sandbox_routes.py`.
+
 ## Convencoes
 
 - UUID em identificadores e `user_id` sempre associado ao All-in-One ID.

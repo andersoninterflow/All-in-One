@@ -30,6 +30,17 @@ from .domain_rules import (
 from .security import Actor, actor_from_headers, demand_active_business_recruiter, demand_mfa, demand_role
 from .store import DuplicateValueError, SQLiteStore
 from .valley import register_valley_routes, validate_valley_resource_policy
+from .integration_sandbox import (
+    ApiHubSandbox,
+    ClinicalConsentSandbox,
+    CtpsSandbox,
+    FiscalDocumentSandbox,
+    IdentityVerificationSandbox,
+    MapsRoutingSandbox,
+    PspLedgerSandbox,
+    SandboxResult,
+    SupplierCatalogSandbox,
+)
 
 
 class ResourceCreate(BaseModel):
@@ -52,6 +63,82 @@ class AuditPayload(BaseModel):
     resource_type: str = Field(min_length=2, max_length=80)
     resource_id: UUID
     payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class SandboxKycPersonPayload(BaseModel):
+    user_id: str = Field(min_length=3, max_length=80)
+    document: str = Field(min_length=5, max_length=40)
+    full_name: str = Field(min_length=3, max_length=200)
+    selfie_hash: str | None = Field(default=None, max_length=128)
+
+
+class SandboxKybBusinessPayload(BaseModel):
+    company_id: str = Field(min_length=3, max_length=80)
+    cnpj: str = Field(min_length=14, max_length=24)
+    legal_name: str = Field(min_length=3, max_length=200)
+
+
+class SandboxPixPayload(BaseModel):
+    payment_id: str = Field(min_length=3, max_length=80)
+    payer_id: str = Field(min_length=3, max_length=80)
+    amount_brl: str = Field(min_length=1, max_length=32)
+    idempotency_key: str = Field(min_length=3, max_length=120)
+
+
+class SandboxEscrowPayload(BaseModel):
+    escrow_id: str = Field(min_length=3, max_length=80)
+    payer_id: str = Field(min_length=3, max_length=80)
+    beneficiary_id: str = Field(min_length=3, max_length=80)
+    amount_brl: str = Field(min_length=1, max_length=32)
+
+
+class SandboxEscrowReleasePayload(BaseModel):
+    escrow_id: str = Field(min_length=3, max_length=80)
+    amount_brl: str = Field(min_length=1, max_length=32)
+
+
+class SandboxFiscalInvoicePayload(BaseModel):
+    invoice_id: str = Field(min_length=3, max_length=80)
+    document_type: str = Field(min_length=3, max_length=16)
+    amount_brl: str = Field(min_length=1, max_length=32)
+    issuer_document: str = Field(min_length=5, max_length=40)
+
+
+class SandboxCtpsPayload(BaseModel):
+    resume_id: str = Field(min_length=3, max_length=80)
+    pdf_text: str = Field(min_length=5, max_length=10000)
+
+
+class SandboxRoutePayload(BaseModel):
+    route_id: str = Field(min_length=3, max_length=80)
+    origin: dict[str, float]
+    destination: dict[str, float]
+    vehicle_type: str = Field(default="car", max_length=32)
+
+
+class SandboxClinicalConsentPayload(BaseModel):
+    patient_id: str = Field(min_length=3, max_length=80)
+    professional_id: str = Field(min_length=3, max_length=80)
+    purpose: str = Field(min_length=3, max_length=200)
+    ttl_days: int = Field(default=180, ge=1, le=730)
+
+
+class SandboxWebhookSignPayload(BaseModel):
+    webhook_id: str = Field(min_length=3, max_length=80)
+    payload: dict[str, Any] = Field(default_factory=dict)
+    secret: str = Field(min_length=8, max_length=256)
+
+
+class SandboxApiKeyVerifyPayload(BaseModel):
+    api_key: str = Field(min_length=3, max_length=256)
+    allowed_hashes: list[str] = Field(default_factory=list)
+
+
+class SandboxSupplierProductPayload(BaseModel):
+    supplier_id: str = Field(min_length=3, max_length=80)
+    external_sku: str = Field(min_length=2, max_length=80)
+    cost_brl: str = Field(min_length=1, max_length=32)
+    available_quantity: int = Field(ge=0)
 
 
 class IdentityRegistration(BaseModel):
@@ -154,6 +241,21 @@ def _expose(item: dict[str, Any], actor: Actor, rule: ResourceRule, module_name:
     if rule.sensitive and actor.user_id != UUID(item["user_id"]) and not can_read_sensitive(module_name, actor.roles):
         raise HTTPException(status_code=403, detail="Leitura de dado sensivel nao autorizada.")
     return item
+
+
+def _sandbox_response(result: SandboxResult) -> dict[str, Any]:
+    return {
+        "provider_key": result.provider_key,
+        "adapter": result.adapter,
+        "status": result.status,
+        "reference_id": result.reference_id,
+        "payload": result.payload,
+        "events": list(result.events),
+    }
+
+
+def _authorize_sandbox(actor: Actor) -> None:
+    demand_role(actor, APPROVER_ROLES, "executar integracao sandbox")
 
 
 def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
@@ -403,6 +505,166 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
     def outbox(actor: Actor = Depends(actor_from_headers)) -> list[dict[str, Any]]:
         demand_role(actor, APPROVER_ROLES, "outbox")
         return store.outbox()
+
+    if module_name in {"identity", "riders", "services"}:
+        @app.post("/integrations/sandbox/kyc/person")
+        def sandbox_kyc_person(
+            body: SandboxKycPersonPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(
+                IdentityVerificationSandbox().verify_person(
+                    body.user_id,
+                    body.document,
+                    body.full_name,
+                    body.selfie_hash,
+                )
+            )
+
+    if module_name == "business":
+        @app.post("/integrations/sandbox/kyb/business")
+        def sandbox_kyb_business(
+            body: SandboxKybBusinessPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(
+                IdentityVerificationSandbox().verify_business(
+                    body.company_id,
+                    body.cnpj,
+                    body.legal_name,
+                )
+            )
+
+    if module_name == "finance":
+        @app.post("/integrations/sandbox/psp/pix/authorize")
+        def sandbox_pix_authorize(
+            body: SandboxPixPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(
+                PspLedgerSandbox().authorize_pix(
+                    body.payment_id,
+                    body.payer_id,
+                    body.amount_brl,
+                    body.idempotency_key,
+                )
+            )
+
+        @app.post("/integrations/sandbox/psp/escrows")
+        def sandbox_escrow_create(
+            body: SandboxEscrowPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(
+                PspLedgerSandbox().create_escrow(
+                    body.escrow_id,
+                    body.payer_id,
+                    body.beneficiary_id,
+                    body.amount_brl,
+                )
+            )
+
+        @app.post("/integrations/sandbox/psp/escrows/release")
+        def sandbox_escrow_release(
+            body: SandboxEscrowReleasePayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(PspLedgerSandbox().release_escrow(body.escrow_id, body.amount_brl))
+
+    if module_name == "erp":
+        @app.post("/integrations/sandbox/fiscal/invoices")
+        def sandbox_fiscal_invoice(
+            body: SandboxFiscalInvoicePayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(
+                FiscalDocumentSandbox().issue_invoice(
+                    body.invoice_id,
+                    body.document_type,
+                    body.amount_brl,
+                    body.issuer_document,
+                )
+            )
+
+    if module_name == "jobs":
+        @app.post("/integrations/sandbox/ctps/classify")
+        def sandbox_ctps_classify(
+            body: SandboxCtpsPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(CtpsSandbox().classify_pdf(body.resume_id, body.pdf_text.encode("utf-8")))
+
+    if module_name in {"delivery", "mobility", "tms"}:
+        @app.post("/integrations/sandbox/maps/route")
+        def sandbox_maps_route(
+            body: SandboxRoutePayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(
+                MapsRoutingSandbox().route(
+                    body.route_id,
+                    body.origin,
+                    body.destination,
+                    body.vehicle_type,
+                )
+            )
+
+    if module_name == "health":
+        @app.post("/integrations/sandbox/health/consents")
+        def sandbox_health_consent(
+            body: SandboxClinicalConsentPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(
+                ClinicalConsentSandbox().record_consent(
+                    body.patient_id,
+                    body.professional_id,
+                    body.purpose,
+                    body.ttl_days,
+                )
+            )
+
+    if module_name == "api_hub":
+        @app.post("/integrations/sandbox/api-hub/webhooks/sign")
+        def sandbox_api_hub_webhook_sign(
+            body: SandboxWebhookSignPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(ApiHubSandbox().sign_webhook(body.webhook_id, body.payload, body.secret))
+
+        @app.post("/integrations/sandbox/api-hub/api-key/verify")
+        def sandbox_api_hub_api_key_verify(
+            body: SandboxApiKeyVerifyPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(ApiHubSandbox().verify_api_key(body.api_key, set(body.allowed_hashes)))
+
+    if module_name == "stock":
+        @app.post("/integrations/sandbox/suppliers/products")
+        def sandbox_supplier_product(
+            body: SandboxSupplierProductPayload,
+            actor: Actor = Depends(actor_from_headers),
+        ) -> dict[str, Any]:
+            _authorize_sandbox(actor)
+            return _sandbox_response(
+                SupplierCatalogSandbox().import_product(
+                    body.supplier_id,
+                    body.external_sku,
+                    body.cost_brl,
+                    body.available_quantity,
+                )
+            )
 
     if module_name == "delivery":
         @app.post("/pricing/quote")

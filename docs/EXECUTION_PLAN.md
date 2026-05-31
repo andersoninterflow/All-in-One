@@ -16,7 +16,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 58% | 6 apps catalogados, plano Stitch com 25 projetos/177 telas e 7 jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
-| Integracoes externas | 34% | Contratos, pontos de extensao, matriz versionada e adapters sandbox compartilhados existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
+| Integracoes externas | 38% | Contratos, matriz versionada, adapters sandbox e endpoints administrativos locais existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
 | Producao/compliance | 20% | Docs e politicas iniciais | Faltam LGPD/DPIA, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
 ## 2. Ordem mandataria de execucao
@@ -162,7 +162,7 @@ Proximos passos naturais:
 
 Objetivo: substituir mocks/contratos por provedores reais.
 
-Status: 34%
+Status: 38%
 
 Pendencias por area:
 - Identity: OIDC, MFA real, KYC/KYB, liveness, biometria e consentimento LGPD.
@@ -184,9 +184,14 @@ Entregas ja existentes:
   clinico, API Hub/webhooks e catalogo fornecedor sem chamada externa.
 - Teste `tests/test_integration_sandbox_adapters.py` valida contratos,
   eventos, determinismo e protecao contra vazamento de dado sensivel bruto.
+- Endpoints administrativos `/integrations/sandbox/*` conectam os adapters aos
+  modulos Identity, Business, Finance, ERP, Jobs, Delivery, Mobility, TMS,
+  Health, API Hub, Stock, Riders e Services.
+- Teste `tests/test_integration_sandbox_routes.py` valida autorizacao e contratos
+  HTTP desses endpoints.
 
 Proximos passos naturais:
-1. Conectar os adapters sandbox aos fluxos dos modulos prioritarios.
+1. Conectar respostas sandbox a recursos reais/auditaveis dos modulos prioritarios.
 2. Separar sandbox/homologacao/producao.
 3. Implementar adapters por provider real com testes de contrato.
 4. Registrar evidencias de homologacao.

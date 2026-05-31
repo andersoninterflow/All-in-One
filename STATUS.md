@@ -1,5 +1,37 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Endpoints Sandbox De Integracao
+
+### Concluido neste ciclo
+
+- Endpoints administrativos `/integrations/sandbox/*` adicionados ao runtime comum para expor adapters sandbox nos modulos prioritarios.
+- Identity, Riders e Services agora expoem KYC pessoa sandbox.
+- Business expoe KYB empresa sandbox.
+- Finance expoe Pix authorize, escrow create e escrow release sandbox.
+- ERP expoe emissao fiscal sandbox.
+- Jobs expoe classificacao CTPS hash-only sandbox.
+- Delivery, Mobility e TMS expoem rota/distancia/ETA sandbox.
+- Health expoe consentimento clinico sandbox.
+- API Hub expoe assinatura de webhook e verificacao de API key por hash.
+- Stock expoe importacao de produto fornecedor sandbox.
+- Rotas exigem papel operacional/compliance por `X-Actor-Roles`, evitando endpoints publicos de simulacao sensivel.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_integration_sandbox_routes.py`: 2 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_integration_sandbox_routes.py tests/test_integration_sandbox_adapters.py tests/test_integration_provider_matrix.py`: 7 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 132 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Persistir resultados sandbox como recursos/auditoria quando o fluxo de produto exigir historico operacional.
+- Separar configuracao de `sandbox`, `homologacao` e `producao`.
+- Implementar adapters reais com testes de contrato por provedor.
+
+### Git
+
+- Incremento pronto para validacao completa, commit e push automatico.
+
 ## STATUS OPERACIONAL - 2026-05-31 Adapters Sandbox De Integracao
 
 ### Concluido neste ciclo

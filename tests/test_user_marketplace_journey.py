@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from platform_test_support import client_for
+from platform_test_support import fresh_client_for
 
 
 def actor_headers(user_id: str) -> dict[str, str]:
@@ -8,9 +8,9 @@ def actor_headers(user_id: str) -> dict[str, str]:
 
 
 def test_user_identity_wallet_marketplace_order_journey() -> None:
-    identity = client_for("identity")
-    finance = client_for("finance")
-    marketplace = client_for("marketplace")
+    identity = fresh_client_for("identity")
+    finance = fresh_client_for("finance")
+    marketplace = fresh_client_for("marketplace")
     nonce = uuid4().hex
     phone_suffix = str(int(nonce[:8], 16)).zfill(10)[-10:]
 

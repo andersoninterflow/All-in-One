@@ -13,6 +13,14 @@ ROOT = Path(__file__).resolve().parent
 
 @lru_cache
 def client_for(slug: str) -> TestClient:
+    return _build_client(slug)
+
+
+def fresh_client_for(slug: str) -> TestClient:
+    return _build_client(slug)
+
+
+def _build_client(slug: str) -> TestClient:
     path = ROOT / "modules" / slug / "main.py"
     module_dir = str(path.parent)
     if module_dir not in sys.path:

@@ -15,7 +15,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Mensageria/outbox | 75% | RabbitMQ, dispatcher e testes criticos ja validados | Precisa ampliar cobertura para eventos de todos os modulos. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
-| Apps/frontend | 35% | 6 apps catalogados e plano Stitch com 25 projetos/177 telas | Ainda falta app funcional real e testes E2E. |
+| Apps/frontend | 42% | 6 apps catalogados, plano Stitch com 25 projetos/177 telas e 2 jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
 | Integracoes externas | 20% | Contratos e pontos de extensao existem | KYC/KYB, Pix/PSP, fiscal, CTPS oficial, Stitch remoto e provedores dependem de credenciais/homologacao. |
 | Producao/compliance | 20% | Docs e politicas iniciais | Faltam LGPD/DPIA, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
@@ -133,7 +133,7 @@ Proximos passos naturais:
 
 Objetivo: transformar microservicos em jornadas de produto.
 
-Status: 38%
+Status: 42%
 
 Apps e prioridades:
 - `all-in-one-user`: cadastro, wallet, busca, compra, delivery, jobs.
@@ -146,15 +146,16 @@ Apps e prioridades:
 Pendencias:
 - Implementar interfaces funcionais reais.
 - Ligar cada app aos endpoints FastAPI.
-- Criar Playwright E2E por jornada; a primeira jornada contratual local
-  `identity -> wallet -> marketplace order` ja esta coberta por pytest.
+- Criar Playwright E2E por jornada; as jornadas contratuais locais
+  `identity -> wallet -> marketplace order` e `business -> jobs -> candidate access`
+  ja estao cobertas por pytest.
 - Sincronizar design Stitch remoto com credencial rotacionada.
 
 Proximos passos naturais:
 1. Corrigir/validar plano Stitch local.
 2. Definir shell frontend por app.
-3. Implementar jornada `business -> jobs -> candidate access`.
-4. Expandir a jornada `identity -> wallet -> marketplace order` para Playwright desktop/mobile quando houver shell frontend.
+3. Expandir jornadas contratuais para delivery, riders, services, health e mobility.
+4. Levar as jornadas `identity -> wallet -> marketplace order` e `business -> jobs -> candidate access` para Playwright desktop/mobile quando houver shell frontend.
 5. Rodar testes E2E desktop/mobile.
 
 ### Fase 5 - Integracoes externas homologadas
@@ -205,7 +206,7 @@ Proximos passos naturais:
 | Modulo | Conclusao | Estado | Pendencia principal | Proximo passo |
 | --- | ---: | --- | --- | --- |
 | `identity` | 86% | Contrato, runtime, PostgreSQL especializado, cadastro/login/KYC/MFA E2E e container healthy | KYC/KYB/liveness reais | Homologar provedor KYC/KYB e ampliar testes negativos |
-| `business` | 74% | Companies, memberships, idempotencia e store tipado | Fluxo KYB e aprovacao operacional | Testar onboarding empresa e convite de usuario |
+| `business` | 77% | Companies, memberships, idempotencia, store tipado e criacao/aprovacao de empresa coberta na jornada Jobs | Fluxo KYB real e convite operacional de usuarios | Testar convite de usuario e homologar KYB |
 | `permissions` | 64% | RBAC/ABAC modelado e store gerado | Enforcement profundo em todos endpoints | Criar matriz de permissoes e testes negativos |
 | `finance` | 72% | Wallet, ledger, escrow e store tipado | PSP/Pix/split/fiscal reais | Testar ledger append-only e reconciliacao sandbox |
 | `marketplace` | 68% | Catalogo, pedidos e store tipado | Checkout, pagamento e fulfillment | Jornada produto -> carrinho -> pedido -> pagamento |
@@ -214,7 +215,7 @@ Proximos passos naturais:
 | `riders` | 62% | Candidatura, documentos e veiculos modelados | Aprovacao e ganhos reais | Fluxo de onboarding rider |
 | `services` | 68% | Prestadores e contratos com store tipado | Anti-burla e escrow | Jornada visita -> orcamento -> contrato |
 | `mobility` | 68% | Rides, tickets e fare rules com store tipado | ETA, QR/NFC e tarifas reais | Jornada corrida e ticket |
-| `jobs` | 84% | Mais maduro: CTPS/cofre/outbox/testes | Homologacao CTPS oficial e E2E amplo | Fluxo candidato -> vaga -> recrutador |
+| `jobs` | 87% | Mais maduro: CTPS/cofre/outbox/testes e jornada candidato -> vaga -> recrutador coberta por pytest | Homologacao CTPS oficial e Playwright E2E | Expandir fluxo para triagem, entrevista e notificacoes |
 | `api_hub` | 82% | API keys/webhooks, SQL refinado, rotas gateway de API key/webhook e testes de rate limit | OAuth2 real e testes de proxy com servicos vivos | Testar OAuth2 real, assinatura de webhooks de saida e rate limit com Redis real |
 | `erp` | 60% | Fiscal/accounting modelado e store gerado | Fluxos contabeis reais | Tipar store ERP e testar payables/receivables |
 | `wms` | 60% | Armazem/inventario modelados | Operacao real de estoque | Tipar store WMS e testar recebimento/picking |
@@ -237,7 +238,7 @@ O projeto entra em beta quando todos os itens abaixo estiverem verdes:
 - Docker Compose sobe todos os servicos essenciais sem restart.
 - Migrations PostgreSQL 001-012 aplicam em banco limpo.
 - Stores PostgreSQL passam CRUD/idempotencia/audit/outbox em todos os modulos prioritarios.
-- Pelo menos 6 jornadas E2E passam, uma por app.
+- Pelo menos 6 jornadas E2E passam, uma por app; 2 jornadas contratuais locais ja passam por pytest.
 - API Hub funciona com API key, webhook assinado e rate limit.
 - Identity tem login/MFA/KYC sandbox.
 - Finance tem pagamento/escrow/refund sandbox.
@@ -253,6 +254,7 @@ Sequencia recomendada:
 3. Rodar migrations e testes em ambiente limpo.
 4. Implementar gate CI de compose/healthcheck.
 5. Testar OAuth2 real, webhooks de saida e rate limit Redis no API Hub.
-6. Implementar jornada E2E `business -> jobs -> candidate access`.
-7. Atualizar `STATUS.md`.
-8. Sincronizar Git.
+6. Implementar jornada E2E `business -> jobs -> candidate access`. Concluido em 2026-05-30.
+7. Expandir jornadas E2E para delivery, riders, services, health e mobility.
+8. Atualizar `STATUS.md`.
+9. Sincronizar Git.

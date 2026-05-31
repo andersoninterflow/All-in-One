@@ -1,5 +1,31 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-30 Jornada Business Jobs E Isolamento De Testes
+
+### Concluido neste ciclo
+
+- Segunda jornada E2E local de produto criada em `tests/test_business_jobs_journey.py`.
+- Jornada cobre criacao de empresa Business, aprovacao KYB operacional, publicacao de vaga Jobs, listagem publica de vagas, criacao de curriculo, candidatura e controle de acesso ao curriculo por recrutador autorizado.
+- `platform_test_support.py` recebeu `fresh_client_for`, preservando `client_for` cacheado e permitindo testes de jornada com apps isolados por execucao.
+- Jornada `identity -> wallet -> marketplace order` atualizada para usar cliente fresco e evitar interferencia de estado entre a suite completa e os fluxos integrados.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_user_marketplace_journey.py tests/test_business_jobs_journey.py`: 2 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 117 testes aprovados, 29 ignorados.
+- `python3 scripts/validate_repository.py`: aprovado.
+- `python3 scripts/validate_openapi.py`: aprovado.
+
+### Pendencias rastreadas
+
+- Expandir jornadas E2E para delivery, riders, services, health e mobility.
+- Levar as jornadas contratuais para Playwright desktop/mobile quando houver shell frontend funcional.
+- Resolver aviso ambiental do pytest Windows no cleanup de `pytest-current`, que ocorre apos a suite verde e nao altera o codigo de saida.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-30 Resolucao Worktree E Jornada User Marketplace
 
 ### Concluido neste ciclo

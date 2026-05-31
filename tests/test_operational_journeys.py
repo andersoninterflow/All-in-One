@@ -181,7 +181,7 @@ def test_services_provider_contract_completion_journey() -> None:
             "user_id": customer_id,
             "payload": {
                 "provider_user_id": provider_reference,
-                "escrow_id": f"escrow-{nonce[:12]}",
+                "escrow_id": "escrow-services",
                 "visit_price_brl": "79.90",
                 "contracted_price_brl": "249.90",
                 "scope": "manutencao preventiva residencial",
@@ -203,7 +203,7 @@ def test_services_provider_contract_completion_journey() -> None:
     completed = services.post(
         f"/resources/service_contracts/{contract_id}/actions/complete",
         headers=actor_headers(customer_id),
-        json={"reason": "servico executado", "payload": {"evidence_hash": f"evidence-{nonce}"}},
+        json={"reason": "servico executado", "payload": {"evidence_hash": "evidence-ok"}},
     )
     assert completed.status_code == 200
     assert completed.json()["status"] == "completed"
@@ -216,7 +216,7 @@ def test_services_provider_contract_completion_journey() -> None:
 def test_mobility_fare_ride_and_ticket_journey() -> None:
     mobility = fresh_client_for("mobility")
     passenger_id = str(uuid4())
-    driver_id = str(uuid4())
+    driver_id = "driver-alpha"
     operator_id = str(uuid4())
     nonce = uuid4().hex
 
@@ -269,7 +269,7 @@ def test_mobility_fare_ride_and_ticket_journey() -> None:
             "payload": {
                 "route_code": "BUS-875",
                 "amount_brl": "6.40",
-                "qr_token_hash": f"qr-{nonce}",
+                "qr_token_hash": "qr-mobility",
             },
         },
     )

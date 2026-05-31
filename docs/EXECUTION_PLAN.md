@@ -16,7 +16,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 58% | 6 apps catalogados, plano Stitch com 25 projetos/177 telas e 7 jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
-| Integracoes externas | 28% | Contratos, pontos de extensao e matriz versionada de provedores/sandbox existem | KYC/KYB, Pix/PSP, fiscal, CTPS oficial, Stitch remoto e provedores dependem de credenciais/homologacao. |
+| Integracoes externas | 34% | Contratos, pontos de extensao, matriz versionada e adapters sandbox compartilhados existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
 | Producao/compliance | 20% | Docs e politicas iniciais | Faltam LGPD/DPIA, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
 ## 2. Ordem mandataria de execucao
@@ -162,7 +162,7 @@ Proximos passos naturais:
 
 Objetivo: substituir mocks/contratos por provedores reais.
 
-Status: 28%
+Status: 34%
 
 Pendencias por area:
 - Identity: OIDC, MFA real, KYC/KYB, liveness, biometria e consentimento LGPD.
@@ -179,11 +179,16 @@ Entregas ja existentes:
   e gate de producao.
 - Teste `tests/test_integration_provider_matrix.py` valida cobertura dos modulos
   criticos e impede versionamento acidental de valores de segredo.
+- Adapters sandbox em `modules/shared/integration_sandbox.py` implementam
+  KYC/KYB, Pix/PSP/escrow, fiscal, CTPS hash-only, mapas/ETA, consentimento
+  clinico, API Hub/webhooks e catalogo fornecedor sem chamada externa.
+- Teste `tests/test_integration_sandbox_adapters.py` valida contratos,
+  eventos, determinismo e protecao contra vazamento de dado sensivel bruto.
 
 Proximos passos naturais:
-1. Implementar adapters sandbox para KYC/KYB, PSP/Pix, mapas/tracking e fiscal.
+1. Conectar os adapters sandbox aos fluxos dos modulos prioritarios.
 2. Separar sandbox/homologacao/producao.
-3. Implementar adapters por provider com testes de contrato.
+3. Implementar adapters por provider real com testes de contrato.
 4. Registrar evidencias de homologacao.
 
 ### Fase 6 - Seguranca, compliance e producao

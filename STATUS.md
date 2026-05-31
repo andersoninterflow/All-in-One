@@ -1,5 +1,34 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Adapters Sandbox De Integracao
+
+### Concluido neste ciclo
+
+- Camada `modules/shared/integration_sandbox.py` criada para transformar a matriz de integracoes em adapters sandbox executaveis.
+- Adapters implementados para KYC/KYB, PSP/Pix/escrow, fiscal, CTPS hash-only, mapas/rotas/ETA, consentimento clinico, API Hub/webhooks/API key e catalogo fornecedor.
+- Todos os adapters sao deterministicos, nao fazem chamadas externas e nao exigem segredos reais.
+- Dados sensiveis brutos sao reduzidos a hash nos fluxos de identidade, fiscal, API key e CTPS.
+- `docs/INTEGRATION.md` atualizado com a secao de adapters sandbox e regras de uso.
+- `docs/EXECUTION_PLAN.md` atualizado para refletir integracoes externas em 34%.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_integration_sandbox_adapters.py tests/test_integration_provider_matrix.py`: 5 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_operational_journeys.py tests/test_integration_sandbox_adapters.py tests/test_integration_provider_matrix.py`: 10 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 130 testes aprovados, 29 ignorados.
+- `python3 scripts/validate_repository.py`: aprovado.
+- `python3 scripts/validate_openapi.py`: aprovado.
+
+### Pendencias rastreadas
+
+- Conectar adapters sandbox aos endpoints/fluxos dos modulos prioritarios.
+- Separar `sandbox`, `homologacao` e `producao` por configuracao operacional.
+- Implementar adapters reais por provedor quando houver credenciais de sandbox/homologacao.
+
+### Git
+
+- Incremento pronto para validacao completa, commit e push automatico.
+
 ## STATUS OPERACIONAL - 2026-05-31 Matriz De Integracoes Externas Sandbox
 
 ### Concluido neste ciclo

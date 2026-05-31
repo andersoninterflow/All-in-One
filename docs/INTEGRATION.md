@@ -22,6 +22,26 @@ garantir que os modulos criticos tenham estrategia de integracao, que somente
 nomes de segredos sejam versionados e que exista adapter sandbox antes de
 qualquer dependencia externa obrigatoria.
 
+## Adapters sandbox
+
+A camada executavel de sandbox fica em `modules/shared/integration_sandbox.py`.
+Ela implementa adapters deterministicos para:
+
+- `identity_kyc_kyb`: simulador KYC/KYB com hashes de documento e eventos de
+  aprovacao;
+- `finance_pix_psp`: simulador de Pix, autorizacao, escrow e release;
+- `fiscal_nfse_nfe`: emissao fiscal sandbox com codigo de autorizacao
+  deterministico;
+- `jobs_ctps_official`: preservacao de hash de PDF CTPS sem alegar verificacao
+  oficial externa;
+- `maps_routing_tracking`: calculo local de distancia e ETA;
+- `health_telemedicine_prescription`: consentimento clinico local com validade;
+- `api_hub_oauth_webhooks`: assinatura HMAC e verificacao de API key por hash;
+- `stock_supplier_catalog`: fixture de catalogo de fornecedor e disponibilidade.
+
+Os contratos sao validados por `tests/test_integration_sandbox_adapters.py`.
+Nenhum adapter sandbox deve realizar chamada externa nem exigir segredo real.
+
 ## Convencoes
 
 - UUID em identificadores e `user_id` sempre associado ao All-in-One ID.

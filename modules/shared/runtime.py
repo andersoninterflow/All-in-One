@@ -29,7 +29,7 @@ from .domain_rules import (
 )
 from .security import Actor, actor_from_headers, demand_active_business_recruiter, demand_mfa, demand_role
 from .store import DuplicateValueError, SQLiteStore
-from .valley import register_valley_routes, validate_valley_resource_policy
+from .valley import register_valley_routes, validate_valley_gold_ledger_payload, validate_valley_resource_policy
 from .integration_sandbox import (
     ApiHubSandbox,
     ClinicalConsentSandbox,
@@ -168,6 +168,7 @@ class DecisionPayload(BaseModel):
 TRANSACTIONAL_RESOURCES = {
     ("finance", "ledger_entries"),
     ("finance", "escrows"),
+    ("finance", "valley_gold_ledger_entries"),
     ("marketplace", "orders"),
     ("marketplace", "pepita_grants"),
     ("stock", "discount_quotes"),
@@ -324,6 +325,8 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
             if posting["status"] != "published":
                 raise HTTPException(status_code=409, detail="Candidatura exige vaga publicada.")
         validate_valley_resource_policy(module_name, resource_type, payload, actor)
+        if module_name == "finance" and resource_type == "valley_gold_ledger_entries":
+            validate_valley_gold_ledger_payload(payload)
         if (module_name, resource_type) in TRANSACTIONAL_RESOURCES and not idempotency_key:
             raise HTTPException(status_code=422, detail="X-Idempotency-Key obrigatorio para operacao transacional.")
         check_payload(rule, payload)

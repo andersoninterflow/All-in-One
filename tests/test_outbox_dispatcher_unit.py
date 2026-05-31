@@ -78,6 +78,35 @@ def test_valley_pepita_publication_notifies_consumer_with_safe_payload() -> None
     assert "note" not in message["payload"]
 
 
+def test_valley_gold_ledger_publication_uses_safe_payload() -> None:
+    message = publication_message(
+        {
+            "id": uuid4(),
+            "routing_key": "valley.gold.ledger.posted",
+            "schema_version": 1,
+            "aggregate_type": "valley_gold_ledger_entries",
+            "aggregate_id": uuid4(),
+            "correlation_id": uuid4(),
+            "entity_id": uuid4(),
+            "created_at": datetime.now(timezone.utc),
+            "payload": {
+                "merchant_business_id": str(uuid4()),
+                "entry_type": "pepita_grant_debit",
+                "amount_gold_delta": -100,
+                "reference_type": "pepita_grant",
+                "reference_id": str(uuid4()),
+                "processor_fee_brl": "private",
+                "internal_note": "must-not-publish",
+            },
+        }
+    )
+    assert message["routing_key"] == "valley.gold.ledger.posted"
+    assert message["payload"]["entry_type"] == "pepita_grant_debit"
+    assert message["payload"]["amount_gold_delta"] == -100
+    assert "processor_fee_brl" not in message["payload"]
+    assert "internal_note" not in message["payload"]
+
+
 def test_valley_discount_publication_uses_progressive_discount_allowlist() -> None:
     message = publication_message(
         {

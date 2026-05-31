@@ -51,7 +51,7 @@ MODULE_ENTITIES: dict[str, tuple[str, ...]] = {
     "identity": ("users", "kyc_records", "business_profiles", "consents", "audit_logs"),
     "business": ("companies", "branches", "company_documents", "user_company_memberships"),
     "permissions": ("roles", "permissions", "user_roles", "access_policies", "approval_limits"),
-    "finance": ("wallets", "ledger_entries", "escrows", "splits", "invoices"),
+    "finance": ("wallets", "ledger_entries", "escrows", "splits", "invoices", "valley_gold_ledger_entries"),
     "marketplace": ("stores", "products", "carts", "orders", "reviews", "disputes", "pepita_grants"),
     "stock": ("suppliers", "catalog_products", "price_rules", "supplier_orders", "discount_quotes"),
     "delivery": ("delivery_requests", "quotes", "assignments", "proofs", "insurance_options"),
@@ -162,6 +162,13 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         immutable=True,
         sensitive=True,
         monetary_fields=("amount_brl", "amount_nex"),
+    ),
+    ("finance", "valley_gold_ledger_entries"): ResourceRule(
+        ("merchant_business_id", "entry_type", "amount_gold_delta", "reference_type"),
+        ("idempotency_key",),
+        "posted",
+        immutable=True,
+        sensitive=True,
     ),
     ("finance", "escrows"): ResourceRule(
         ("wallet_id", "beneficiary_user_id", "amount_brl"),
@@ -372,6 +379,7 @@ def event_for_create(module: str, resource_type: str) -> str:
     explicit = {
         ("identity", "users"): "identity.user.created",
         ("business", "companies"): "business.company.created",
+        ("finance", "valley_gold_ledger_entries"): "valley.gold.ledger.posted",
         ("marketplace", "orders"): "marketplace.order.created",
         ("marketplace", "pepita_grants"): "valley.pepitas.granted",
         ("stock", "discount_quotes"): "valley.stock.discount.quoted",

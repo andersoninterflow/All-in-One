@@ -1,5 +1,35 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Ledger Gold Valley Finance
+
+### Concluido neste ciclo
+
+- Finance recebeu a entidade `valley_gold_ledger_entries` para lastrear compra e uso de Gold Valley em ledger separado do ledger financeiro BRL/NEX.
+- Migration PostgreSQL `015_valley_gold_ledger.sql` adicionada com tabela append-only, idempotencia unica, checks de credito/debito e trigger contra `UPDATE`/`DELETE`.
+- Runtime comum passou a exigir `X-Idempotency-Key` para lancamentos Gold Valley e bloquear automacao de concessao de Pepitas.
+- Validacao de dominio Gold Valley criada para aceitar credito positivo de compra, debito negativo por concessao manual de Pepitas e ajuste manual controlado.
+- Dispatcher de outbox recebeu allowlist segura para `valley.gold.ledger.posted`, sem publicar taxa interna, anotacao privada ou payload nao revisado.
+- Contratos e docs do modulo Finance atualizados com a nova entidade, evento e regra append-only.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_valley_gold_ledger.py tests/test_outbox_dispatcher_unit.py tests/test_valley_ecosystem.py`: 11 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 138 testes aprovados, 29 ignorados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos, 9 apps e controles centrais.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- Observacao ambiental: pytest Windows continua emitindo `PermissionError` no cleanup de `pytest-current` apos a suite verde, sem alterar codigo de saida.
+
+### Pendencias rastreadas
+
+- Conectar `valley_gold_ledger_entries` a fluxo operacional de compra de Gold com PSP/Pix real.
+- Debitar Gold automaticamente somente como consequencia auditada da concessao manual de Pepitas, preservando a decisao humana do lojista.
+- Expor saldo derivado de Gold por soma de ledger, sem gravar saldo mutavel como fonte de verdade.
+- Criar telas Valley Business para compra de Gold, historico append-only e concessao manual de Pepitas.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Reforco Valley Outbox E ACL Essencial
 
 ### Concluido neste ciclo

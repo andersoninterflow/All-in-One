@@ -20,14 +20,17 @@ mesmo durante o cadastro.
 - `finance.wallets` e unica por `(id, user_id)`.
 - `delivery.rider_profiles`, `identity.led_cards`, `finance.ledger_entries` e
   `finance.escrows` referenciam a tupla wallet/proprietario.
+- `finance.valley_gold_ledger_entries` lastreia Gold Valley por empresa em
+  tabela propria, separada do ledger BRL/NEX.
 - `identity.users.default_wallet_id` e `primary_led_card_id` sao FKs
   deferrable, permitindo criacao transacional sem quebrar integridade.
 
 ## Imutabilidade
 
-`audit.logs`, `audit.event_deliveries` e `finance.ledger_entries` recebem
-trigger que rejeita `UPDATE` e `DELETE`. A outbox `audit.domain_events` pode
-marcar publicacao; cada tentativa de entrega e preservada separadamente.
+`audit.logs`, `audit.event_deliveries`, `finance.ledger_entries` e
+`finance.valley_gold_ledger_entries` recebem trigger que rejeita `UPDATE` e
+`DELETE`. A outbox `audit.domain_events` pode marcar publicacao; cada tentativa
+de entrega e preservada separadamente.
 Correcoes financeiras devem ser novos lancamentos compensatorios.
 
 ## Jobs E Procedencia Documental

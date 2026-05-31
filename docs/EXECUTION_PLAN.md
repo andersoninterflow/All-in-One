@@ -10,7 +10,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | --- | ---: | --- | --- |
 | Git e sincronizacao remota | 100% | `local main`, `origin/main` e `fork/main` alinhados | Fluxo de entrega remoto esta operacional. |
 | Contratos de microservicos | 100% | 25 modulos com OpenAPI, contratos, Dockerfile, docs e testes base | Superficie contratual completa para evoluir. |
-| PostgreSQL estrutural | 80% | 12 migrations SQL e stores para 25 modulos | Schema amplo existe; falta prova real por modulo. |
+| PostgreSQL estrutural | 81% | 15 migrations SQL e stores para 25 modulos, incluindo ledger Gold Valley append-only | Schema amplo existe; falta prova real por modulo. |
 | Runtime FastAPI modular | 85% | Runtime comum, autorizacao, auditoria, outbox e carregamento dinamico por DSN validado em containers | Base local estabilizada; falta ampliar testes E2E por jornada. |
 | Mensageria/outbox | 78% | RabbitMQ, dispatcher, testes criticos e payload seguro para eventos Valley validados | Precisa ampliar cobertura para eventos de todos os modulos. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
@@ -63,7 +63,7 @@ Pendencias:
 - Acompanhar primeira execucao do workflow `compose-health.yml` no GitHub.
 
 Proximos passos naturais:
-1. Executar compose em banco limpo e validar migrations 001-013.
+1. Executar compose em banco limpo e validar migrations 001-015.
 2. Otimizar Dockerfiles com cache de dependencias.
 3. Registrar evidencias por execucao em `STATUS.md`.
 
@@ -74,14 +74,14 @@ Objetivo: trocar o contrato local por persistencia PostgreSQL real, auditavel e 
 Status: 80%
 
 Entregas ja existentes:
-- 12 migrations PostgreSQL.
+- 15 migrations PostgreSQL.
 - `BasePostgresStore` compartilhado.
 - Stores especializados para `jobs`, `identity`, `finance`, `api_hub`, `business`, `marketplace`, `delivery`, `services` e `mobility`.
 - Stores gerados para os demais modulos.
 - Idempotencia espalhada nas principais tabelas.
 
 Pendencias:
-- Validar migrations 001-012 em banco limpo e banco ja populado.
+- Validar migrations 001-015 em banco limpo e banco ja populado.
 - Criar testes CRUD reais para cada store PostgreSQL.
 - Confirmar audit log append-only em todos os fluxos sensiveis.
 - Confirmar outbox para eventos de todos os modulos.
@@ -232,7 +232,7 @@ Proximos passos naturais:
 | `identity` | 86% | Contrato, runtime, PostgreSQL especializado, cadastro/login/KYC/MFA E2E e container healthy | KYC/KYB/liveness reais | Homologar provedor KYC/KYB e ampliar testes negativos |
 | `business` | 77% | Companies, memberships, idempotencia, store tipado e criacao/aprovacao de empresa coberta na jornada Jobs | Fluxo KYB real e convite operacional de usuarios | Testar convite de usuario e homologar KYB |
 | `permissions` | 64% | RBAC/ABAC modelado e store gerado | Enforcement profundo em todos endpoints | Criar matriz de permissoes e testes negativos |
-| `finance` | 72% | Wallet, ledger, escrow e store tipado | PSP/Pix/split/fiscal reais | Testar ledger append-only e reconciliacao sandbox |
+| `finance` | 74% | Wallet, ledger, escrow, store tipado e ledger Gold Valley append-only | PSP/Pix/split/fiscal reais | Conectar compra Gold a PSP/Pix e saldo derivado por ledger |
 | `marketplace` | 68% | Catalogo, pedidos e store tipado | Checkout, pagamento e fulfillment | Jornada produto -> carrinho -> pedido -> pagamento |
 | `stock` | 62% | Dropshipping e fornecedores modelados | Integracoes reais de fornecedores | Adapter inicial de fornecedor sandbox |
 | `delivery` | 73% | Entregas, riders, cotacao, atribuicao, coleta/conclusao e store tipado | Tracking real, matching e POD com arquivo | Levar jornada pedido -> cotacao -> rider -> entrega para Playwright |
@@ -260,7 +260,7 @@ Proximos passos naturais:
 O projeto entra em beta quando todos os itens abaixo estiverem verdes:
 
 - Docker Compose sobe todos os servicos essenciais sem restart.
-- Migrations PostgreSQL 001-012 aplicam em banco limpo.
+- Migrations PostgreSQL 001-015 aplicam em banco limpo.
 - Stores PostgreSQL passam CRUD/idempotencia/audit/outbox em todos os modulos prioritarios.
 - Pelo menos 6 jornadas E2E passam, uma por app; 7 jornadas contratuais locais ja passam por pytest.
 - API Hub funciona com API key, webhook assinado e rate limit.

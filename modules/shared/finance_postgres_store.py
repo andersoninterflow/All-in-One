@@ -15,6 +15,7 @@ TABLES = {
     "wallets": "finance.wallets",
     "ledger_entries": "finance.ledger_entries",
     "escrows": "finance.escrows",
+    "valley_gold_ledger_entries": "finance.valley_gold_ledger_entries",
 }
 
 class FinancePostgresStore:
@@ -56,14 +57,29 @@ class FinancePostgresStore:
             "resource_type": resource_type,
             "user_id": str(row["user_id"]),
             "status": row["status"],
-            "payload": {
-                **self._payload(row),
-                "brl_available": str(row.get("brl_available", 0)),
-                "nex_available": str(row.get("nex_available", 0)),
-            } if resource_type == "wallets" else self._payload(row),
+            "payload": self._resource_payload(resource_type, row),
             "created_at": created_at.isoformat(),
             "updated_at": (row.get("updated_at") or created_at).isoformat(),
         }
+
+    def _resource_payload(self, resource_type: str, row: dict[str, Any]) -> dict[str, Any]:
+        payload = self._payload(row)
+        if resource_type == "wallets":
+            return {
+                **payload,
+                "brl_available": str(row.get("brl_available", 0)),
+                "nex_available": str(row.get("nex_available", 0)),
+            }
+        if resource_type == "valley_gold_ledger_entries":
+            return {
+                **payload,
+                "merchant_business_id": str(row["merchant_business_id"]),
+                "entry_type": row["entry_type"],
+                "amount_gold_delta": row["amount_gold_delta"],
+                "reference_type": row["reference_type"],
+                "reference_id": str(row["reference_id"]) if row.get("reference_id") else None,
+            }
+        return payload
 
     def create(
         self,
@@ -124,6 +140,27 @@ class FinancePostgresStore:
                     resource_id, user_id, payload["wallet_id"], payload["currency"],
                     payload.get("amount_brl"), payload.get("amount_nex"), payload["entry_type"],
                     idempotency_key or str(uuid4()), metadata, actor
+                ),
+            ).fetchone()
+
+        if resource_type == "valley_gold_ledger_entries":
+            return connection.execute(
+                """INSERT INTO finance.valley_gold_ledger_entries
+                   (id, user_id, merchant_business_id, entry_type, amount_gold_delta,
+                    reference_type, reference_id, status, metadata, created_by, idempotency_key)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+                (
+                    resource_id,
+                    user_id,
+                    payload["merchant_business_id"],
+                    payload["entry_type"],
+                    payload["amount_gold_delta"],
+                    payload["reference_type"],
+                    payload.get("reference_id"),
+                    status,
+                    metadata,
+                    actor,
+                    idempotency_key or str(uuid4()),
                 ),
             ).fetchone()
         

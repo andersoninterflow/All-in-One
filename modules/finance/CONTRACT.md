@@ -11,6 +11,7 @@
 - `escrows`
 - `splits`
 - `invoices`
+- `valley_gold_ledger_entries`
 
         ## APIs
 
@@ -43,11 +44,13 @@
 - `payment.escrow.released`
 - `payment.refunded`
 - `payment.split.executed`
+- `valley.gold.ledger.posted`
 
         ## Regras
 
         - `user_id` e obrigatorio em todo recurso operacional e referencia `identity.users`.
         - Exclusao e logica; registros financeiros, de aprovacao e auditoria nao sao apagados.
+        - Ledger Gold Valley e append-only, aceita credito de compra e debito manual associado a concessao de Pepitas, sem automacao de beneficio.
         - Aprovacao e rejeicao exigem ator autenticado, justificativa e log imutavel.
         - A empresa ou profissional deve estar aprovado antes de uma operacao publica.
 

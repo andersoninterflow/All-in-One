@@ -11,6 +11,8 @@ from .security import Actor, actor_from_headers, demand_active_business, demand_
 
 
 PEPITA_GRANT_AMOUNTS = {1, 10, 100}
+VALLEY_GOLD_ENTRY_TYPES = {"purchase_credit", "pepita_grant_debit", "manual_adjustment"}
+VALLEY_GOLD_REFERENCE_TYPES = {"gold_purchase", "pepita_grant", "manual_adjustment"}
 STOCK_DISCOUNT_TIERS = (
     {"percent": 10, "pepitas_required": 100},
     {"percent": 20, "pepitas_required": 200},
@@ -65,6 +67,28 @@ def validate_valley_resource_policy(module_name: str, resource_type: str, payloa
             raise HTTPException(status_code=422, detail="Produto Marketplace exige stock_location_type=local_physical.")
         if any(key in payload for key in ("amazon_asin", "aliexpress_item_id", "cj_product_id")):
             raise HTTPException(status_code=403, detail="APIs de importacao global pertencem apenas ao Modulo Stock corporativo Valley.")
+
+
+def validate_valley_gold_ledger_payload(payload: dict[str, Any]) -> None:
+    entry_type = payload.get("entry_type")
+    if entry_type not in VALLEY_GOLD_ENTRY_TYPES:
+        raise HTTPException(status_code=422, detail="Tipo de lancamento Gold Valley invalido.")
+    if payload.get("reference_type") not in VALLEY_GOLD_REFERENCE_TYPES:
+        raise HTTPException(status_code=422, detail="Referencia Gold Valley invalida.")
+    try:
+        amount = int(payload.get("amount_gold_delta"))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=422, detail="amount_gold_delta deve ser inteiro nao nulo.") from None
+    if amount == 0:
+        raise HTTPException(status_code=422, detail="amount_gold_delta nao pode ser zero.")
+    if entry_type == "purchase_credit" and amount <= 0:
+        raise HTTPException(status_code=422, detail="Compra de Gold deve registrar credito positivo.")
+    if entry_type == "pepita_grant_debit" and amount >= 0:
+        raise HTTPException(status_code=422, detail="Uso de Gold em Pepitas deve registrar debito negativo.")
+    if entry_type == "pepita_grant_debit" and not payload.get("reference_id"):
+        raise HTTPException(status_code=422, detail="Debito Gold por Pepitas exige reference_id da concessao.")
+    if payload.get("auto_grant_pepitas"):
+        raise HTTPException(status_code=422, detail="Gold nao concede Pepitas automaticamente; concessao continua manual pelo lojista.")
 
 
 def register_valley_routes(

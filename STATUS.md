@@ -1,5 +1,32 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Matriz De Integracoes Externas Sandbox
+
+### Concluido neste ciclo
+
+- Matriz versionada de integracoes criada em `config/integrations/provider_matrix.json`.
+- A matriz cobre KYC/KYB, Pix/PSP/split/escrow, fiscal NFS-e/NF-e, CTPS, mapas/rotas/tracking, saude/telemedicina/prescricao, OAuth/webhooks/API Hub e catalogo de fornecedores.
+- Cada integracao define modulos consumidores, adapter sandbox local, candidatos primarios/fallback, variaveis de ambiente, eventos, dados sensiveis, entrada de menor custo e gate minimo de producao.
+- `docs/INTEGRATION.md` expandido com convencoes, ordem de homologacao e politica de menor custo.
+- Teste `tests/test_integration_provider_matrix.py` adicionado para garantir cobertura dos modulos criticos e evitar versionamento de segredos reais.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_integration_provider_matrix.py`: 1 teste aprovado.
+- `python3 -m json.tool config/integrations/provider_matrix.json`: aprovado.
+- `python3 scripts/validate_repository.py`: aprovado.
+- `python3 scripts/validate_openapi.py`: aprovado.
+
+### Pendencias rastreadas
+
+- Implementar adapters sandbox reais para os provedores prioritarios.
+- Separar ambientes `sandbox`, `homologacao` e `producao` por modulo.
+- Adicionar testes de contrato por provider assim que houver credenciais de sandbox.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Jornadas Operacionais Delivery Riders Services Mobility Health
 
 ### Concluido neste ciclo

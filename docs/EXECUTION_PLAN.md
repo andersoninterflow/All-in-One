@@ -16,7 +16,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 58% | 6 apps catalogados, plano Stitch com 25 projetos/177 telas e 7 jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
-| Integracoes externas | 20% | Contratos e pontos de extensao existem | KYC/KYB, Pix/PSP, fiscal, CTPS oficial, Stitch remoto e provedores dependem de credenciais/homologacao. |
+| Integracoes externas | 28% | Contratos, pontos de extensao e matriz versionada de provedores/sandbox existem | KYC/KYB, Pix/PSP, fiscal, CTPS oficial, Stitch remoto e provedores dependem de credenciais/homologacao. |
 | Producao/compliance | 20% | Docs e politicas iniciais | Faltam LGPD/DPIA, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
 ## 2. Ordem mandataria de execucao
@@ -162,7 +162,7 @@ Proximos passos naturais:
 
 Objetivo: substituir mocks/contratos por provedores reais.
 
-Status: 20%
+Status: 28%
 
 Pendencias por area:
 - Identity: OIDC, MFA real, KYC/KYB, liveness, biometria e consentimento LGPD.
@@ -173,9 +173,16 @@ Pendencias por area:
 - Health: governanca de prontuario, prescricao, telemedicina e consentimento.
 - API Hub: OAuth2, API keys, webhooks assinados, sandbox e rate limits reais.
 
+Entregas ja existentes:
+- Matriz `config/integrations/provider_matrix.json` cobre provedores candidatos,
+  adapter sandbox, eventos, variaveis de ambiente, dados sensiveis, custo minimo
+  e gate de producao.
+- Teste `tests/test_integration_provider_matrix.py` valida cobertura dos modulos
+  criticos e impede versionamento acidental de valores de segredo.
+
 Proximos passos naturais:
-1. Criar matriz de provedores e segredos em `docs/INTEGRATION.md`.
-2. Separar sandbox/producao.
+1. Implementar adapters sandbox para KYC/KYB, PSP/Pix, mapas/tracking e fiscal.
+2. Separar sandbox/homologacao/producao.
 3. Implementar adapters por provider com testes de contrato.
 4. Registrar evidencias de homologacao.
 

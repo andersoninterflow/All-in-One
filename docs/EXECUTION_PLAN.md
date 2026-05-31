@@ -15,7 +15,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Mensageria/outbox | 75% | RabbitMQ, dispatcher e testes criticos ja validados | Precisa ampliar cobertura para eventos de todos os modulos. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
-| Apps/frontend | 42% | 6 apps catalogados, plano Stitch com 25 projetos/177 telas e 2 jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
+| Apps/frontend | 58% | 6 apps catalogados, plano Stitch com 25 projetos/177 telas e 7 jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
 | Integracoes externas | 20% | Contratos e pontos de extensao existem | KYC/KYB, Pix/PSP, fiscal, CTPS oficial, Stitch remoto e provedores dependem de credenciais/homologacao. |
 | Producao/compliance | 20% | Docs e politicas iniciais | Faltam LGPD/DPIA, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
@@ -133,7 +133,7 @@ Proximos passos naturais:
 
 Objetivo: transformar microservicos em jornadas de produto.
 
-Status: 42%
+Status: 58%
 
 Apps e prioridades:
 - `all-in-one-user`: cadastro, wallet, busca, compra, delivery, jobs.
@@ -147,15 +147,15 @@ Pendencias:
 - Implementar interfaces funcionais reais.
 - Ligar cada app aos endpoints FastAPI.
 - Criar Playwright E2E por jornada; as jornadas contratuais locais
-  `identity -> wallet -> marketplace order` e `business -> jobs -> candidate access`
-  ja estao cobertas por pytest.
+  `identity -> wallet -> marketplace order`, `business -> jobs -> candidate access`,
+  Delivery, Riders, Services, Mobility e Health ja estao cobertas por pytest.
 - Sincronizar design Stitch remoto com credencial rotacionada.
 
 Proximos passos naturais:
 1. Corrigir/validar plano Stitch local.
 2. Definir shell frontend por app.
-3. Expandir jornadas contratuais para delivery, riders, services, health e mobility.
-4. Levar as jornadas `identity -> wallet -> marketplace order` e `business -> jobs -> candidate access` para Playwright desktop/mobile quando houver shell frontend.
+3. Consolidar as 7 jornadas contratuais locais como base de regressao de produto.
+4. Levar as jornadas contratuais para Playwright desktop/mobile quando houver shell frontend.
 5. Rodar testes E2E desktop/mobile.
 
 ### Fase 5 - Integracoes externas homologadas
@@ -211,10 +211,10 @@ Proximos passos naturais:
 | `finance` | 72% | Wallet, ledger, escrow e store tipado | PSP/Pix/split/fiscal reais | Testar ledger append-only e reconciliacao sandbox |
 | `marketplace` | 68% | Catalogo, pedidos e store tipado | Checkout, pagamento e fulfillment | Jornada produto -> carrinho -> pedido -> pagamento |
 | `stock` | 62% | Dropshipping e fornecedores modelados | Integracoes reais de fornecedores | Adapter inicial de fornecedor sandbox |
-| `delivery` | 68% | Entregas, riders e veiculos com store tipado | Tracking, matching e POD | Jornada pedido -> cotacao -> rider -> entrega |
-| `riders` | 62% | Candidatura, documentos e veiculos modelados | Aprovacao e ganhos reais | Fluxo de onboarding rider |
-| `services` | 68% | Prestadores e contratos com store tipado | Anti-burla e escrow | Jornada visita -> orcamento -> contrato |
-| `mobility` | 68% | Rides, tickets e fare rules com store tipado | ETA, QR/NFC e tarifas reais | Jornada corrida e ticket |
+| `delivery` | 73% | Entregas, riders, cotacao, atribuicao, coleta/conclusao e store tipado | Tracking real, matching e POD com arquivo | Levar jornada pedido -> cotacao -> rider -> entrega para Playwright |
+| `riders` | 68% | Candidatura, documentos, aprovacao, ativacao e veiculos cobertos por pytest | Ganhos reais e antifraude documental | Integrar ganhos Finance e validacao documental sandbox |
+| `services` | 73% | Prestadores, aprovacao, contrato, escrow referenciado e conclusao cobertos por pytest | Anti-burla avancado e escrow Finance real | Integrar contrato Services ao escrow Finance |
+| `mobility` | 73% | Rides, tickets, tarifa, aceite/conclusao e QR token cobertos por pytest | ETA, QR/NFC real e tarifas dinamicas | Levar jornada corrida e ticket para Playwright |
 | `jobs` | 87% | Mais maduro: CTPS/cofre/outbox/testes e jornada candidato -> vaga -> recrutador coberta por pytest | Homologacao CTPS oficial e Playwright E2E | Expandir fluxo para triagem, entrevista e notificacoes |
 | `api_hub` | 82% | API keys/webhooks, SQL refinado, rotas gateway de API key/webhook e testes de rate limit | OAuth2 real e testes de proxy com servicos vivos | Testar OAuth2 real, assinatura de webhooks de saida e rate limit com Redis real |
 | `erp` | 60% | Fiscal/accounting modelado e store gerado | Fluxos contabeis reais | Tipar store ERP e testar payables/receivables |
@@ -224,7 +224,7 @@ Proximos passos naturais:
 | `bpm` | 58% | Processos/workflows modelados | Engine real de workflow | Implementar timers/SLA/escalonamento |
 | `document` | 58% | GED/OCR/assinatura modelados | Storage, OCR e assinatura reais | Tipar store e implementar upload/versionamento |
 | `hr` | 58% | HCM/ATS/LMS modelado | Folha, ponto e LMS reais | Fluxo colaborador -> folha -> treinamento |
-| `health` | 60% | Pacientes/agenda/prontuario modelados | Consentimento e telemedicina reais | Tipar store Health e testar agendamento |
+| `health` | 66% | Pacientes, agenda, protecao de dado sensivel e consulta cobertos por pytest | Consentimento, prontuario e telemedicina reais | Implementar consentimento auditavel e prontuario |
 | `vision` | 55% | Dispositivos/streams/alertas modelados | Ingestao de video e IA | Prova de stream e alerta |
 | `legal` | 55% | Casos/prazos/audiencias modelados | Integracoes tribunal/calendario | Fluxo caso -> prazo -> alerta |
 | `property` | 55% | Imoveis/unidades/locacoes modelados | Condominio e manutencao reais | Fluxo locacao/manutencao |
@@ -238,7 +238,7 @@ O projeto entra em beta quando todos os itens abaixo estiverem verdes:
 - Docker Compose sobe todos os servicos essenciais sem restart.
 - Migrations PostgreSQL 001-012 aplicam em banco limpo.
 - Stores PostgreSQL passam CRUD/idempotencia/audit/outbox em todos os modulos prioritarios.
-- Pelo menos 6 jornadas E2E passam, uma por app; 2 jornadas contratuais locais ja passam por pytest.
+- Pelo menos 6 jornadas E2E passam, uma por app; 7 jornadas contratuais locais ja passam por pytest.
 - API Hub funciona com API key, webhook assinado e rate limit.
 - Identity tem login/MFA/KYC sandbox.
 - Finance tem pagamento/escrow/refund sandbox.
@@ -255,6 +255,7 @@ Sequencia recomendada:
 4. Implementar gate CI de compose/healthcheck.
 5. Testar OAuth2 real, webhooks de saida e rate limit Redis no API Hub.
 6. Implementar jornada E2E `business -> jobs -> candidate access`. Concluido em 2026-05-30.
-7. Expandir jornadas E2E para delivery, riders, services, health e mobility.
-8. Atualizar `STATUS.md`.
-9. Sincronizar Git.
+7. Expandir jornadas E2E para delivery, riders, services, health e mobility. Concluido em 2026-05-31.
+8. Levar jornadas contratuais para shell frontend e Playwright.
+9. Atualizar `STATUS.md`.
+10. Sincronizar Git.

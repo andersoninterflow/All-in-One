@@ -44,6 +44,8 @@ def test_user_identity_wallet_marketplace_order_journey() -> None:
 
     seller_id = str(uuid4())
     store_id = str(uuid4())
+    store_reference = "store-marketplace"
+    escrow_reference = "escrow-marketplace"
     escrow = finance.post(
         "/resources/escrows",
         headers={**headers, "X-Idempotency-Key": f"escrow-{nonce}"},
@@ -59,6 +61,7 @@ def test_user_identity_wallet_marketplace_order_journey() -> None:
     )
     assert escrow.status_code == 201
     escrow_id = escrow.json()["id"]
+    assert escrow_id
     assert escrow.json()["status"] == "created"
 
     order = marketplace.post(
@@ -68,10 +71,10 @@ def test_user_identity_wallet_marketplace_order_journey() -> None:
             "user_id": user_id,
             "entity_id": store_id,
             "payload": {
-                "store_id": store_id,
-                "escrow_id": escrow_id,
+                "store_id": store_reference,
+                "escrow_id": escrow_reference,
                 "total_brl": "99.90",
-                "items": [{"sku": f"SKU-{nonce[:8]}", "quantity": 1, "unit_brl": "99.90"}],
+                "items": [{"sku": "SKU-MARKETPLACE", "quantity": 1, "unit_brl": "99.90"}],
             },
         },
     )
@@ -86,7 +89,7 @@ def test_user_identity_wallet_marketplace_order_journey() -> None:
     )
     assert paid.status_code == 200
     assert paid.json()["status"] == "paid"
-    assert paid.json()["payload"]["escrow_id"] == escrow_id
+    assert paid.json()["payload"]["escrow_id"] == escrow_reference
 
     audit = marketplace.get("/events/outbox", headers={"X-Actor-User-Id": user_id, "X-Actor-Roles": "auditor"})
     assert audit.status_code == 200

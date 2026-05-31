@@ -1,5 +1,35 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Jornadas Operacionais Delivery Riders Services Mobility Health
+
+### Concluido neste ciclo
+
+- Suite `tests/test_operational_journeys.py` criada com 5 novas jornadas contratuais locais.
+- Jornada Delivery cobre cotacao, criacao de solicitacao transacional, atribuicao de rider, coleta, conclusao e evento `delivery.completed` na outbox.
+- Jornada Riders cobre onboarding de perfil, submissao documental, aprovacao com MFA, ativacao e cadastro de veiculo.
+- Jornada Services cobre cadastro/aprovacao de prestador, contrato com escrow referenciado, aceite, conclusao e evento `services.contract.completed`.
+- Jornada Mobility cobre calculo de tarifa, solicitacao de corrida, aceite com motorista, conclusao, emissao de ticket e uso de QR token.
+- Jornada Health cobre cadastro de paciente, bloqueio de acesso indevido a dado sensivel, acesso medico autorizado, agendamento, aprovacao e conclusao de consulta.
+- Foram usadas referencias opacas em payloads protegidos para respeitar a politica anti-burla sem enfraquecer validacoes.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_operational_journeys.py -vv`: 5 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_user_marketplace_journey.py tests/test_operational_journeys.py tests/test_business_jobs_journey.py`: 7 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 122 testes aprovados, 29 ignorados.
+- `python3 scripts/validate_repository.py`: aprovado.
+- `python3 scripts/validate_openapi.py`: aprovado.
+
+### Pendencias rastreadas
+
+- Levar as 7 jornadas contratuais locais para Playwright desktop/mobile quando houver shell frontend funcional.
+- Avancar para integracoes externas homologadas e adapters sandbox dos provedores prioritarios.
+- Resolver aviso ambiental do pytest Windows no cleanup de `pytest-current`, que ocorre apos a suite verde e nao altera o codigo de saida.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-30 Ambiente Dev Persistente
 
 ### Concluido neste ciclo

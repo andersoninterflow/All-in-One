@@ -11,11 +11,11 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Git e sincronizacao remota | 100% | `local main`, `origin/main` e `fork/main` alinhados | Fluxo de entrega remoto esta operacional. |
 | Contratos de microservicos | 100% | 25 modulos com OpenAPI, contratos, Dockerfile, docs e testes base | Superficie contratual completa para evoluir. |
 | PostgreSQL estrutural | 81% | 15 migrations SQL e stores para 25 modulos, incluindo ledger Gold Valley append-only | Schema amplo existe; falta prova real por modulo. |
-| Runtime FastAPI modular | 85% | Runtime comum, autorizacao, auditoria, outbox e carregamento dinamico por DSN validado em containers | Base local estabilizada; falta ampliar testes E2E por jornada. |
-| Mensageria/outbox | 78% | RabbitMQ, dispatcher, testes criticos e payload seguro para eventos Valley validados | Precisa ampliar cobertura para eventos de todos os modulos. |
+| Runtime FastAPI modular | 86% | Runtime comum, autorizacao, auditoria, outbox, catalogo Valley regionalizado e carregamento dinamico por DSN validado em containers | Base local estabilizada; falta ampliar testes E2E por jornada. |
+| Mensageria/outbox | 80% | RabbitMQ, dispatcher, testes criticos e payload seguro para eventos Valley/catalogo validados | Precisa ampliar cobertura para eventos de todos os modulos. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
-| Apps/frontend | 60% | 9 apps catalogados, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest, incluindo reforcos Valley | Ainda falta app funcional real e Playwright E2E. |
+| Apps/frontend | 63% | 9 apps catalogados, catalogo Valley backend regionalizado, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
 | Integracoes externas | 38% | Contratos, matriz versionada, adapters sandbox e endpoints administrativos locais existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
 | Producao/compliance | 20% | Docs e politicas iniciais | Faltam LGPD/DPIA, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
@@ -110,7 +110,7 @@ Proximos passos naturais:
 
 Objetivo: garantir comunicacao assincroma confiavel e rastreavel.
 
-Status: 78%
+Status: 80%
 
 Entregas ja existentes:
 - `audit.domain_events`.
@@ -118,6 +118,8 @@ Entregas ja existentes:
 - Testes de integracao com RabbitMQ para fluxo critico.
 - Allowlist segura do dispatcher cobre eventos Valley de concessao manual de
   Pepitas e cotacao progressiva Stock sem expor ledger privado, custo ou margem.
+- Allowlist segura cobre `valley.catalog.offer.synced`, sem expor custo interno,
+  margem, markup ou endereco sensivel.
 
 Pendencias:
 - Validar eventos de todos os modulos.
@@ -135,7 +137,7 @@ Proximos passos naturais:
 
 Objetivo: transformar microservicos em jornadas de produto.
 
-Status: 60%
+Status: 63%
 
 Apps e prioridades:
 - `all-in-one-user`: cadastro, wallet, busca, compra, delivery, jobs.
@@ -147,6 +149,8 @@ Apps e prioridades:
 - `valley`: consumidor, saldo Pepitas, descontos Stock e notificacoes.
 - `valley-business`: loja local, Plano Essencial por CNPJ e concessao manual de Pepitas.
 - `valley-rider`: entregador/corridas vinculadas ao ecossistema Valley.
+- Catalogo Valley backend agrupa ofertas em linguagem simples por `food`,
+  `product`, `service`, categoria amigavel e raio regional em km.
 
 Pendencias:
 - Implementar interfaces funcionais reais.

@@ -8,6 +8,12 @@ from fastapi import Body, Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from .security import Actor, actor_from_headers, demand_active_business, demand_valley_master_stock, enforce_essential_plan
+from .valley_catalog import (
+    build_valley_offers,
+    search_valley_offers,
+    valley_categories,
+    valley_modules,
+)
 
 
 PEPITA_GRANT_AMOUNTS = {1, 10, 100}
@@ -97,6 +103,35 @@ def register_valley_routes(
     store: Any,
     fetch: Callable[[str, UUID], dict[str, Any]],
 ) -> None:
+    @app.get("/valley/catalog/modules")
+    def valley_catalog_modules() -> list[dict[str, Any]]:
+        return valley_modules()
+
+    @app.get("/valley/catalog/categories")
+    def valley_catalog_categories() -> list[dict[str, Any]]:
+        return valley_categories()
+
+    @app.get("/valley/catalog/offers")
+    def valley_catalog_offers() -> list[dict[str, Any]]:
+        return build_valley_offers(module_name, store)
+
+    @app.get("/valley/catalog/search")
+    def valley_catalog_search(
+        q: str | None = None,
+        category: str | None = None,
+        offer_type: str | None = None,
+        lat: float | None = None,
+        lng: float | None = None,
+    ) -> list[dict[str, Any]]:
+        return search_valley_offers(
+            build_valley_offers(module_name, store),
+            q=q,
+            category=category,
+            offer_type=offer_type,
+            lat=lat,
+            lng=lng,
+        )
+
     if module_name == "marketplace":
 
         @app.post("/valley/orders/{order_id}/pepitas/grants", status_code=201)

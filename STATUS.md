@@ -1,5 +1,38 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Catalogo Valley Super App Regionalizado
+
+### Concluido neste ciclo
+
+- Helper `modules/shared/valley_catalog.py` criado para normalizar ofertas Valley em linguagem de consumidor.
+- Endpoints `GET /valley/catalog/modules`, `/categories`, `/offers` e `/search` registrados no runtime comum.
+- Ofertas agora distinguem `offer_type` entre `food`, `product` e `service`.
+- Categorias amigaveis criadas para esconder a complexidade tecnica dos modulos na primeira camada de navegacao.
+- Busca regional implementada com Haversine usando `lat`, `lng` do usuario, `service_radius_km` e coordenadas publicas da empresa/prestador.
+- Ofertas locais fora do raio ou sem cadastro regional completo deixam de aparecer como disponiveis na busca por localizacao.
+- Ofertas `online` e `national` continuam visiveis sem depender de raio regional.
+- Fallback `coming_soon` garante visibilidade dos 25 modulos no Super App Valley.
+- Outbox recebeu allowlist segura para `valley.catalog.offer.synced`, sem expor custo interno, margem, markup ou endereco sensivel.
+- `docs/VALLEY_CATALOG.md` documenta contrato, taxonomia amigavel e regra regional.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_valley_catalog.py tests/test_valley_ecosystem.py tests/test_outbox_dispatcher_unit.py`: 13 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 142 testes aprovados, 29 ignorados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos, 9 apps e controles centrais.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- Observacao ambiental: pytest Windows continua emitindo `PermissionError` no cleanup de `pytest-current` apos a suite verde, sem alterar codigo de saida.
+
+### Pendencias rastreadas
+
+- Centralizar agregacao multi-servico real no API Hub para consultar ofertas vivas de todos os modulos em uma unica chamada.
+- Persistir snapshots de catalogo e eventos `valley.catalog.offer.synced` quando houver banco dedicado do agregador Valley.
+- Implementar interface visual do app Valley usando as categorias amigaveis e filtros regionais.
+
+### Git
+
+- Incremento pronto para validacao completa, commit e push automatico.
+
 ## STATUS OPERACIONAL - 2026-05-31 Ledger Gold Valley Finance
 
 ### Concluido neste ciclo

@@ -16,6 +16,7 @@ OFF_PLATFORM_PATTERNS = (
     re.compile(r"https?://|www\.", re.IGNORECASE),
     re.compile(r"(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?\d{4,5}[-\s]?\d{4}"),
 )
+PUBLIC_LOCATION_FIELDS = frozenset({"latitude", "longitude", "service_origin", "service_radius_km"})
 APPROVER_ROLES = frozenset(
     {"owner", "legal_representative", "administrator", "compliance_officer", "auditor"}
 )
@@ -353,7 +354,7 @@ def check_payload(rule: ResourceRule, payload: dict[str, Any]) -> None:
     if missing:
         raise HTTPException(status_code=422, detail=f"Campos obrigatorios ausentes: {', '.join(missing)}.")
     if rule.protected_content:
-        material = str(payload)
+        material = str({key: value for key, value in payload.items() if key not in PUBLIC_LOCATION_FIELDS})
         if any(pattern.search(material) for pattern in OFF_PLATFORM_PATTERNS):
             raise HTTPException(status_code=422, detail="Conteudo bloqueado pela politica anti-burla.")
     for field in rule.monetary_fields:

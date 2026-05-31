@@ -67,6 +67,23 @@ SAFE_PAYLOAD_FIELDS: dict[str, frozenset[str]] = {
             "visibility_rule",
         }
     ),
+    "valley_catalog_offers": frozenset(
+        {
+            "offer_id",
+            "offer_type",
+            "consumer_category",
+            "title",
+            "source_module",
+            "source_resource_type",
+            "availability_status",
+            "price_brl",
+            "benefits",
+            "rewards",
+            "region_label",
+            "service_radius_km",
+            "consumer_action",
+        }
+    ),
 }
 
 

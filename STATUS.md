@@ -1,5 +1,36 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Reforco Valley Outbox E ACL Essencial
+
+### Concluido neste ciclo
+
+- Dispatcher de outbox ampliado com allowlist segura para eventos Valley de `pepita_grants` e `discount_quotes`.
+- Evento `valley.pepitas.granted` agora publica somente dados operacionais necessarios para notificacao do consumidor, sem expor ledger privado Gold, observacoes internas ou payload nao revisado.
+- Evento `valley.stock.discount.quoted` agora publica somente campos seguros da cotacao progressiva de desconto, preservando a regra de nao comunicar custo, margem, preco original sensivel ou markup.
+- Jornada Valley de concessao manual de Pepitas reforcada com prova de idempotencia por `X-Idempotency-Key`.
+- Regra comercial de Pepitas reforcada para bloquear quantidades fora dos pacotes permitidos `1`, `10` e `100`.
+- Plano Valley Business Essencial reforcado para bloquear integracoes externas em loja vinculada a CNPJ unico.
+- As regras implementadas continuam alinhadas ao documento mestre Valley: Pepitas concedidas manualmente pelo lojista, desconto Stock progressivo por saldo e Marketplace Business restrito a operacao local.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q tests/test_valley_ecosystem.py tests/test_outbox_dispatcher_unit.py`: 8 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest --import-mode=importlib -q`: 135 testes aprovados, 29 ignorados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos, 9 apps e controles centrais.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- Observacao ambiental: pytest Windows continua emitindo `PermissionError` no cleanup de `pytest-current` apos a suite verde, sem alterar codigo de saida.
+
+### Pendencias rastreadas
+
+- Integrar ledger Gold append-only real ao Finance para lastrear compra/uso de Gold sem automatizar concessao de Pepitas.
+- Persistir notificacoes ao consumidor em canal operacional real quando RabbitMQ/outbox estiver conectado ao frontend Valley.
+- Conectar Valley, Valley Business e Valley Rider a telas funcionais e Playwright desktop/mobile.
+- Homologar providers reais sem romper restricoes do Plano Essencial e sem expor dados internos de margem/custo.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Endpoints Sandbox De Integracao
 
 ### Concluido neste ciclo

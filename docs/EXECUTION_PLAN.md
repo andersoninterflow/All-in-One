@@ -12,10 +12,10 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Contratos de microservicos | 100% | 25 modulos com OpenAPI, contratos, Dockerfile, docs e testes base | Superficie contratual completa para evoluir. |
 | PostgreSQL estrutural | 80% | 12 migrations SQL e stores para 25 modulos | Schema amplo existe; falta prova real por modulo. |
 | Runtime FastAPI modular | 85% | Runtime comum, autorizacao, auditoria, outbox e carregamento dinamico por DSN validado em containers | Base local estabilizada; falta ampliar testes E2E por jornada. |
-| Mensageria/outbox | 75% | RabbitMQ, dispatcher e testes criticos ja validados | Precisa ampliar cobertura para eventos de todos os modulos. |
+| Mensageria/outbox | 78% | RabbitMQ, dispatcher, testes criticos e payload seguro para eventos Valley validados | Precisa ampliar cobertura para eventos de todos os modulos. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
-| Apps/frontend | 58% | 6 apps catalogados, plano Stitch com 25 projetos/177 telas e 7 jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
+| Apps/frontend | 60% | 9 apps catalogados, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest, incluindo reforcos Valley | Ainda falta app funcional real e Playwright E2E. |
 | Integracoes externas | 38% | Contratos, matriz versionada, adapters sandbox e endpoints administrativos locais existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
 | Producao/compliance | 20% | Docs e politicas iniciais | Faltam LGPD/DPIA, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
@@ -110,12 +110,14 @@ Proximos passos naturais:
 
 Objetivo: garantir comunicacao assincroma confiavel e rastreavel.
 
-Status: 75%
+Status: 78%
 
 Entregas ja existentes:
 - `audit.domain_events`.
 - Worker `outbox-dispatcher`.
 - Testes de integracao com RabbitMQ para fluxo critico.
+- Allowlist segura do dispatcher cobre eventos Valley de concessao manual de
+  Pepitas e cotacao progressiva Stock sem expor ledger privado, custo ou margem.
 
 Pendencias:
 - Validar eventos de todos os modulos.
@@ -133,7 +135,7 @@ Proximos passos naturais:
 
 Objetivo: transformar microservicos em jornadas de produto.
 
-Status: 58%
+Status: 60%
 
 Apps e prioridades:
 - `all-in-one-user`: cadastro, wallet, busca, compra, delivery, jobs.
@@ -142,6 +144,9 @@ Apps e prioridades:
 - `all-in-one-services`: prestador, visita, orcamento, contrato, evidencia.
 - `all-in-one-health`: paciente, agenda, prontuario, consulta.
 - `all-in-one-mobility`: corrida, ticket, QR/NFC, historico.
+- `valley`: consumidor, saldo Pepitas, descontos Stock e notificacoes.
+- `valley-business`: loja local, Plano Essencial por CNPJ e concessao manual de Pepitas.
+- `valley-rider`: entregador/corridas vinculadas ao ecossistema Valley.
 
 Pendencias:
 - Implementar interfaces funcionais reais.
@@ -149,6 +154,8 @@ Pendencias:
 - Criar Playwright E2E por jornada; as jornadas contratuais locais
   `identity -> wallet -> marketplace order`, `business -> jobs -> candidate access`,
   Delivery, Riders, Services, Mobility e Health ja estao cobertas por pytest.
+- Regras Valley de Pepitas, desconto Stock, idempotencia e Plano Essencial ja
+  estao cobertas por pytest contratual.
 - Sincronizar design Stitch remoto com credencial rotacionada.
 
 Proximos passos naturais:

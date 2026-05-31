@@ -196,6 +196,63 @@ def test_merchant_manual_pepita_grant_emits_valley_event() -> None:
     assert grant.status_code == 201
     assert grant.json()["payload"]["grant_mode"] == "merchant_manual_free_will"
 
+    repeated = marketplace.post(
+        f"/valley/orders/{order_id}/pepitas/grants",
+        headers={
+            **actor_headers(merchant_id, "merchant", business_id=business_id),
+            "X-Idempotency-Key": f"pepitas-{nonce}",
+        },
+        json={
+            "pepitas": 100,
+            "customer_user_id": customer_id,
+            "merchant_gold_ledger_id": f"gold-ledger-{nonce}",
+        },
+    )
+    assert repeated.status_code == 201
+    assert repeated.json()["id"] == grant.json()["id"]
+
+    blocked_amount = marketplace.post(
+        f"/valley/orders/{order_id}/pepitas/grants",
+        headers={
+            **actor_headers(merchant_id, "merchant", business_id=business_id),
+            "X-Idempotency-Key": f"pepitas-invalid-{nonce}",
+        },
+        json={
+            "pepitas": 50,
+            "customer_user_id": customer_id,
+            "merchant_gold_ledger_id": f"gold-ledger-{nonce}",
+        },
+    )
+    assert blocked_amount.status_code == 422
+
     outbox = marketplace.get("/events/outbox", headers=actor_headers(merchant_id, "auditor"))
     assert outbox.status_code == 200
     assert any(event["routing_key"] == "valley.pepitas.granted" for event in outbox.json())
+
+
+def test_valley_essential_plan_blocks_external_integrations() -> None:
+    marketplace = fresh_client_for("marketplace")
+    merchant_id = str(uuid4())
+    business_id = str(uuid4())
+
+    blocked = marketplace.post(
+        "/resources/stores",
+        headers=actor_headers(
+            merchant_id,
+            "merchant",
+            business_id=business_id,
+            business_plan="essential",
+            business_cnpj="12345678000199",
+        ),
+        json={
+            "user_id": merchant_id,
+            "entity_id": business_id,
+            "payload": {
+                "business_id": business_id,
+                "store_name": "Loja Essencial",
+                "inventory_source": "local_physical",
+                "external_integrations": ["erp-provider"],
+            },
+        },
+    )
+    assert blocked.status_code == 403

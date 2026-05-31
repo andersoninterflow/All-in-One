@@ -39,6 +39,25 @@ SAFE_PAYLOAD_FIELDS: dict[str, frozenset[str]] = {
     "job_postings": frozenset({"company_id", "title", "employment_type", "workplace_model"}),
     "applications": frozenset({"job_posting_id", "resume_id"}),
     "resume_access_logs": frozenset({"resume_id", "business_id"}),
+    "pepita_grants": frozenset(
+        {
+            "order_id",
+            "customer_user_id",
+            "merchant_business_id",
+            "pepitas",
+            "grant_mode",
+        }
+    ),
+    "discount_quotes": frozenset(
+        {
+            "catalog_product_id",
+            "selected_percent",
+            "pepitas_required",
+            "discount_brl",
+            "final_price_brl",
+            "visibility_rule",
+        }
+    ),
 }
 
 

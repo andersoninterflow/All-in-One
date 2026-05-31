@@ -1,5 +1,32 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Gate Scaffold E Pytest Mandatorio
+
+### Concluido neste ciclo
+
+- `scripts/scaffold_modules.py --check` corrigido para reconhecer artefatos customizados intencionais, evitando falha falsa no CI quando arquivos especializados substituem o scaffold generico.
+- Template de `requirements.txt` do scaffold atualizado para refletir o baseline real com PostgreSQL/`psycopg` nos modulos.
+- Dependencias especiais de Identity, Jobs e API Hub preservadas no scaffold sem apagar os extras necessarios.
+- Configuracao mandatoria de pytest e interpretador Python verificada pelo reposititorio: `pytest.ini` centraliza `--import-mode=importlib` e `--basetemp=.pytest_tmp`; VS Code aponta para `.venv/Scripts/python.exe`.
+- O comando simples `.venv/Scripts/python.exe -m pytest -q` passou sem o aviso ambiental de `pytest-current`.
+
+### Validacoes executadas
+
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos, 9 apps e controles centrais.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `python3 -m compileall -q modules scripts platform_test_support.py`: aprovado.
+- `.venv/Scripts/python.exe -m pytest -q`: 142 testes aprovados, 29 ignorados, sem `PermissionError` no cleanup.
+
+### Pendencias rastreadas
+
+- Observar a proxima execucao do GitHub Actions para confirmar que o job `CI / python` deixa de falhar em `scaffold_modules.py --check`.
+- Evoluir o gate para relatar artefatos customizados em secao propria, sem misturar com drift real.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Catalogo Valley Super App Regionalizado
 
 ### Concluido neste ciclo

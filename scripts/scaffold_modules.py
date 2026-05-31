@@ -43,6 +43,24 @@ ENDPOINTS = [
     "POST /reject",
     "POST /audit",
 ]
+CUSTOMIZED_ARTIFACTS = {
+    # Entrypoints com fluxos reais alem do baseline generico.
+    "modules/identity/main.py",
+    "modules/finance/main.py",
+    "modules/api_hub/main.py",
+    # Dockerfiles copiam o pacote completo do modulo para preservar imports locais.
+    "modules/identity/Dockerfile",
+    "modules/finance/Dockerfile",
+    # Contratos/docs especializados mantidos manualmente apos refinamentos de dominio.
+    "modules/finance/CONTRACT.md",
+    "modules/finance/DATABASE.md",
+    "modules/finance/EVENTS.md",
+    "contracts/finance.md",
+    "modules/api_hub/OPENAPI.yaml",
+    # Apps Valley ja possuem estado operacional proprio alem do scaffold inicial.
+    "apps/valley/README.md",
+    "apps/valley/STATUS.md",
+}
 
 
 def load_catalog() -> dict:
@@ -563,6 +581,43 @@ def render_dockerfile() -> str:
     )
 
 
+def render_requirements(slug: str) -> str:
+    shared = "fastapi==0.136.1\nstarlette==1.0.1\nuvicorn[standard]==0.34.2\npsycopg[binary]==3.3.4\n"
+    if slug == "identity":
+        return (
+            "fastapi==0.136.1\n"
+            "starlette==1.0.1\n"
+            "uvicorn[standard]==0.34.2\n"
+            "PyJWT==2.10.1\n"
+            "passlib[argon2]==1.7.4\n"
+            "psycopg[binary]==3.3.4\n"
+            "motor==3.7.0\n"
+            "pymongo==4.11.1\n"
+        )
+    if slug == "jobs":
+        return (
+            "cryptography==48.0.0\n"
+            "fastapi==0.136.1\n"
+            "pypdf==6.12.1\n"
+            "psycopg[binary]==3.3.4\n"
+            "starlette==1.0.1\n"
+            "uvicorn[standard]==0.34.2\n"
+        )
+    if slug == "api_hub":
+        return (
+            "fastapi==0.136.1\n"
+            "starlette==1.0.1\n"
+            "uvicorn[standard]==0.34.2\n"
+            "httpx==0.28.1\n"
+            "redis==5.2.1\n"
+            "PyJWT==2.10.1\n"
+            "psycopg[binary]==3.3.4\n"
+        )
+    if slug == "finance":
+        return "fastapi==0.136.1\npsycopg[binary]==3.3.4\nstarlette==1.0.1\nuvicorn[standard]==0.34.2\n"
+    return shared
+
+
 def render_test_health(slug: str) -> str:
     return dedent(
         f"""\
@@ -655,11 +710,7 @@ def expected_files(catalog: dict) -> dict[Path, str]:
             {
                 base / "README.md": render_readme(module),
                 base / "main.py": render_main(slug),
-                base / "requirements.txt": (
-                    "cryptography==48.0.0\nfastapi==0.136.1\npypdf==6.12.1\npsycopg[binary]==3.3.4\nstarlette==1.0.1\nuvicorn[standard]==0.34.2\n"
-                    if slug == "jobs"
-                    else "fastapi==0.136.1\nstarlette==1.0.1\nuvicorn[standard]==0.34.2\n"
-                ),
+                base / "requirements.txt": render_requirements(slug),
                 base / "CONTRACT.md": render_contract(module),
                 base / "STATUS.md": render_status(module),
                 base / "OPENAPI.yaml": render_openapi(module),
@@ -681,6 +732,8 @@ def expected_files(catalog: dict) -> dict[Path, str]:
         base = ROOT / "apps" / app["slug"]
         outputs[base / "README.md"] = render_app_readme(app)
         outputs[base / "STATUS.md"] = render_app_status()
+    for relative_path in CUSTOMIZED_ARTIFACTS:
+        outputs.pop(ROOT / relative_path, None)
     return outputs
 
 

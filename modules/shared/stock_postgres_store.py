@@ -15,6 +15,7 @@ class StockPostgresStore(BasePostgresStore):
         "catalog_products": "stock.catalog_products",
         "price_rules": "stock.price_rules",
         "supplier_orders": "stock.supplier_orders",
+        "discount_quotes": "stock.discount_quotes",
     }
     soft_deletable = frozenset(['suppliers', 'catalog_products', 'price_rules', 'supplier_orders'])
 

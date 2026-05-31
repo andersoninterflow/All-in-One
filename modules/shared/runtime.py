@@ -29,6 +29,7 @@ from .domain_rules import (
 )
 from .security import Actor, actor_from_headers, demand_active_business_recruiter, demand_mfa, demand_role
 from .store import DuplicateValueError, SQLiteStore
+from .valley import register_valley_routes, validate_valley_resource_policy
 
 
 class ResourceCreate(BaseModel):
@@ -56,8 +57,9 @@ class AuditPayload(BaseModel):
 class IdentityRegistration(BaseModel):
     full_name: str = Field(min_length=3, max_length=200)
     email: str = Field(min_length=5, max_length=254)
-    password_hash: str = Field(min_length=8)
-    document_cpf: str | None = Field(default=None, min_length=11, max_length=14)
+    password_hash: str = Field(default="gateway-managed-password-hash", min_length=8)
+    document_cpf: str | None = Field(default=None, min_length=5, max_length=32)
+    cpf_document: str | None = Field(default=None, min_length=5, max_length=32)
     terms_accepted_at: str = Field(min_length=10, max_length=40)
     lgpd_consent_at: str = Field(min_length=10, max_length=40)
 
@@ -80,10 +82,13 @@ TRANSACTIONAL_RESOURCES = {
     ("finance", "ledger_entries"),
     ("finance", "escrows"),
     ("marketplace", "orders"),
+    ("marketplace", "pepita_grants"),
+    ("stock", "discount_quotes"),
     ("delivery", "delivery_requests"),
     ("services", "service_contracts"),
     ("mobility", "rides"),
 }
+
 
 
 def _database_path(module_name: str) -> str:
@@ -216,6 +221,7 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
                 raise HTTPException(status_code=403, detail="Candidatura exige curriculo do proprio usuario.")
             if posting["status"] != "published":
                 raise HTTPException(status_code=409, detail="Candidatura exige vaga publicada.")
+        validate_valley_resource_policy(module_name, resource_type, payload, actor)
         if (module_name, resource_type) in TRANSACTIONAL_RESOURCES and not idempotency_key:
             raise HTTPException(status_code=422, detail="X-Idempotency-Key obrigatorio para operacao transacional.")
         check_payload(rule, payload)
@@ -273,6 +279,8 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         def register_user(body: IdentityRegistration) -> dict[str, Any]:
             user_id = str(uuid4())
             payload = body.model_dump()
+            if payload.get("cpf_document") and not payload.get("document_cpf"):
+                payload["document_cpf"] = payload["cpf_document"]
             rule = rule_for("identity", "users")
             check_payload(rule, payload)
             try:
@@ -622,6 +630,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
             return assemble_resume(resume, for_recruiter=True)
 
     # Backward-compatible baseline endpoints. New clients should use /resources/*.
+
+    register_valley_routes(app, module_name, store, fetch)
+
     @app.post("/create", status_code=201, deprecated=True)
     def create_record(
         body: CreatePayload,

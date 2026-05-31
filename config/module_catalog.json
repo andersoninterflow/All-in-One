@@ -7,7 +7,10 @@
     {"slug": "all-in-one-riders", "scope": "Candidatura, veiculos, entregas, corridas, ganhos e ocorrencias."},
     {"slug": "all-in-one-services", "scope": "Prestadores, visitas, orcamentos, contratos, escrow e avaliacoes."},
     {"slug": "all-in-one-health", "scope": "Pacientes, profissionais, agenda, prontuario e telemedicina."},
-    {"slug": "all-in-one-mobility", "scope": "Corridas, transporte publico, tarifas, tickets, QR Code e NFC."}
+    {"slug": "all-in-one-mobility", "scope": "Corridas, transporte publico, tarifas, tickets, QR Code e NFC."},
+    {"slug": "valley", "scope": "Consumer Valley: catalogo hibrido, wallet de Pepitas e descontos progressivos no Modulo Stock."},
+    {"slug": "valley-business", "scope": "Lojista Valley Business: estoque fisico local, Plano Essencial por CNPJ e concessao manual de Pepitas."},
+    {"slug": "valley-rider", "scope": "Rider Valley: logistica e mobilidade urbana usando Riders, Delivery e Mobility."}
   ],
   "modules": [
     {
@@ -49,19 +52,19 @@
     {
       "slug": "marketplace",
       "title": "Marketplace",
-      "description": "Lojas aprovadas, catalogo, carrinho, checkout, pedidos e disputas.",
-      "entities": ["stores", "products", "carts", "orders", "reviews", "disputes"],
-      "events": ["marketplace.store.created", "marketplace.product.created", "marketplace.order.created", "marketplace.order.paid", "marketplace.order.delivered"],
+      "description": "Lojas locais aprovadas, estoque fisico local, catalogo, checkout, pedidos e concessao manual de Pepitas.",
+      "entities": ["stores", "products", "carts", "orders", "reviews", "disputes", "pepita_grants"],
+      "events": ["marketplace.store.created", "marketplace.product.created", "marketplace.order.created", "marketplace.order.paid", "marketplace.order.delivered", "valley.pepitas.granted"],
       "monetization": "Comissao de 8 a 15 por cento, ads, destaque e assinatura.",
       "branch": "module/marketplace"
     },
     {
       "slug": "stock",
       "title": "Stock",
-      "description": "Dropshipping Global, fornecedores homologados, precificacao e fulfillment.",
-      "entities": ["suppliers", "catalog_products", "price_rules", "supplier_orders"],
-      "events": ["stock.product.imported", "stock.order.created"],
-      "monetization": "Markup proprio, margem da plataforma e taxa do fornecedor.",
+      "description": "Dropshipping Global corporativo Valley, fornecedores homologados, catalogo Stock e descontos progressivos por Pepitas.",
+      "entities": ["suppliers", "catalog_products", "price_rules", "supplier_orders", "discount_quotes"],
+      "events": ["stock.product.imported", "stock.order.created", "valley.stock.discount.quoted"],
+      "monetization": "Produtos Stock comunicam economia e valor percebido; APIs de importacao sao exclusivas da conta mestre Valley.",
       "branch": "module/stock"
     },
     {

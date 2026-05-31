@@ -52,8 +52,8 @@ MODULE_ENTITIES: dict[str, tuple[str, ...]] = {
     "business": ("companies", "branches", "company_documents", "user_company_memberships"),
     "permissions": ("roles", "permissions", "user_roles", "access_policies", "approval_limits"),
     "finance": ("wallets", "ledger_entries", "escrows", "splits", "invoices"),
-    "marketplace": ("stores", "products", "carts", "orders", "reviews", "disputes"),
-    "stock": ("suppliers", "catalog_products", "price_rules", "supplier_orders"),
+    "marketplace": ("stores", "products", "carts", "orders", "reviews", "disputes", "pepita_grants"),
+    "stock": ("suppliers", "catalog_products", "price_rules", "supplier_orders", "discount_quotes"),
     "delivery": ("delivery_requests", "quotes", "assignments", "proofs", "insurance_options"),
     "riders": ("rider_profiles", "rider_documents", "vehicles", "rider_reviews"),
     "services": ("providers", "visits", "quotes", "service_contracts", "evidence"),
@@ -183,7 +183,7 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         transitions=review_flow("marketplace.store"),
     ),
     ("marketplace", "products"): ResourceRule(
-        ("store_id", "sku", "name", "price_brl"),
+        ("store_id", "sku", "name", "price_brl", "stock_location_type"),
         ("sku",),
         protected_content=True,
         monetary_fields=("price_brl",),
@@ -204,9 +204,20 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         ("company_id", "company_status"), initial_status="pending_validation", transitions=review_flow("stock.supplier")
     ),
     ("stock", "catalog_products"): ResourceRule(
-        ("supplier_id", "external_sku", "cost_brl", "markup_percent"),
+        ("supplier_id", "external_sku", "name", "list_price_brl"),
         ("external_sku",),
-        monetary_fields=("cost_brl",),
+        monetary_fields=("list_price_brl",),
+    ),
+    ("marketplace", "pepita_grants"): ResourceRule(
+        ("order_id", "customer_user_id", "pepitas", "merchant_gold_ledger_id"),
+        initial_status="posted",
+        immutable=True,
+    ),
+    ("stock", "discount_quotes"): ResourceRule(
+        ("catalog_product_id", "selected_percent", "pepitas_required"),
+        initial_status="quoted",
+        immutable=True,
+        monetary_fields=("original_price_brl", "discount_brl", "final_price_brl"),
     ),
     ("delivery", "delivery_requests"): ResourceRule(
         ("service_type", "origin", "destination"),
@@ -362,6 +373,8 @@ def event_for_create(module: str, resource_type: str) -> str:
         ("identity", "users"): "identity.user.created",
         ("business", "companies"): "business.company.created",
         ("marketplace", "orders"): "marketplace.order.created",
+        ("marketplace", "pepita_grants"): "valley.pepitas.granted",
+        ("stock", "discount_quotes"): "valley.stock.discount.quoted",
         ("delivery", "delivery_requests"): "delivery.request.created",
         ("services", "service_contracts"): "services.contract.created",
         ("mobility", "rides"): "mobility.ride.requested",

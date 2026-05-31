@@ -2,7 +2,7 @@
 
         ## Descricao
 
-        Dropshipping Global, fornecedores homologados, precificacao e fulfillment.
+        Dropshipping Global corporativo Valley, fornecedores homologados, catalogo Stock e descontos progressivos por Pepitas.
 
         ## Entidades
 
@@ -10,6 +10,7 @@
 - `catalog_products`
 - `price_rules`
 - `supplier_orders`
+- `discount_quotes`
 
         ## APIs
 
@@ -40,6 +41,7 @@
 
         - `stock.product.imported`
 - `stock.order.created`
+- `valley.stock.discount.quoted`
 
         ## Regras
 
@@ -56,7 +58,7 @@
 
         ## Monetizacao
 
-        Markup proprio, margem da plataforma e taxa do fornecedor.
+        Produtos Stock comunicam economia e valor percebido; APIs de importacao sao exclusivas da conta mestre Valley.
 
         ## Integracoes e erros
 

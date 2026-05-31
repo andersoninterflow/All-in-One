@@ -1,5 +1,5 @@
 # Monetization: Stock
 
-Markup proprio, margem da plataforma e taxa do fornecedor.
+Produtos Stock comunicam economia e valor percebido; APIs de importacao sao exclusivas da conta mestre Valley.
 
 Toda cobranca gera ledger, split e conciliacao auditaveis quando aplicavel.

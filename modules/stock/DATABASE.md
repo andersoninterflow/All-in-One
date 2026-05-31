@@ -8,6 +8,7 @@
 - `stock.catalog_products`
 - `stock.price_rules`
 - `stock.supplier_orders`
+- `stock.discount_quotes`
 
         Todo registro operacional inclui UUID, `user_id`, status, timestamps,
         atores de criacao/atualizacao e `metadata JSONB`. A implementacao inicial

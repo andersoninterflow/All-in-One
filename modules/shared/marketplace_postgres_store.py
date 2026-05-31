@@ -17,6 +17,7 @@ TABLES = {
     "stores": "marketplace.stores",
     "products": "marketplace.products",
     "orders": "marketplace.orders",
+    "pepita_grants": "marketplace.pepita_grants",
 }
 SOFT_DELETABLE = frozenset({"stores", "products", "orders"})
 
@@ -152,6 +153,16 @@ class MarketplacePostgresStore:
                     payload.get("commission_brl", 0), status, metadata, actor, actor, idempotency_key,
                 ),
             ).fetchone()
+        if resource_type == "pepita_grants":
+            return connection.execute(
+                """INSERT INTO marketplace.pepita_grants
+                   (id, user_id, company_id, order_id, customer_user_id, pepitas, merchant_gold_ledger_id, status, metadata, created_by, updated_by, idempotency_key)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+                (
+                    resource_id, user_id, entity_id, payload["order_id"], payload["customer_user_id"],
+                    payload["pepitas"], payload["merchant_gold_ledger_id"], status, metadata, actor, actor, idempotency_key,
+                ),
+            ).fetchone()
         raise ValueError(f"Recurso Marketplace desconhecido: {resource_type}")
 
     def get(self, resource_type: str, resource_id: str) -> dict[str, Any] | None:
@@ -270,7 +281,7 @@ class MarketplacePostgresStore:
 
     def outbox(self) -> list[dict[str, Any]]:
         return [dict(row) for row in self.connection.execute(
-            "SELECT * FROM audit.domain_events WHERE routing_key LIKE 'marketplace.%' ORDER BY created_at DESC"
+            "SELECT * FROM audit.domain_events WHERE routing_key LIKE 'marketplace.%' OR routing_key LIKE 'valley.%' ORDER BY created_at DESC"
         ).fetchall()]
 
     def metrics(self) -> tuple[int, int, int]:
@@ -282,6 +293,6 @@ class MarketplacePostgresStore:
         )
         audits = self.connection.execute("SELECT COUNT(*) AS count FROM audit.logs WHERE module = 'marketplace'").fetchone()["count"]
         events = self.connection.execute(
-            "SELECT COUNT(*) AS count FROM audit.domain_events WHERE routing_key LIKE 'marketplace.%'"
+            "SELECT COUNT(*) AS count FROM audit.domain_events WHERE routing_key LIKE 'marketplace.%' OR routing_key LIKE 'valley.%'"
         ).fetchone()["count"]
         return records, audits, events

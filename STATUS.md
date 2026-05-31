@@ -1,5 +1,33 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-30 Ambiente Dev Persistente
+
+### Concluido neste ciclo
+
+- Configuracao persistente do workspace VS Code criada/expandida com extensoes recomendadas para Python, Pylance, debug, Docker, PowerShell, YAML, GitHub Actions, GitHub PRs, GitLens, WSL e Kubernetes.
+- Settings do VS Code adicionados para usar `.venv/Scripts/python.exe`, pytest com `--import-mode=importlib`, validacao YAML, EOL LF e perfis PowerShell/Git Bash.
+- Tasks do VS Code adicionadas para bootstrap de ambiente, pytest completo, validacao do repositorio, validacao OpenAPI e healthcheck Docker Compose.
+- Script `scripts/bootstrap_dev_environment.ps1` criado para instalar/verificar ferramentas Windows via Winget, instalar extensoes VS Code e reinstalar dependencias Python de todos os `requirements.txt`.
+- PATH persistente do usuario atualizado para incluir Git for Windows, PowerShell 7 e Docker Desktop.
+- `scripts/git_auto_sync.ps1` endurecido para localizar Git em caminhos padrao do Windows quando `git` nao estiver no PATH do PowerShell.
+
+### Ferramentas verificadas no ambiente Windows
+
+- `git`: `C:\Program Files\Git\cmd\git.exe`.
+- `pwsh`: `C:\Program Files\PowerShell\7\pwsh.exe`.
+- `docker`: `C:\Program Files\Docker\Docker\resources\bin\docker`.
+- `gh`: `C:\Users\ereta\.local\bin\gh`.
+- `code`: `C:\Users\ereta\AppData\Local\Programs\Microsoft VS Code\bin\code.cmd`.
+
+### Pendencias rastreadas
+
+- Reabrir terminais antigos para herdarem o PATH persistente atualizado.
+- Reexecutar instalacao de extensoes diretamente no VS Code caso o CLI `code` continue bloqueado por sessao remota aberta.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-30 Jornada Business Jobs E Isolamento De Testes
 
 ### Concluido neste ciclo

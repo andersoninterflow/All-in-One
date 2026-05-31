@@ -1,0 +1,62 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "bootstrap: ambiente dev",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/bootstrap_dev_environment.ps1"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "test: pytest completo",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "args": [
+                "-m",
+                "pytest",
+                "--import-mode=importlib",
+                "-q"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "validate: repository",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "scripts/validate_repository.py"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "validate: openapi",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "scripts/validate_openapi.py"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "docker: compose health",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "scripts/validate_compose_health.ps1"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}

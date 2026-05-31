@@ -1,5 +1,15 @@
 {
     "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.powershell",
+        "redhat.vscode-yaml",
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github",
+        "eamodio.gitlens",
+        "ms-vscode-remote.remote-wsl",
         "ms-kubernetes-tools.vscode-kubernetes-tools"
     ]
 }

@@ -9,9 +9,28 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$GitExecutable = "git"
+$gitCommand = Get-Command git -ErrorAction SilentlyContinue
+if ($gitCommand) {
+    $GitExecutable = $gitCommand.Source
+} else {
+    $gitCandidates = @(
+        "C:\Program Files\Git\cmd\git.exe",
+        "C:\Program Files\Git\bin\git.exe",
+        "$env:LOCALAPPDATA\Programs\Git\cmd\git.exe",
+        "$env:LOCALAPPDATA\Programs\Git\bin\git.exe"
+    )
+    foreach ($candidate in $gitCandidates) {
+        if (Test-Path $candidate) {
+            $GitExecutable = $candidate
+            break
+        }
+    }
+}
+
 function Invoke-Git {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GitArgs)
-    & git @GitArgs
+    & $GitExecutable @GitArgs
     if ($LASTEXITCODE -ne 0) {
         throw "git $($GitArgs -join ' ') falhou com codigo $LASTEXITCODE"
     }
@@ -19,14 +38,14 @@ function Invoke-Git {
 
 function Test-GitPath {
     param([string]$Path)
-    $value = & git rev-parse --git-path $Path
+    $value = & $GitExecutable rev-parse --git-path $Path
     if ($LASTEXITCODE -ne 0) {
         throw "Nao foi possivel resolver o caminho Git: $Path"
     }
     return (Test-Path $value)
 }
 
-$repoRoot = & git rev-parse --show-toplevel
+$repoRoot = & $GitExecutable rev-parse --show-toplevel
 if ($LASTEXITCODE -ne 0) {
     throw "Este comando precisa ser executado dentro de um repositorio Git."
 }
@@ -38,19 +57,19 @@ if ((Test-GitPath "MERGE_HEAD") -or (Test-GitPath "rebase-merge") -or (Test-GitP
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = (& git branch --show-current).Trim()
+    $Branch = (& $GitExecutable branch --show-current).Trim()
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($Branch)) {
         throw "Nao foi possivel identificar a branch atual."
     }
 }
 
 if ([string]::IsNullOrWhiteSpace($Remote)) {
-    $Remote = (& git config --get "branch.$Branch.pushRemote").Trim()
+    $Remote = (& $GitExecutable config --get "branch.$Branch.pushRemote").Trim()
     if ([string]::IsNullOrWhiteSpace($Remote)) {
-        $Remote = (& git config --get remote.pushDefault).Trim()
+        $Remote = (& $GitExecutable config --get remote.pushDefault).Trim()
     }
     if ([string]::IsNullOrWhiteSpace($Remote)) {
-        $Remote = (& git config --get "branch.$Branch.remote").Trim()
+        $Remote = (& $GitExecutable config --get "branch.$Branch.remote").Trim()
     }
     if ([string]::IsNullOrWhiteSpace($Remote)) {
         $Remote = "origin"
@@ -58,7 +77,7 @@ if ([string]::IsNullOrWhiteSpace($Remote)) {
 }
 
 if (-not $NoFetch) {
-    & git fetch $Remote $Branch | Out-Host
+    & $GitExecutable fetch $Remote $Branch | Out-Host
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "Fetch de $Remote/$Branch falhou; prosseguindo com commit local antes do push."
     }
@@ -79,7 +98,7 @@ if ($normalizedPathSpec.Count -gt 0) {
     Invoke-Git add -A
 }
 
-& git diff --cached --quiet
+& $GitExecutable diff --cached --quiet
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Sem mudancas staged para commit. Nada para sincronizar."
     exit 0

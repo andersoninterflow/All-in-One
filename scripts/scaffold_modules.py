@@ -737,12 +737,17 @@ def expected_files(catalog: dict) -> dict[Path, str]:
     return outputs
 
 
+def customized_artifact_paths() -> list[Path]:
+    return sorted(ROOT / relative_path for relative_path in CUSTOMIZED_ARTIFACTS)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="Falha se os artefatos estiverem dessincronizados.")
     args = parser.parse_args()
     outputs = expected_files(load_catalog())
     stale: list[str] = []
+    missing_customized: list[str] = []
     for path, content in outputs.items():
         if args.check:
             if not path.exists() or path.read_text(encoding="utf-8") != content:
@@ -750,12 +755,25 @@ def main() -> int:
             continue
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8", newline="\n")
+    if args.check:
+        for path in customized_artifact_paths():
+            if not path.exists():
+                missing_customized.append(str(path.relative_to(ROOT)))
     if stale:
         print("Artefatos dessincronizados:")
         for path in stale:
             print(f"- {path}")
         return 1
+    if missing_customized:
+        print("Artefatos customizados ausentes:")
+        for path in missing_customized:
+            print(f"- {path}")
+        return 1
     print(f"{len(outputs)} artefatos {'verificados' if args.check else 'gerados'} a partir do catalogo.")
+    if args.check:
+        print(f"{len(CUSTOMIZED_ARTIFACTS)} artefatos customizados preservados fora do scaffold generico:")
+        for path in customized_artifact_paths():
+            print(f"- {path.relative_to(ROOT)}")
     return 0
 
 

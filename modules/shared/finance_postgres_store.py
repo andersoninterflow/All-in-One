@@ -9,6 +9,7 @@ from psycopg import Connection, sql
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
+from .correlation import get_correlation_id
 from .store import DuplicateValueError
 
 TABLES = {
@@ -112,9 +113,9 @@ class FinancePostgresStore:
                 # Outbox para eventos
                 connection.execute(
                     """INSERT INTO audit.domain_events
-                       (user_id, actor_user_id, routing_key, aggregate_type, aggregate_id, payload)
-                       VALUES (%s, %s, %s, %s, %s, %s)""",
-                    (user_id, actor, event, resource_type, resource_id, Jsonb(payload)),
+                       (user_id, actor_user_id, routing_key, aggregate_type, aggregate_id, correlation_id, payload)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                    (user_id, actor, event, resource_type, resource_id, get_correlation_id(), Jsonb(payload)),
                 )
                 return item
         except Exception as exc:

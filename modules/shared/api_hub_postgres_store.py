@@ -10,6 +10,7 @@ from psycopg.errors import UniqueViolation
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
+from .correlation import get_correlation_id
 from .store import DuplicateValueError
 
 
@@ -284,9 +285,19 @@ class ApiHubPostgresStore:
     def _event(self, connection: Connection, routing_key: str, actor: str, item: dict[str, Any]) -> None:
         connection.execute(
             """INSERT INTO audit.domain_events
-               (user_id, actor_user_id, entity_id, routing_key, aggregate_type, aggregate_id, payload, created_by)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-            (item["user_id"], actor, item["entity_id"], routing_key, item["resource_type"], item["id"], Jsonb(item["payload"]), actor),
+               (user_id, actor_user_id, entity_id, routing_key, aggregate_type, aggregate_id, correlation_id, payload, created_by)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (
+                item["user_id"],
+                actor,
+                item["entity_id"],
+                routing_key,
+                item["resource_type"],
+                item["id"],
+                get_correlation_id(),
+                Jsonb(item["payload"]),
+                actor,
+            ),
         )
 
     def audit_log(self) -> list[dict[str, Any]]:

@@ -12,7 +12,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Contratos de microservicos | 100% | 25 modulos com OpenAPI, contratos, Dockerfile, docs e testes base | Superficie contratual completa para evoluir. |
 | PostgreSQL estrutural | 81% | 15 migrations SQL e stores para 25 modulos, incluindo ledger Gold Valley append-only | Schema amplo existe; falta prova real por modulo. |
 | Runtime FastAPI modular | 86% | Runtime comum, autorizacao, auditoria, outbox, catalogo Valley regionalizado e carregamento dinamico por DSN validado em containers | Base local estabilizada; falta ampliar testes E2E por jornada. |
-| Mensageria/outbox | 80% | RabbitMQ, dispatcher, testes criticos e payload seguro para eventos Valley/catalogo validados | Precisa ampliar cobertura para eventos de todos os modulos. |
+| Mensageria/outbox | 82% | RabbitMQ, dispatcher, correlation_id por requisicao, testes criticos e payload seguro para eventos Valley/catalogo validados | Precisa ampliar cobertura para eventos de todos os modulos. |
 | MongoDB/NoSQL | 55% | Script inicial para AI/social/telemetria | Precisa validacao de colecoes, indices e uso real. |
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 63% | 9 apps catalogados, catalogo Valley backend regionalizado, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
@@ -120,10 +120,11 @@ Entregas ja existentes:
   Pepitas e cotacao progressiva Stock sem expor ledger privado, custo ou margem.
 - Allowlist segura cobre `valley.catalog.offer.synced`, sem expor custo interno,
   margem, markup ou endereco sensivel.
+- Mutacoes HTTP aceitam `X-Correlation-Id`, geram UUID quando ausente e gravam
+  `correlation_id` em auditoria/outbox SQLite e eventos PostgreSQL.
 
 Pendencias:
 - Validar eventos de todos os modulos.
-- Garantir `correlation_id` em chamadas e eventos.
 - Criar retry/backoff observavel por falha.
 - Dashboards e alertas de outbox parada, fila acumulada e erro de publish.
 

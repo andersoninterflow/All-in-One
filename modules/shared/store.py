@@ -9,6 +9,8 @@ from threading import RLock
 from typing import Any, Iterator
 from uuid import uuid4
 
+from .correlation import get_correlation_id
+
 
 def now() -> str:
     return datetime.now(UTC).isoformat()
@@ -80,6 +82,7 @@ class SQLiteStore:
                     action TEXT NOT NULL,
                     resource_type TEXT NOT NULL,
                     resource_id TEXT NOT NULL,
+                    correlation_id TEXT NOT NULL,
                     before_data TEXT,
                     after_data TEXT,
                     created_at TEXT NOT NULL
@@ -92,12 +95,22 @@ class SQLiteStore:
                     resource_type TEXT NOT NULL,
                     resource_id TEXT NOT NULL,
                     actor_user_id TEXT NOT NULL,
+                    correlation_id TEXT NOT NULL,
                     payload TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     published_at TEXT
                 );
                 """
             )
+            self._ensure_column(connection, "audit_events", "correlation_id TEXT")
+            self._ensure_column(connection, "domain_events", "correlation_id TEXT")
+
+    @staticmethod
+    def _ensure_column(connection: sqlite3.Connection, table: str, column_definition: str) -> None:
+        column_name = column_definition.split()[0]
+        columns = {row["name"] for row in connection.execute(f"PRAGMA table_info({table})").fetchall()}
+        if column_name not in columns:
+            connection.execute(f"ALTER TABLE {table} ADD COLUMN {column_definition}")
 
     @staticmethod
     def _resource(row: sqlite3.Row | None) -> dict[str, Any] | None:
@@ -259,12 +272,18 @@ class SQLiteStore:
             "action": action,
             "resource_type": resource_type,
             "resource_id": resource_id,
+            "correlation_id": get_correlation_id(),
             "before_data": before,
             "after_data": after,
             "created_at": now(),
         }
         connection.execute(
-            "INSERT INTO audit_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            """
+            INSERT INTO audit_events
+            (id, module, actor_user_id, action, resource_type, resource_id, correlation_id,
+             before_data, after_data, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
             (
                 evidence["id"],
                 self.module,
@@ -272,6 +291,7 @@ class SQLiteStore:
                 action,
                 resource_type,
                 resource_id,
+                evidence["correlation_id"],
                 json.dumps(before, sort_keys=True) if before else None,
                 json.dumps(after, sort_keys=True) if after else None,
                 evidence["created_at"],
@@ -281,7 +301,12 @@ class SQLiteStore:
 
     def _event(self, connection: sqlite3.Connection, routing_key: str, actor: str, item: dict[str, Any]) -> None:
         connection.execute(
-            "INSERT INTO domain_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            """
+            INSERT INTO domain_events
+            (id, module, routing_key, user_id, resource_type, resource_id, actor_user_id,
+             correlation_id, payload, created_at, published_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
             (
                 str(uuid4()),
                 self.module,
@@ -290,6 +315,7 @@ class SQLiteStore:
                 item["resource_type"],
                 item["id"],
                 actor,
+                get_correlation_id(),
                 json.dumps(item["payload"], sort_keys=True),
                 now(),
                 None,

@@ -5,6 +5,17 @@ routing keys versionadas, payload minimizado e identificadores de correlacao.
 O outbox relacional inicial e `audit.domain_events`; cada tentativa publicada
 fica preservada de modo imutavel em `audit.event_deliveries`.
 
+## Correlacao de requisicoes
+
+Mutacoes HTTP aceitam `X-Correlation-Id` em formato UUID. Quando o cabecalho
+nao e enviado, o runtime gera um UUID por requisicao antes de gravar auditoria
+e eventos de dominio. Cabecalhos invalidos sao rejeitados antes da mutacao.
+
+O `correlation_id` deve ser preservado em logs, mensagens publicadas e chamadas
+entre modulos para permitir rastrear a jornada completa sem expor payload
+sensivel. Consumidores continuam deduplicando por `event_id`; `correlation_id`
+e chave de observabilidade, investigacao e suporte.
+
 ## Dispatcher de outbox
 
 `workers/outbox_dispatcher` consome eventos `pending` em lotes com

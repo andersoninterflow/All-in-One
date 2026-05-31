@@ -1,5 +1,35 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Correlacao De Eventos E Auditoria
+
+### Concluido neste ciclo
+
+- Runtime FastAPI passou a aceitar `X-Correlation-Id` UUID em mutacoes modernas e rotas legadas.
+- Quando o cabecalho nao e enviado, o runtime gera um UUID por requisicao antes de gravar auditoria e outbox.
+- Cabecalho `X-Correlation-Id` invalido e rejeitado pelo FastAPI com `422`, antes da mutacao.
+- Store SQLite contratual grava `correlation_id` em `audit_events` e `domain_events`.
+- Stores PostgreSQL principais e `BasePostgresStore` passaram a inserir `correlation_id` explicitamente em `audit.domain_events`.
+- `docs/EVENTS.md` documenta a regra de correlacao e rastreabilidade sem expor payload sensivel.
+- `docs/EXECUTION_PLAN.md` atualiza Mensageria/outbox de 80% para 82% e remove a pendencia de garantir `correlation_id`.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest -q tests/test_correlation_id.py tests/test_user_marketplace_journey.py tests/test_operational_journeys.py tests/test_outbox_dispatcher_unit.py`: 15 testes aprovados.
+- `python3 -m compileall -q modules/shared tests/test_correlation_id.py platform_test_support.py`: aprovado.
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos, 9 apps e controles centrais.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `.venv/Scripts/python.exe -m pytest -q`: 145 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Ampliar cobertura de eventos reais por todos os modulos e criar dashboards/alertas de outbox parada, fila acumulada e erro de publish.
+- Propagar `correlation_id` para chamadas internas entre servicos vivos quando o API Hub proxy operacional estiver ativo.
+
+### Git
+
+- Incremento pronto para validacao completa, commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Gate Scaffold E Pytest Mandatorio
 
 ### Concluido neste ciclo

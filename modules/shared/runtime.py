@@ -17,6 +17,7 @@ from .calculators import (
     marketplace_commission,
     mobility_fare,
 )
+from .correlation import set_correlation_id
 from .domain_rules import (
     APPROVER_ROLES,
     MODULE_ENTITIES,
@@ -259,6 +260,10 @@ def _authorize_sandbox(actor: Actor) -> None:
     demand_role(actor, APPROVER_ROLES, "executar integracao sandbox")
 
 
+def bind_correlation_id(x_correlation_id: UUID | None) -> str:
+    return set_correlation_id(str(x_correlation_id) if x_correlation_id else None)
+
+
 def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
     if module_name not in MODULE_ENTITIES:
         raise ValueError(f"Modulo desconhecido: {module_name}")
@@ -283,7 +288,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         body: ResourceCreate,
         actor: Actor,
         idempotency_key: str | None,
+        correlation_id: UUID | None,
     ) -> dict[str, Any]:
+        bind_correlation_id(correlation_id)
         rule = rule_for(module_name, resource_type)
         _authorize_owner_or_operator(actor, body.user_id, "create")
         payload = dict(body.payload)
@@ -381,7 +388,11 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
 
     if module_name == "identity":
         @app.post("/registrations", status_code=201)
-        def register_user(body: IdentityRegistration) -> dict[str, Any]:
+        def register_user(
+            body: IdentityRegistration,
+            x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
+        ) -> dict[str, Any]:
+            bind_correlation_id(x_correlation_id)
             user_id = str(uuid4())
             payload = body.model_dump()
             if payload.get("cpf_document") and not payload.get("document_cpf"):
@@ -409,8 +420,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         body: ResourceCreate,
         actor: Actor = Depends(actor_from_headers),
         x_idempotency_key: str | None = Header(default=None, alias="X-Idempotency-Key"),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> dict[str, Any]:
-        return create_secured(resource_type, body, actor, x_idempotency_key)
+        return create_secured(resource_type, body, actor, x_idempotency_key, x_correlation_id)
 
     @app.get("/resources/{resource_type}")
     def list_resources(
@@ -439,7 +451,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         resource_id: UUID,
         body: ResourcePatch,
         actor: Actor = Depends(actor_from_headers),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> dict[str, Any]:
+        bind_correlation_id(x_correlation_id)
         rule = rule_for(module_name, resource_type)
         if rule.immutable:
             raise HTTPException(status_code=409, detail="Recurso append-only nao aceita atualizacao.")
@@ -456,7 +470,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         resource_type: str,
         resource_id: UUID,
         actor: Actor = Depends(actor_from_headers),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> Response:
+        bind_correlation_id(x_correlation_id)
         rule = rule_for(module_name, resource_type)
         if rule.immutable or rule.sensitive:
             raise HTTPException(status_code=409, detail="Recurso protegido exige retencao e nao pode ser excluido.")
@@ -472,7 +488,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         action: str,
         body: ActionPayload,
         actor: Actor = Depends(actor_from_headers),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> dict[str, Any]:
+        bind_correlation_id(x_correlation_id)
         rule = rule_for(module_name, resource_type)
         transition = rule.transitions.get(action)
         if transition is None:
@@ -740,7 +758,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
             resume_id: UUID,
             document: bytes = Body(media_type="application/pdf"),
             actor: Actor = Depends(actor_from_headers),
+            x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
         ) -> dict[str, Any]:
+            bind_correlation_id(x_correlation_id)
             resume = fetch("resumes", resume_id)
             if actor.user_id != UUID(resume["user_id"]):
                 raise HTTPException(status_code=403, detail="Somente o titular pode importar sua CTPS Digital.")
@@ -798,7 +818,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
             resume_id: UUID,
             document_id: UUID,
             actor: Actor = Depends(actor_from_headers),
+            x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
         ) -> Response:
+            bind_correlation_id(x_correlation_id)
             resume = fetch("resumes", resume_id)
             if actor.user_id != UUID(resume["user_id"]):
                 raise HTTPException(status_code=403, detail="Somente o titular pode acessar o PDF da CTPS Digital.")
@@ -849,7 +871,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         def candidate_resumes(
             q: str | None = Query(default=None, max_length=100),
             actor: Actor = Depends(actor_from_headers),
+            x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
         ) -> list[dict[str, Any]]:
+            bind_correlation_id(x_correlation_id)
             authorize_business_recruiter(actor, "consultar curriculos", "jobs:resumes:read")
             terms = q.casefold() if q else None
             resumes = [
@@ -876,7 +900,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
             resume_id: UUID,
             purpose: str = Query(min_length=3, max_length=200),
             actor: Actor = Depends(actor_from_headers),
+            x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
         ) -> dict[str, Any]:
+            bind_correlation_id(x_correlation_id)
             authorize_business_recruiter(actor, "consultar curriculos", "jobs:resumes:read")
             resume = fetch("resumes", resume_id)
             if resume["payload"].get("recruiter_visibility") != "business_recruiters":
@@ -903,7 +929,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         body: CreatePayload,
         actor: Actor = Depends(actor_from_headers),
         x_idempotency_key: str | None = Header(default=None, alias="X-Idempotency-Key"),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> dict[str, Any]:
+        bind_correlation_id(x_correlation_id)
         _authorize_owner_or_operator(actor, body.user_id, "create")
         return store.create(
             "records",
@@ -926,7 +954,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
     def approve(
         body: DecisionPayload,
         actor: Actor = Depends(actor_from_headers),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> dict[str, Any]:
+        bind_correlation_id(x_correlation_id)
         item = fetch("records", body.id)
         _authorize_owner_or_operator(actor, UUID(item["user_id"]), "approve")
         return store.update(item, item["payload"], "approved", str(actor.user_id), "approve")
@@ -935,7 +965,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
     def reject(
         body: DecisionPayload,
         actor: Actor = Depends(actor_from_headers),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> dict[str, Any]:
+        bind_correlation_id(x_correlation_id)
         item = fetch("records", body.id)
         _authorize_owner_or_operator(actor, UUID(item["user_id"]), "reject")
         return store.update(item, item["payload"], "rejected", str(actor.user_id), "reject")
@@ -944,7 +976,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
     def audit(
         body: AuditPayload,
         actor: Actor = Depends(actor_from_headers),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> dict[str, Any]:
+        bind_correlation_id(x_correlation_id)
         demand_role(actor, APPROVER_ROLES, "audit")
         return store.audit_external(str(actor.user_id), body.action, body.resource_type, str(body.resource_id), body.payload)
 
@@ -959,7 +993,9 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         resource_id: UUID,
         body: PatchPayload,
         actor: Actor = Depends(actor_from_headers),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
     ) -> dict[str, Any]:
+        bind_correlation_id(x_correlation_id)
         item = fetch("records", resource_id)
         _authorize_owner_or_operator(actor, UUID(item["user_id"]), "update")
         return store.update(
@@ -971,7 +1007,12 @@ def create_module_app(module_name: str, version: str = "0.2.0") -> FastAPI:
         )
 
     @app.delete("/{resource_id}", status_code=204, deprecated=True)
-    def delete_record(resource_id: UUID, actor: Actor = Depends(actor_from_headers)) -> Response:
+    def delete_record(
+        resource_id: UUID,
+        actor: Actor = Depends(actor_from_headers),
+        x_correlation_id: UUID | None = Header(default=None, alias="X-Correlation-Id"),
+    ) -> Response:
+        bind_correlation_id(x_correlation_id)
         item = fetch("records", resource_id)
         _authorize_owner_or_operator(actor, UUID(item["user_id"]), "delete")
         store.soft_delete(item, str(actor.user_id))

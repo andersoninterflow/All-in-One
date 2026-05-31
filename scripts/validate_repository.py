@@ -8,6 +8,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = json.loads((ROOT / "config" / "module_catalog.json").read_text(encoding="utf-8"))
 STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
+VSCODE_SETTINGS = ROOT / ".vscode" / "settings.json"
+VSCODE_TASKS = ROOT / ".vscode" / "tasks.json"
 REQUIRED_MODULE_FILES = {
     "README.md",
     "main.py",
@@ -92,6 +94,30 @@ def main() -> int:
     for script in ["check_git_sync.ps1", "validate_compose_health.ps1", "check_generated_artifacts.ps1"]:
         if not (ROOT / "scripts" / script).is_file():
             fail(f"Gate operacional ausente: {script}", errors)
+    if not (ROOT / "pytest.ini").is_file():
+        fail("Configuracao pytest.ini ausente.", errors)
+    else:
+        pytest_ini = (ROOT / "pytest.ini").read_text(encoding="utf-8")
+        if "--import-mode=importlib" not in pytest_ini or "--basetemp=.pytest_tmp" not in pytest_ini:
+            fail("pytest.ini deve centralizar importlib e basetemp local .pytest_tmp.", errors)
+    if not VSCODE_SETTINGS.is_file():
+        fail("Configuracao VS Code ausente: .vscode/settings.json", errors)
+    else:
+        settings = json.loads(VSCODE_SETTINGS.read_text(encoding="utf-8"))
+        expected_python = "${workspaceFolder}/.venv/Scripts/python.exe"
+        if settings.get("python.defaultInterpreterPath") != expected_python:
+            fail(f"python.defaultInterpreterPath deve ser {expected_python}.", errors)
+        if settings.get("python.testing.pytestArgs") not in ([], None):
+            fail("python.testing.pytestArgs deve ficar vazio; pytest.ini e a fonte obrigatoria.", errors)
+    if not VSCODE_TASKS.is_file():
+        fail("Configuracao VS Code ausente: .vscode/tasks.json", errors)
+    else:
+        tasks = json.loads(VSCODE_TASKS.read_text(encoding="utf-8"))
+        pytest_tasks = [task for task in tasks.get("tasks", []) if task.get("label") == "test: pytest completo"]
+        if not pytest_tasks:
+            fail("Task VS Code test: pytest completo ausente.", errors)
+        elif pytest_tasks[0].get("command") != "${config:python.defaultInterpreterPath}":
+            fail("Task pytest deve usar ${config:python.defaultInterpreterPath}.", errors)
     if not (ROOT / "workers" / "outbox_dispatcher" / "main.py").is_file():
         fail("Worker da outbox RabbitMQ ausente.", errors)
     if not STITCH_MANIFEST.is_file():

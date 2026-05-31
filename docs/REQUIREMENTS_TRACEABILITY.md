@@ -23,7 +23,7 @@ necessarios para producao.
 | Infraestrutura | `infra/docker/`, `infra/kubernetes/`, `infra/terraform/` |
 | CI/CD | `.github/workflows/` |
 | Testes de modulo e Jobs | `modules/*/tests/`, `tests/test_identity_jobs_domain.py` |
-| Seguranca, monetizacao e operacao | `docs/SECURITY.md`, `docs/MONETIZATION.md`, `docs/OPERATIONS.md` |
+| Seguranca, monetizacao, compliance e operacao | `docs/SECURITY.md`, `docs/COMPLIANCE.md`, `config/compliance/data_classification.json`, `docs/MONETIZATION.md`, `docs/OPERATIONS.md` |
 
 ## Limite correto do baseline
 

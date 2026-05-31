@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = json.loads((ROOT / "config" / "module_catalog.json").read_text(encoding="utf-8"))
 STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
+COMPLIANCE_MATRIX = ROOT / "config" / "compliance" / "data_classification.json"
 VSCODE_SETTINGS = ROOT / ".vscode" / "settings.json"
 VSCODE_TASKS = ROOT / ".vscode" / "tasks.json"
 REQUIRED_MODULE_FILES = {
@@ -129,6 +130,18 @@ def main() -> int:
             fail("Stitch deve declarar um projeto por modulo.", errors)
         if not all(project.get("screen_count", 0) > 0 for project in projects):
             fail("Todo projeto Stitch deve declarar telas.", errors)
+    if not (ROOT / "docs" / "COMPLIANCE.md").is_file():
+        fail("Documento de compliance ausente: docs/COMPLIANCE.md", errors)
+    if not COMPLIANCE_MATRIX.is_file():
+        fail("Matriz de dados sensiveis ausente: config/compliance/data_classification.json", errors)
+    else:
+        compliance = json.loads(COMPLIANCE_MATRIX.read_text(encoding="utf-8"))
+        if set(compliance.get("modules", {})) != slugs:
+            fail("Matriz de compliance deve cobrir exatamente os 25 modulos do catalogo.", errors)
+        for slug, entry in compliance.get("modules", {}).items():
+            for field in ["risk_level", "data_domains", "sensitive_categories", "legal_basis", "retention_policy", "production_gate"]:
+                if not entry.get(field):
+                    fail(f"Matriz de compliance incompleta em {slug}.{field}.", errors)
     if errors:
         print("Validacao falhou:")
         print("\n".join(f"- {error}" for error in errors))

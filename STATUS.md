@@ -1,5 +1,35 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Jobs De Retencao LGPD
+
+### Concluido neste ciclo
+
+- `config/compliance/retention_jobs.json` criado com contratos para revisao diaria, anonimizacao horaria, descarte diario e reconciliacao diaria de legal hold.
+- Os 25 modulos ganharam regra de retencao com acao padrao, motivos de legal hold, job minimo e dominio de evidencia.
+- `tests/test_retention_jobs.py` criado para bloquear modulo sem regra, job sem evidencia, auditoria ausente e descarte destrutivo sem revisao legal.
+- `scripts/validate_repository.py` passou a exigir o contrato de jobs de retencao e sua cobertura completa do catalogo.
+- `docs/COMPLIANCE.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 39%.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 11 testes aprovados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `python3 -m json.tool config/compliance/retention_jobs.json`: aprovado.
+- `python3 -m compileall -q scripts tests/test_retention_jobs.py`: aprovado.
+- `.venv/Scripts/python.exe -m pytest -q`: 159 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Implementar workers reais de retencao, anonimizacao e descarte.
+- Registrar DPIA assinada para modulos criticos.
+- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Direitos Do Titular LGPD
 
 ### Concluido neste ciclo

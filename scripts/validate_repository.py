@@ -10,6 +10,7 @@ CATALOG = json.loads((ROOT / "config" / "module_catalog.json").read_text(encodin
 STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
 COMPLIANCE_MATRIX = ROOT / "config" / "compliance" / "data_classification.json"
 DATA_SUBJECT_RIGHTS = ROOT / "config" / "compliance" / "data_subject_rights.json"
+RETENTION_JOBS = ROOT / "config" / "compliance" / "retention_jobs.json"
 ENV_EXAMPLE = ROOT / ".env.example"
 VSCODE_SETTINGS = ROOT / ".vscode" / "settings.json"
 VSCODE_TASKS = ROOT / ".vscode" / "tasks.json"
@@ -51,6 +52,12 @@ REQUIRED_SUBJECT_RIGHTS = {
     "anonimizacao",
     "revogacao de consentimento",
     "exclusao quando legalmente permitida",
+}
+REQUIRED_RETENTION_JOBS = {
+    "retention_review_daily",
+    "anonymization_worker_hourly",
+    "deletion_worker_daily",
+    "legal_hold_reconciliation_daily",
 }
 
 
@@ -177,6 +184,17 @@ def main() -> int:
         guardrails = subject_rights.get("guardrails", {})
         if guardrails.get("audit_event") != "compliance.data_subject_request.processed":
             fail("Fluxo de direitos do titular deve declarar evento auditavel padrao.", errors)
+    if not RETENTION_JOBS.is_file():
+        fail(f"Contrato de jobs de retencao ausente: {RETENTION_JOBS}", errors)
+    else:
+        retention_jobs = json.loads(RETENTION_JOBS.read_text(encoding="utf-8"))
+        if set(retention_jobs.get("jobs", {})) != REQUIRED_RETENTION_JOBS:
+            fail("Jobs de retencao devem declarar revisao, anonimizacao, descarte e legal hold.", errors)
+        if set(retention_jobs.get("module_rules", {})) != slugs:
+            fail("Jobs de retencao devem cobrir exatamente os 25 modulos do catalogo.", errors)
+        safety = retention_jobs.get("safety_rules", {})
+        if not safety.get("requires_subject_rights_link") or not safety.get("requires_immutable_audit"):
+            fail("Jobs de retencao devem exigir vinculo com direitos do titular e auditoria imutavel.", errors)
 
     if errors:
         print("\nFalhas de validacao encontradas:")

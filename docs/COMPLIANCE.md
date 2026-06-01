@@ -4,7 +4,9 @@ Este documento consolida a primeira matriz operacional de compliance do
 All-in-One. A fonte versionada esta em
 `config/compliance/data_classification.json` e cobre os 25 modulos do catalogo.
 O fluxo operacional de direitos do titular fica em
-`config/compliance/data_subject_rights.json`.
+`config/compliance/data_subject_rights.json`. O contrato dos jobs de retencao,
+anonimizacao, descarte e legal hold fica em
+`config/compliance/retention_jobs.json`.
 
 ## Principios
 
@@ -74,6 +76,25 @@ Regras obrigatorias:
 - Quando houver obrigacao legal, contrato ativo, defesa de direito ou disputa,
   o pedido pode ser parcialmente atendido com justificativa registrada.
 
+## Retencao, Anonimizacao E Descarte
+
+Os jobs operacionais de retencao agora possuem contrato versionado antes da
+ativacao produtiva:
+
+- `retention_review_daily`: revisa dados vencidos por politica, contrato ou
+  consentimento.
+- `anonymization_worker_hourly`: anonimiza dados permitidos apos avaliacao de
+  base legal.
+- `deletion_worker_daily`: descarta dados excluiveis sem obrigacao legal ou
+  disputa ativa.
+- `legal_hold_reconciliation_daily`: bloqueia descarte quando houver obrigacao
+  legal, fiscal, trabalhista, regulatoria ou defesa de direito.
+
+Cada modulo declara acao padrao, razoes de legal hold, job minimo e dominio de
+evidencia. Descartes produtivos exigem dry-run inicial, auditoria imutavel e
+revisao legal para registros financeiros, fiscais, medicos, trabalhistas ou
+contratos assinados.
+
 ## Evidencia Atual
 
 - `docs/SECURITY.md` descreve controles implementados e obrigatorios.
@@ -83,13 +104,18 @@ Regras obrigatorias:
   dados, base legal, retencao e gates por modulo.
 - `config/compliance/data_subject_rights.json` versiona SLA, workflow,
   evidencias, guardrails e cobertura por modulo para direitos do titular.
+- `config/compliance/retention_jobs.json` versiona jobs de retencao,
+  anonimizacao, descarte e legal hold por modulo.
 - `tests/test_compliance_matrix.py` bloqueia ausencia de modulo, campos
   obrigatorios e classificacao invalida.
 - `tests/test_data_subject_rights.py` bloqueia ausencia de direito, SLA
   invalido, modulo sem cobertura e exportacao de dados proibidos.
+- `tests/test_retention_jobs.py` bloqueia ausencia de job, modulo sem regra,
+  evidencia fraca e descarte destrutivo sem revisao legal.
 
 ## Pendencias
 
-- Conectar retencao a jobs de anonimizacao e descarte.
+- Implementar workers reais de retencao, anonimizacao e descarte a partir do
+  contrato versionado.
 - Gerar evidencias de DPIA assinadas por modulo critico.
 - Integrar scans SAST/SCA/DAST obrigatorios ao CI com severidade bloqueante.

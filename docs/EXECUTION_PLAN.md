@@ -17,7 +17,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 63% | 9 apps catalogados, catalogo Valley backend regionalizado, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
 | Integracoes externas | 38% | Contratos, matriz versionada, adapters sandbox e endpoints administrativos locais existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
-| Producao/compliance | 34% | `docs/COMPLIANCE.md`, matriz LGPD por modulo, fluxo de direitos do titular e politicas iniciais | Faltam DPIA assinada, pentest, carga, DR, backup/restore, jobs reais de retencao/anonimizacao e observabilidade produtiva. |
+| Producao/compliance | 39% | `docs/COMPLIANCE.md`, matriz LGPD por modulo, fluxo de direitos do titular, contrato de jobs de retencao e politicas iniciais | Faltam workers reais de retencao/anonimizacao/descarte, DPIA assinada, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
 ## 2. Ordem mandataria de execucao
 
@@ -217,10 +217,10 @@ Proximos passos naturais:
 
 Objetivo: sair de beta tecnica para producao auditavel.
 
-Status: 34%
+Status: 39%
 
 Pendencias:
-- Jobs reais de retencao, anonimizacao e descarte vinculados ao fluxo de direitos do titular.
+- Implementar workers reais de retencao, anonimizacao e descarte a partir do contrato versionado.
 - DPIA assinada por modulo critico.
 - Pentest e SAST/DAST.
 - Testes de carga.
@@ -230,7 +230,7 @@ Pendencias:
 - Revisao de permissoes para dados sensiveis de saude, identidade, financeiro e trabalho.
 
 Proximos passos naturais:
-1. Conectar retencao a jobs reais de anonimizacao e descarte.
+1. Implementar workers reais de retencao, anonimizacao e descarte.
 2. Adicionar scans obrigatorios no CI.
 3. Testar restore de Postgres/Mongo.
 4. Definir SLOs e alertas.

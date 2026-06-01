@@ -9,8 +9,11 @@
    aplicar as migrations; fora dele, configure `ALL_IN_ONE_JOBS_POSTGRES_DSN`.
    Para publicar a outbox configure `ALL_IN_ONE_OUTBOX_POSTGRES_DSN` e
    `ALL_IN_ONE_RABBITMQ_URL`; o Compose ja fornece valores locais.
-   Para coordenar designs Stitch configure uma credencial rotacionada em
-   `STITCH_API_KEY` ou `STITCH_ACCESS_TOKEN` apenas no ambiente local/CI.
+   Para coordenar designs Stitch mantenha o MCP obrigatorio em
+   `~/.codex/config.toml` apontando para `https://stitch.googleapis.com/mcp`.
+   A documentacao oficial usa `http_headers`; neste workspace, persista o
+   header por `env_http_headers` e configure a credencial rotacionada em
+   `STITCH_API_KEY` apenas no ambiente local/CI.
 Para o agente de IA Superdesign, configure `OPENROUTER_API_KEY` no seu ambiente local
 e aponte a URL base para `https://openrouter.ai/api/v1`.
 2. Execute `docker compose -f infra/docker/docker-compose.yml up --build`.
@@ -18,8 +21,9 @@ e aponte a URL base para `https://openrouter.ai/api/v1`.
    `psql` em ambiente limpo.
 4. Consulte Identity em `http://localhost:8101/health`, API Hub em
    `http://localhost:8100/health` e Jobs em `http://localhost:8112/health`.
-5. Para o contrato de telas, rode `python scripts/stitch_orchestrator.py plan`;
-   com credencial segura disponível, `sync` cria um projeto Stitch por modulo.
+5. Para o contrato de telas, rode `python scripts/stitch_orchestrator.py plan`
+   e `python scripts/validate_stitch_mcp_config.py`; com credencial segura
+   disponivel, `sync` cria um projeto Stitch por modulo.
 
 ## Producao
 

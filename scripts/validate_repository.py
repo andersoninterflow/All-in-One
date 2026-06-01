@@ -6,8 +6,14 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.validate_stitch_mcp_config import validate_stitch_mcp_config
+
 CATALOG = json.loads((ROOT / "config" / "module_catalog.json").read_text(encoding="utf-8"))
 STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
+STITCH_MCP_POLICY = ROOT / "config" / "autonomy" / "stitch_mcp_policy.json"
 COMPLIANCE_MATRIX = ROOT / "config" / "compliance" / "data_classification.json"
 DATA_SUBJECT_RIGHTS = ROOT / "config" / "compliance" / "data_subject_rights.json"
 RETENTION_JOBS = ROOT / "config" / "compliance" / "retention_jobs.json"
@@ -196,6 +202,11 @@ def main() -> int:
             fail("Stitch deve declarar um projeto por modulo.", errors)
         if not all(project.get("screen_count", 0) > 0 for project in projects):
             fail("Todo projeto Stitch deve declarar telas.", errors)
+    if not STITCH_MCP_POLICY.is_file():
+        fail("Politica obrigatoria do MCP Stitch ausente.", errors)
+    else:
+        for error in validate_stitch_mcp_config(require_secret=False):
+            fail(error, errors)
     if not (ROOT / "docs" / "COMPLIANCE.md").is_file():
         fail("Documento de compliance ausente: docs/COMPLIANCE.md", errors)
     if not COMPLIANCE_MATRIX.is_file():

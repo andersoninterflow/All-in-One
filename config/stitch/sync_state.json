@@ -212,9 +212,59 @@
           "screen_id": "15068183542581814647",
           "name": "Marketplace - Products",
           "branding_version": "2026-06-01"
+        },
+        "entity_carts": {
+          "screen_id": "8444358665116714791",
+          "name": "Marketplace - Carts",
+          "branding_version": "2026-06-01"
+        },
+        "entity_orders": {
+          "screen_id": "10079040557655505288",
+          "name": "Marketplace - Orders",
+          "branding_version": "2026-06-01"
+        },
+        "entity_reviews": {
+          "screen_id": "10280338125378182577",
+          "name": "Marketplace - Reviews",
+          "branding_version": "2026-06-01"
+        },
+        "entity_disputes": {
+          "screen_id": "10025668963609848757",
+          "name": "Marketplace - Disputes",
+          "branding_version": "2026-06-01"
+        },
+        "entity_pepita_grants": {
+          "screen_id": "3811815719123719008",
+          "name": "Marketplace - Pepita Grants",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "3393007011887563674",
+          "name": "Marketplace - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "567184365367232368"
+    },
+    "stock": {
+      "screens": {
+        "overview": {
+          "screen_id": "15052015642809348540",
+          "name": "Stock - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_suppliers": {
+          "screen_id": "4063556934586279464",
+          "name": "Stock - Suppliers",
+          "branding_version": "2026-06-01"
+        },
+        "entity_catalog_products": {
+          "screen_id": "3995534354919576155",
+          "name": "Stock - Catalog Products",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "4360824476361591453"
     }
   }
 }

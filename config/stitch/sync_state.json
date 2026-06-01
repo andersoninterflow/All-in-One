@@ -150,6 +150,51 @@
         }
       },
       "project_id": "17502899261008825994"
+    },
+    "finance": {
+      "screens": {
+        "overview": {
+          "screen_id": "8143521791468296338",
+          "name": "Finance Pay Billing Fiscal - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_wallets": {
+          "screen_id": "16060708146552054349",
+          "name": "Finance Pay Billing Fiscal - Wallets",
+          "branding_version": "2026-06-01"
+        },
+        "entity_ledger_entries": {
+          "screen_id": "10996951120933023072",
+          "name": "Finance Pay Billing Fiscal - Ledger Entries",
+          "branding_version": "2026-06-01"
+        },
+        "entity_escrows": {
+          "screen_id": "9420546456024104394",
+          "name": "Finance Pay Billing Fiscal - Escrows",
+          "branding_version": "2026-06-01"
+        },
+        "entity_splits": {
+          "screen_id": "11066271925061386057",
+          "name": "Finance Pay Billing Fiscal - Splits",
+          "branding_version": "2026-06-01"
+        },
+        "entity_invoices": {
+          "screen_id": "2891770388070381543",
+          "name": "Finance Pay Billing Fiscal - Invoices",
+          "branding_version": "2026-06-01"
+        },
+        "wallet_ledger": {
+          "screen_id": "675227774581453486",
+          "name": "Finance Pay Billing Fiscal - Wallet Ledger",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "6504089768853436488",
+          "name": "Finance Pay Billing Fiscal - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "10421166672889982759"
     }
   }
 }

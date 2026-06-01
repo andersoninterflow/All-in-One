@@ -19,9 +19,9 @@
 ### Estado atual da sincronia
 
 - Manifesto local: 25 projetos Stitch planejados.
-- Estado remoto local versionado: 3 projetos e 27 telas registrados em `config/stitch/sync_state.json`.
-- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 27 telas registradas carregam `branding_version` 2026-06-01.
-- Modulos remotos completos neste estado: `identity`, `business` e `permissions`.
+- Estado remoto local versionado: 4 projetos e 35 telas registrados em `config/stitch/sync_state.json`.
+- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 35 telas registradas carregam `branding_version` 2026-06-01.
+- Modulos remotos completos neste estado: `identity`, `business`, `permissions` e `finance`.
 - Sync remoto real: validado com `STITCH_API_KEY` no Windows e automatizado no GitHub Actions quando `secrets.STITCH_API_KEY` existir.
 
 ### Validacoes executadas
@@ -36,6 +36,8 @@
 - `python3 scripts/stitch_orchestrator.py sync --max-operations 2` via Windows: sucesso, concluindo as 2 telas restantes de Business.
 - `python3 scripts/stitch_orchestrator.py sync --max-operations 4` via Windows: sucesso, criando projeto Permissions e 3 telas iniciais.
 - `python3 scripts/stitch_orchestrator.py sync --max-operations 4` via Windows: sucesso, concluindo as 4 telas restantes de Permissions.
+- `python3 scripts/stitch_orchestrator.py sync --max-operations 4` via Windows: sucesso, criando projeto Finance e 3 telas iniciais.
+- `python3 scripts/stitch_orchestrator.py sync --max-operations 5` via Windows: sucesso, concluindo as 5 telas restantes de Finance.
 - `.venv/Scripts/python.exe -m pytest -q`: sucesso, 195 testes aprovados e 29 pulados.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py`: sucesso, 12 testes aprovados.
 - `python3 scripts/scaffold_modules.py --check`: sucesso.

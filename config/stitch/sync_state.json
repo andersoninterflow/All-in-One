@@ -262,9 +262,49 @@
           "screen_id": "3995534354919576155",
           "name": "Stock - Catalog Products",
           "branding_version": "2026-06-01"
+        },
+        "entity_price_rules": {
+          "screen_id": "17418898159840475495",
+          "name": "Stock - Price Rules",
+          "branding_version": "2026-06-01"
+        },
+        "entity_supplier_orders": {
+          "screen_id": "16984526316065369651",
+          "name": "Stock - Supplier Orders",
+          "branding_version": "2026-06-01"
+        },
+        "entity_discount_quotes": {
+          "screen_id": "11755968740977644910",
+          "name": "Stock - Discount Quotes",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "9419539895740992671",
+          "name": "Stock - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "4360824476361591453"
+    },
+    "delivery": {
+      "screens": {
+        "overview": {
+          "screen_id": "9976194066376810895",
+          "name": "Delivery - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_delivery_requests": {
+          "screen_id": "15236929492968251043",
+          "name": "Delivery - Delivery Requests",
+          "branding_version": "2026-06-01"
+        },
+        "entity_quotes": {
+          "screen_id": "13748337641984504686",
+          "name": "Delivery - Quotes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "10126595868360250241"
     }
   }
 }

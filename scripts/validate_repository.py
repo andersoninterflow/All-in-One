@@ -14,6 +14,8 @@ RETENTION_JOBS = ROOT / "config" / "compliance" / "retention_jobs.json"
 ENV_EXAMPLE = ROOT / ".env.example"
 VSCODE_SETTINGS = ROOT / ".vscode" / "settings.json"
 VSCODE_TASKS = ROOT / ".vscode" / "tasks.json"
+DOCKER_COMPOSE = ROOT / "infra" / "docker" / "docker-compose.yml"
+KUBERNETES_PLATFORM = ROOT / "infra" / "kubernetes" / "base" / "platform.yaml"
 REQUIRED_MODULE_FILES = {
     "README.md",
     "main.py",
@@ -45,6 +47,7 @@ REQUIRED_ENV_VARS = {
     "ALL_IN_ONE_FINANCE_POSTGRES_DSN",
     "ALL_IN_ONE_IDENTITY_POSTGRES_DSN",
     "ALL_IN_ONE_RETENTION_POSTGRES_DSN",
+    "ALL_IN_ONE_RETENTION_POLL_SECONDS",
 }
 REQUIRED_SUBJECT_RIGHTS = {
     "acesso",
@@ -157,6 +160,16 @@ def main() -> int:
     for relative in ["workers/retention_worker/main.py", "modules/shared/retention_worker.py"]:
         if not (ROOT / relative).is_file():
             fail(f"Worker de retencao LGPD ausente: {relative}", errors)
+    compose = DOCKER_COMPOSE.read_text(encoding="utf-8") if DOCKER_COMPOSE.is_file() else ""
+    if "retention-worker:" not in compose or "workers/retention_worker/Dockerfile" not in compose:
+        fail("Docker Compose deve agendar o worker de retencao LGPD.", errors)
+    if "deletion_worker_daily --dry-run" not in compose:
+        fail("Docker Compose deve manter descarte LGPD em dry-run ate homologacao por modulo.", errors)
+    kubernetes = KUBERNETES_PLATFORM.read_text(encoding="utf-8") if KUBERNETES_PLATFORM.is_file() else ""
+    if "kind: CronJob" not in kubernetes or "name: retention-worker" not in kubernetes:
+        fail("Kubernetes deve declarar CronJob retention-worker.", errors)
+    if "ALL_IN_ONE_RETENTION_POSTGRES_DSN" not in kubernetes:
+        fail("CronJob de retencao deve receber DSN por Secret/Vault.", errors)
     if not STITCH_MANIFEST.is_file():
         fail("Manifesto de telas Stitch ausente.", errors)
     else:

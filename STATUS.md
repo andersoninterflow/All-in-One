@@ -1,5 +1,39 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Agendamento Retencao LGPD
+
+### Concluido neste ciclo
+
+- `infra/docker/docker-compose.yml` passou a declarar `retention-worker` em loop operacional com `ALL_IN_ONE_RETENTION_POLL_SECONDS`.
+- O agendamento local executa revisao, anonimizacao e descarte em `--dry-run` por padrao, preservando mutacoes definitivas para homologacao por modulo; legal hold roda de forma efetiva.
+- `infra/kubernetes/base/platform.yaml` passou a declarar `CronJob retention-worker` horario com `concurrencyPolicy: Forbid` e DSN via Secret/Vault.
+- `.env.example` recebeu `ALL_IN_ONE_RETENTION_POLL_SECONDS`.
+- `scripts/validate_repository.py` passou a bloquear ausencia do agendamento Docker/Kubernetes e descarte fora de dry-run.
+- `tests/test_retention_scheduling.py` criado para validar Compose e CronJob de retencao.
+- `docs/COMPLIANCE.md`, `docs/OPERATIONS.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 52%.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_scheduling.py tests/test_retention_worker.py tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 24 testes aprovados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `python3 -m compileall -q scripts tests/test_retention_scheduling.py modules/shared/retention_worker.py workers/retention_worker`: aprovado.
+- `python3 -m workers.retention_worker.main --help`: aprovado.
+- `docker compose -f infra/docker/docker-compose.yml config --quiet`: aprovado.
+- `.venv/Scripts/python.exe -m pytest -q`: 173 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Criar alertas para falha, atraso e backlog do CronJob de retencao LGPD.
+- Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
+- Registrar DPIA assinada para modulos criticos.
+- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Retencao LGPD PostgreSQL
 
 ### Concluido neste ciclo

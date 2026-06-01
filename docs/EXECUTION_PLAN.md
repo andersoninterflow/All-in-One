@@ -17,7 +17,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 63% | 9 apps catalogados, catalogo Valley backend regionalizado, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
 | Integracoes externas | 38% | Contratos, matriz versionada, adapters sandbox e endpoints administrativos locais existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
-| Producao/compliance | 48% | `docs/COMPLIANCE.md`, matriz LGPD por modulo, fluxo de direitos do titular, contrato, worker local e fila PostgreSQL de retencao LGPD | Faltam agendamento produtivo, mutacoes finais nos stores de dominio, DPIA assinada, pentest, carga, DR, backup/restore e observabilidade produtiva. |
+| Producao/compliance | 52% | `docs/COMPLIANCE.md`, matriz LGPD por modulo, fluxo de direitos do titular, contrato, worker local, fila PostgreSQL e agendamento seguro de retencao LGPD | Faltam mutacoes finais nos stores de dominio, alertas do CronJob, DPIA assinada, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
 ## 2. Ordem mandataria de execucao
 
@@ -217,11 +217,11 @@ Proximos passos naturais:
 
 Objetivo: sair de beta tecnica para producao auditavel.
 
-Status: 48%
+Status: 52%
 
 Pendencias:
-- Conectar o worker de retencao LGPD ao agendamento produtivo.
 - Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
+- Criar alertas para falha, atraso e backlog do CronJob de retencao LGPD.
 - DPIA assinada por modulo critico.
 - Pentest e SAST/DAST.
 - Testes de carga.
@@ -231,7 +231,7 @@ Pendencias:
 - Revisao de permissoes para dados sensiveis de saude, identidade, financeiro e trabalho.
 
 Proximos passos naturais:
-1. Adicionar agendamento produtivo para o worker de retencao LGPD.
+1. Criar alertas para falha, atraso e backlog do CronJob de retencao LGPD.
 2. Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run.
 3. Adicionar scans obrigatorios no CI.
 4. Testar restore de Postgres/Mongo.

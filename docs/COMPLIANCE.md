@@ -112,6 +112,13 @@ python -m workers.retention_worker.main --postgres --job retention_review_daily 
 O DSN vem de `ALL_IN_ONE_RETENTION_POSTGRES_DSN` e o tamanho do lote de
 `ALL_IN_ONE_RETENTION_BATCH_SIZE`.
 
+O agendamento declarativo foi adicionado em dois modos:
+
+- Docker Compose: `retention-worker` roda em loop horario local, mantendo
+  revisao, anonimizacao e descarte em `--dry-run` ate homologacao por modulo.
+- Kubernetes: `CronJob retention-worker` roda `retention_review_daily --dry-run`
+  de hora em hora, com DSN vindo de Secret/Vault e `concurrencyPolicy: Forbid`.
+
 ## Evidencia Atual
 
 - `docs/SECURITY.md` descreve controles implementados e obrigatorios.
@@ -127,6 +134,8 @@ O DSN vem de `ALL_IN_ONE_RETENTION_POSTGRES_DSN` e o tamanho do lote de
   executam o processamento local dos candidatos de retencao.
 - `database/postgres/migrations/016_compliance_retention_jobs.sql` cria a fila
   PostgreSQL de candidatos e a tabela append-by-policy de decisoes.
+- `infra/docker/docker-compose.yml` e `infra/kubernetes/base/platform.yaml`
+  declaram o agendamento seguro do worker de retencao.
 - `tests/test_compliance_matrix.py` bloqueia ausencia de modulo, campos
   obrigatorios e classificacao invalida.
 - `tests/test_data_subject_rights.py` bloqueia ausencia de direito, SLA
@@ -135,11 +144,12 @@ O DSN vem de `ALL_IN_ONE_RETENTION_POSTGRES_DSN` e o tamanho do lote de
   evidencia fraca e descarte destrutivo sem revisao legal.
 - `tests/test_retention_worker.py` valida dry-run, anonimizacao, descarte,
   legal hold, revisao legal e processamento em lote.
+- `tests/test_retention_scheduling.py` valida Compose e CronJob de retencao.
 
 ## Pendencias
 
-- Conectar o worker de retencao ao agendamento produtivo.
 - Aplicar mutacoes definitivas nos stores de dominio apos homologacao de dry-run
   por modulo.
+- Criar alertas de falha/atraso do CronJob de retencao.
 - Gerar evidencias de DPIA assinadas por modulo critico.
 - Integrar scans SAST/SCA/DAST obrigatorios ao CI com severidade bloqueante.

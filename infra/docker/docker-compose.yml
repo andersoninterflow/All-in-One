@@ -271,6 +271,31 @@ services:
       ALL_IN_ONE_OUTBOX_POLL_SECONDS: ${ALL_IN_ONE_OUTBOX_POLL_SECONDS:-1}
     networks: [platform]
 
+  retention-worker:
+    build:
+      context: ../..
+      dockerfile: workers/retention_worker/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    environment:
+      ALL_IN_ONE_RETENTION_POSTGRES_DSN: ${ALL_IN_ONE_RETENTION_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+      ALL_IN_ONE_RETENTION_BATCH_SIZE: ${ALL_IN_ONE_RETENTION_BATCH_SIZE:-100}
+      ALL_IN_ONE_RETENTION_POLL_SECONDS: ${ALL_IN_ONE_RETENTION_POLL_SECONDS:-3600}
+    command:
+      - sh
+      - -ec
+      - |
+        while true; do
+          python -m workers.retention_worker.main --postgres --job retention_review_daily --dry-run
+          python -m workers.retention_worker.main --postgres --job anonymization_worker_hourly --dry-run
+          python -m workers.retention_worker.main --postgres --job deletion_worker_daily --dry-run
+          python -m workers.retention_worker.main --postgres --job legal_hold_reconciliation_daily
+          sleep "${ALL_IN_ONE_RETENTION_POLL_SECONDS:-3600}"
+        done
+    networks: [platform]
+
 volumes:
   postgres-data:
   mongodb-data:

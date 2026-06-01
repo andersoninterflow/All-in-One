@@ -52,6 +52,29 @@ Metricas expostas:
 - `all_in_one_outbox_max_retry_count`: maior contador de retry observado.
 - `all_in_one_outbox_oldest_pending_age_seconds`: idade do pendente mais antigo.
 
+## Retencao LGPD
+
+O worker de retencao LGPD processa candidatos em
+`compliance.retention_candidates` e registra decisoes em
+`compliance.retention_decisions`, `audit.logs` e `audit.domain_events`.
+
+Execucao local avulsa:
+
+```bash
+python -m workers.retention_worker.main --postgres --job retention_review_daily --dry-run
+```
+
+Agendamento:
+
+- Docker Compose: servico `retention-worker` roda em loop com
+  `ALL_IN_ONE_RETENTION_POLL_SECONDS`.
+- Kubernetes: `CronJob retention-worker` roda de hora em hora com
+  `concurrencyPolicy: Forbid`.
+
+Por seguranca, revisao, anonimizacao e descarte permanecem em `--dry-run` nos
+agendamentos ate homologacao por modulo. A liberacao de mutacoes definitivas
+exige DPIA/revisao legal e evidencia de dry-run sem bloqueios.
+
 ## Incidentes
 
 Revogue sessoes/API keys, preserve trilha imutavel, suspenda publicacao ou

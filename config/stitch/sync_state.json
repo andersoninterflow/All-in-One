@@ -97,9 +97,59 @@
           "screen_id": "2117323080064012635",
           "name": "Business - Company Documents",
           "branding_version": "2026-06-01"
+        },
+        "entity_user_company_memberships": {
+          "screen_id": "12213991912693941833",
+          "name": "Business - User Company Memberships",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "17575573767254115776",
+          "name": "Business - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "17923603857789960283"
+    },
+    "permissions": {
+      "screens": {
+        "overview": {
+          "screen_id": "13100695987944469234",
+          "name": "Permissions - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_roles": {
+          "screen_id": "16101139009082335317",
+          "name": "Permissions - Roles",
+          "branding_version": "2026-06-01"
+        },
+        "entity_permissions": {
+          "screen_id": "8773052706903937630",
+          "name": "Permissions - Permissions",
+          "branding_version": "2026-06-01"
+        },
+        "entity_user_roles": {
+          "screen_id": "9260216267339752137",
+          "name": "Permissions - User Roles",
+          "branding_version": "2026-06-01"
+        },
+        "entity_access_policies": {
+          "screen_id": "17439021159897456952",
+          "name": "Permissions - Access Policies",
+          "branding_version": "2026-06-01"
+        },
+        "entity_approval_limits": {
+          "screen_id": "656783341952687815",
+          "name": "Permissions - Approval Limits",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "581683596336681762",
+          "name": "Permissions - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "17502899261008825994"
     }
   }
 }

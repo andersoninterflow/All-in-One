@@ -302,9 +302,49 @@
           "screen_id": "13748337641984504686",
           "name": "Delivery - Quotes",
           "branding_version": "2026-06-01"
+        },
+        "entity_assignments": {
+          "screen_id": "8477694078131290364",
+          "name": "Delivery - Assignments",
+          "branding_version": "2026-06-01"
+        },
+        "entity_proofs": {
+          "screen_id": "2280746070479602186",
+          "name": "Delivery - Proofs",
+          "branding_version": "2026-06-01"
+        },
+        "entity_insurance_options": {
+          "screen_id": "5436913712153941741",
+          "name": "Delivery - Insurance Options",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "2305070260472487620",
+          "name": "Delivery - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "10126595868360250241"
+    },
+    "riders": {
+      "screens": {
+        "overview": {
+          "screen_id": "15011235181638092698",
+          "name": "Riders - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_rider_profiles": {
+          "screen_id": "17861579121932490558",
+          "name": "Riders - Rider Profiles",
+          "branding_version": "2026-06-01"
+        },
+        "entity_rider_documents": {
+          "screen_id": "1835678046710767015",
+          "name": "Riders - Rider Documents",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "4786957303037573939"
     }
   }
 }

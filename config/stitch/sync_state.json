@@ -342,9 +342,44 @@
           "screen_id": "1835678046710767015",
           "name": "Riders - Rider Documents",
           "branding_version": "2026-06-01"
+        },
+        "entity_vehicles": {
+          "screen_id": "3526759935385924906",
+          "name": "Riders - Vehicles",
+          "branding_version": "2026-06-01"
+        },
+        "entity_rider_reviews": {
+          "screen_id": "3531955678435912075",
+          "name": "Riders - Rider Reviews",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "7308525972030012859",
+          "name": "Riders - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "4786957303037573939"
+    },
+    "services": {
+      "screens": {
+        "overview": {
+          "screen_id": "10015709599851005584",
+          "name": "One Services - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_providers": {
+          "screen_id": "4691537899313763121",
+          "name": "One Services - Providers",
+          "branding_version": "2026-06-01"
+        },
+        "entity_visits": {
+          "screen_id": "2414067732066204309",
+          "name": "One Services - Visits",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "3200465488170705510"
     }
   }
 }

@@ -11,7 +11,7 @@
 - Busca Valley aceita filtros por `company_type`, `company_category`, `business_activity`, preço, disponibilidade e `verified_only`, preservando regionalização por raio.
 - Transições de publicação de ofertas comerciais passaram a emitir `valley.catalog.offer.synced` via outbox seguro.
 - `docs/VALLEY_CATALOG.md` e `docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md` documentam a regra operacional e linguagem simples do usuário final.
-- Ciclo remoto Stitch concluiu o módulo `delivery` e iniciou o módulo `riders`, conectando ofertas regionais do Valley com entrega, coleta, prova operacional e perfis de entregadores/motoristas.
+- Ciclo remoto Stitch concluiu o módulo `riders` e iniciou o módulo `services`, conectando a operação regional do Valley com prestadores e serviços profissionais publicáveis no catálogo.
 - Logomarcas oficiais incorporadas ao repo em `assets/brand/all-in-one-logo-official.png`, `assets/brand/all-in-one-logo-light-official.png` e `assets/brand/valley-logo-official.png`.
 - Criado contrato mandatorio `config/branding/brand_identity.json`, com All-in-One como marca guarda-chuva e Valley obrigatorio para `valley`, `valley-business` e `valley-rider`.
 - `README.md` passou a exibir a imagem oficial All-in-One no topo para apresentacao do projeto no GitHub.
@@ -27,11 +27,11 @@
 ### Estado atual da sincronia
 
 - Manifesto local: 25 projetos Stitch planejados.
-- Estado remoto local versionado: 8 projetos e 61 telas registrados em `config/stitch/sync_state.json`.
-- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 61 telas registradas carregam `branding_version` 2026-06-01.
-- Modulos remotos completos neste estado: `identity`, `business`, `permissions`, `finance`, `marketplace`, `stock` e `delivery`.
-- Modulo `riders`: projeto criado e 3 telas registradas; ainda faltam `audit_permissions`, `entity_rider_reviews` e `entity_vehicles`.
-- Proximo passo natural Stitch: concluir telas pendentes de `riders` e seguir para `services`, pois `services` e o principal modulo de prestadores/servicos profissionais do catalogo Valley.
+- Estado remoto local versionado: 9 projetos e 67 telas registrados em `config/stitch/sync_state.json`.
+- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 67 telas registradas carregam `branding_version` 2026-06-01.
+- Modulos remotos completos neste estado: `identity`, `business`, `permissions`, `finance`, `marketplace`, `stock`, `delivery` e `riders`.
+- Modulo `services`: projeto criado e 3 telas registradas; ainda faltam `audit_permissions`, `entity_evidence`, `entity_quotes` e `entity_service_contracts`.
+- Proximo passo natural Stitch: concluir telas pendentes de `services` e seguir para `mobility`, consolidando servicos profissionais, deslocamento e execucao regional do catalogo Valley.
 - Sync remoto real: validado com `STITCH_API_KEY` no Windows e automatizado no GitHub Actions quando `secrets.STITCH_API_KEY` existir.
 
 ### Validacoes executadas
@@ -43,6 +43,8 @@
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\validate_stitch_mcp_config.py --require-secret && .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, criando projeto `delivery` e registrando 3 telas iniciais.
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\validate_stitch_mcp_config.py --require-secret && .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, concluindo telas pendentes de `delivery`.
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\validate_stitch_mcp_config.py --require-secret && .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, criando projeto `riders` e registrando 3 telas iniciais.
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\validate_stitch_mcp_config.py --require-secret && .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 3"`: sucesso, concluindo telas pendentes de `riders`.
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\validate_stitch_mcp_config.py --require-secret && .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, criando projeto `services` e registrando 3 telas iniciais.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py tests/test_valley_catalog.py`: sucesso, 17 testes aprovados.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_valley_catalog.py tests/test_outbox_dispatcher_unit.py`: sucesso, 15 testes aprovados.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py`: sucesso, 12 testes aprovados.

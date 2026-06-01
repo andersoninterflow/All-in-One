@@ -1,5 +1,30 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-01 PrometheusRule Retencao LGPD
+
+### Concluido neste ciclo
+
+- `infra/kubernetes/base/retention-alerting.yaml` criado com `PrometheusRule` para os 5 alertas de retencao LGPD.
+- O mesmo manifesto inclui `AlertmanagerConfig` com rota para `compliance-oncall` e severidade critica tambem para `platform-oncall`.
+- `scripts/validate_repository.py` passou a exigir a materializacao Kubernetes de cada alerta e a equivalencia das expressoes Prometheus com `config/observability/retention_alerts.json`.
+- `tests/test_retention_alerts.py` expandido para validar `PrometheusRule`, `AlertmanagerConfig`, severidade, janela e runbook.
+- `docs/COMPLIANCE.md`, `docs/OPERATIONS.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 59%.
+
+### Validacoes executadas
+
+- Pendente neste ciclo: testes focados, validadores e suite completa.
+
+### Pendencias rastreadas
+
+- Aplicar manifests de monitoramento no cluster real e validar disparo controlado dos alertas.
+- Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
+- Registrar DPIA assinada para modulos criticos.
+- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+
+### Git
+
+- Incremento em preparacao para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-06-01 Componente CheckoutModal UI
 
 ### Concluído neste ciclo

@@ -170,6 +170,43 @@ def write_manifest() -> dict[str, Any]:
     return manifest
 
 
+def load_state() -> dict[str, Any]:
+    if not STATE_PATH.exists():
+        return {"schema_version": 1, "projects": {}}
+    return json.loads(STATE_PATH.read_text(encoding="utf-8"))
+
+
+def sync_summary(manifest: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
+    projects = state.get("projects", {})
+    expected_screens = {
+        project["module"]: {screen["key"] for screen in project["screens"]}
+        for project in manifest["projects"]
+    }
+    synced_projects = 0
+    synced_screens = 0
+    missing_projects: list[str] = []
+    incomplete_projects: dict[str, list[str]] = {}
+    for module, screen_keys in expected_screens.items():
+        project_state = projects.get(module, {})
+        if project_state.get("project_id"):
+            synced_projects += 1
+        else:
+            missing_projects.append(module)
+        synced_keys = set(project_state.get("screens", {}))
+        synced_screens += len(synced_keys & screen_keys)
+        missing_screens = sorted(screen_keys - synced_keys)
+        if missing_screens:
+            incomplete_projects[module] = missing_screens
+    return {
+        "expected_projects": len(expected_screens),
+        "synced_projects": synced_projects,
+        "expected_screens": sum(len(keys) for keys in expected_screens.values()),
+        "synced_screens": synced_screens,
+        "missing_projects": missing_projects,
+        "incomplete_projects": incomplete_projects,
+    }
+
+
 class StitchMcpClient:
     def __init__(self, endpoint: str = STITCH_ENDPOINT) -> None:
         import httpx
@@ -295,7 +332,7 @@ def extract_identifier(result: Any) -> str | None:
 
 
 def sync_projects(manifest: dict[str, Any]) -> dict[str, Any]:
-    state = json.loads(STATE_PATH.read_text(encoding="utf-8")) if STATE_PATH.exists() else {"schema_version": 1, "projects": {}}
+    state = load_state()
     modules = {module["slug"]: module for module in load_catalog()["modules"]}
     client = StitchMcpClient()
     try:
@@ -340,11 +377,15 @@ def sync_projects(manifest: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Plan and synchronize All-in-One module screens with Google Stitch MCP.")
-    parser.add_argument("command", choices=("plan", "discover", "sync"))
+    parser.add_argument("command", choices=("plan", "status", "discover", "sync"))
     args = parser.parse_args()
     manifest = write_manifest()
     if args.command == "plan":
         print(f"STITCH plan: {manifest['project_count']} projetos e {manifest['screen_count']} telas materializados.")
+        return 0
+    if args.command == "status":
+        summary = sync_summary(manifest, load_state())
+        print(json.dumps(summary, indent=2, ensure_ascii=True))
         return 0
     client = StitchMcpClient()
     if args.command == "discover":

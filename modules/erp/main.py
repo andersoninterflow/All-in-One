@@ -5,7 +5,7 @@ from typing import Any, Optional
 from pydantic import BaseModel
 from modules.shared.erp_postgres_store import ErpPostgresStore
 from modules.shared.runtime import get_erp_store
-from modules.shared.integration_sandbox import local_fiscal_document_simulator
+from modules.shared.integration_sandbox import FiscalDocumentSandbox, local_fiscal_document_simulator
 
 app = FastAPI(title="All-in-One ERP API")
 
@@ -26,6 +26,12 @@ class BillingRequest(BaseModel):
 
 class CancelRequest(BaseModel):
     reason: str
+
+class SandboxFiscalInvoiceRequest(BaseModel):
+    invoice_id: str
+    document_type: str
+    amount_brl: str
+    issuer_document: str
 
 @app.get("/health")
 def health():
@@ -52,8 +58,8 @@ async def create_billing(
     store: ErpPostgresStore = Depends(get_erp_store)
 ):
     try:
-        payload = request.dict(exclude={"items"})
-        items = [item.dict() for item in request.items]
+        payload = request.model_dump(exclude={"items"})
+        items = [item.model_dump() for item in request.items]
 
         # Validação de Gamificação Valley
         if request.pepitas_reward and request.pepitas_reward not in {1, 10, 100}:
@@ -108,3 +114,23 @@ async def cancel_billing(
         return doc
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/integrations/sandbox/fiscal/invoices")
+async def sandbox_fiscal_invoice(
+    request: SandboxFiscalInvoiceRequest,
+    x_actor_user_id: str = Header(...),
+):
+    result = FiscalDocumentSandbox().issue_invoice(
+        request.invoice_id,
+        request.document_type,
+        request.amount_brl,
+        request.issuer_document,
+    )
+    return {
+        "provider_key": result.provider_key,
+        "adapter": result.adapter,
+        "status": result.status,
+        "reference_id": result.reference_id,
+        "payload": result.payload,
+        "events": list(result.events),
+    }

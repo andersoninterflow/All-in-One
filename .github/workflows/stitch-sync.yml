@@ -5,9 +5,12 @@ on:
     branches: [main]
     paths:
       - "config/module_catalog.json"
+      - "config/branding/**"
       - "config/autonomy/stitch_mcp_policy.json"
+      - "assets/brand/**"
       - "config/stitch/**"
       - "scripts/stitch_*.py"
+      - "docs/BRANDING.md"
       - ".github/workflows/stitch-sync.yml"
   workflow_dispatch:
   schedule:

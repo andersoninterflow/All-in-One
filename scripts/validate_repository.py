@@ -14,6 +14,8 @@ from scripts.validate_stitch_mcp_config import validate_stitch_mcp_config
 CATALOG = json.loads((ROOT / "config" / "module_catalog.json").read_text(encoding="utf-8"))
 STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
 STITCH_MCP_POLICY = ROOT / "config" / "autonomy" / "stitch_mcp_policy.json"
+STITCH_SYNC_WORKFLOW = ROOT / ".github" / "workflows" / "stitch-sync.yml"
+BRAND_IDENTITY = ROOT / "config" / "branding" / "brand_identity.json"
 COMPLIANCE_MATRIX = ROOT / "config" / "compliance" / "data_classification.json"
 DATA_SUBJECT_RIGHTS = ROOT / "config" / "compliance" / "data_subject_rights.json"
 RETENTION_JOBS = ROOT / "config" / "compliance" / "retention_jobs.json"
@@ -149,6 +151,7 @@ def main() -> int:
         "automerge.yml",
         "compose-health.yml",
         "git-sync.yml",
+        "stitch-sync.yml",
     ]:
         if not (ROOT / ".github" / "workflows" / workflow).is_file():
             fail(f"Workflow ausente: {workflow}", errors)
@@ -205,11 +208,38 @@ def main() -> int:
             fail("Stitch deve declarar um projeto por modulo.", errors)
         if not all(project.get("screen_count", 0) > 0 for project in projects):
             fail("Todo projeto Stitch deve declarar telas.", errors)
+        if stitch.get("branding_source") != "config/branding/brand_identity.json":
+            fail("Manifesto Stitch deve declarar a fonte de branding oficial.", errors)
+    if not BRAND_IDENTITY.is_file():
+        fail("Contrato de branding oficial ausente: config/branding/brand_identity.json", errors)
+    else:
+        brand = json.loads(BRAND_IDENTITY.read_text(encoding="utf-8"))
+        for relative in [
+            brand.get("platform_brand", {}).get("logo_asset"),
+            brand.get("platform_brand", {}).get("light_logo_asset"),
+            brand.get("valley_brand", {}).get("logo_asset"),
+        ]:
+            if not relative or not (ROOT / relative).is_file():
+                fail(f"Ativo oficial de marca ausente: {relative}", errors)
+        if set(brand.get("valley_apps", [])) != {"valley", "valley-business", "valley-rider"}:
+            fail("Branding deve declarar exatamente os apps Valley oficiais.", errors)
     if not STITCH_MCP_POLICY.is_file():
         fail("Politica obrigatoria do MCP Stitch ausente.", errors)
     else:
         for error in validate_stitch_mcp_config(require_secret=False):
             fail(error, errors)
+    stitch_workflow = STITCH_SYNC_WORKFLOW.read_text(encoding="utf-8") if STITCH_SYNC_WORKFLOW.is_file() else ""
+    for needle in [
+        "workflow_dispatch:",
+        "schedule:",
+        "secrets.STITCH_API_KEY",
+        "python scripts/stitch_auto_sync.py --require-remote",
+        "config/stitch/sync_state.json",
+        "config/branding/**",
+        "assets/brand/**",
+    ]:
+        if needle not in stitch_workflow:
+            fail(f"Workflow de sincronizacao remota Stitch incompleto: {needle}", errors)
     if not (ROOT / "docs" / "COMPLIANCE.md").is_file():
         fail("Documento de compliance ausente: docs/COMPLIANCE.md", errors)
     if not COMPLIANCE_MATRIX.is_file():

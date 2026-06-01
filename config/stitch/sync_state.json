@@ -1,4 +1,76 @@
 {
   "schema_version": 1,
-  "projects": {}
+  "projects": {
+    "identity": {
+      "screens": {
+        "overview": {
+          "screen_id": "2565579723247989825",
+          "name": "Identity - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_users": {
+          "screen_id": "15620840531103559001",
+          "name": "Identity - Users"
+        },
+        "entity_documents": {
+          "screen_id": "10044704592434529777",
+          "name": "Identity - Documents"
+        },
+        "entity_biometrics": {
+          "screen_id": "4006685918359021277",
+          "name": "Identity - Biometrics"
+        },
+        "entity_sessions": {
+          "screen_id": "1599962449736746644",
+          "name": "Identity - Sessions"
+        },
+        "entity_identity_verifications": {
+          "screen_id": "14317294756111226582",
+          "name": "Identity - Identity Verifications"
+        },
+        "entity_consent_records": {
+          "screen_id": "10877092216159681621",
+          "name": "Identity - Consent Records"
+        },
+        "auth_gateway": {
+          "screen_id": "18248888577235785350",
+          "name": "Identity - Auth Gateway"
+        },
+        "kyc_verification": {
+          "screen_id": "11910615811010722712",
+          "name": "Identity - Kyc Verification"
+        },
+        "kyb_business": {
+          "screen_id": "1703182347812851036",
+          "name": "Identity - Kyb Business"
+        },
+        "mfa_manager": {
+          "screen_id": "4774257304834379917",
+          "name": "Identity - Mfa Manager"
+        },
+        "consent_lgpd": {
+          "screen_id": "2486399194428573431",
+          "name": "Identity - Consent Lgpd"
+        },
+        "session_control": {
+          "screen_id": "13803597707122133042",
+          "name": "Identity - Session Control"
+        },
+        "audit_permissions": {
+          "screen_id": "58579948138110050",
+          "name": "Identity - Auditoria E Permissoes"
+        }
+      },
+      "project_id": "6639913763402881744"
+    },
+    "business": {
+      "screens": {
+        "overview": {
+          "screen_id": "5649105063330541501",
+          "name": "Business - Visao Geral"
+        }
+      },
+      "project_id": "17923603857789960283"
+    }
+  }
 }

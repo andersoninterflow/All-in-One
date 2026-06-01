@@ -178,6 +178,8 @@ TRANSACTIONAL_RESOURCES = {
     ("mobility", "rides"),
 }
 
+_ERP_FALLBACK_STORE: Any | None = None
+
 
 
 def _database_path(module_name: str) -> str:
@@ -230,6 +232,17 @@ def _store_for(module_name: str) -> Any:
         from .api_hub_postgres_store import ApiHubPostgresStore
         return ApiHubPostgresStore(os.environ["ALL_IN_ONE_API_HUB_POSTGRES_DSN"])
     return SQLiteStore(module_name, _database_path(module_name))
+
+
+def get_erp_store() -> Any:
+    global _ERP_FALLBACK_STORE
+    if not os.getenv("ALL_IN_ONE_ERP_POSTGRES_DSN"):
+        if _ERP_FALLBACK_STORE is None:
+            from .erp_postgres_store import ErpMemoryStore
+
+            _ERP_FALLBACK_STORE = ErpMemoryStore()
+        return _ERP_FALLBACK_STORE
+    return _store_for("erp")
 
 
 def _authorize_owner_or_operator(actor: Actor, user_id: UUID, action: str) -> None:

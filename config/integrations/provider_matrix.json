@@ -323,14 +323,22 @@
         "api_hub"
       ],
       "capability": "Agente de design e codificacao assistida via LLM",
-      "stage": "active",
+      "stage": "partially_implemented",
       "sandbox_adapter": "local_mock_ai_response",
       "primary_model": "google/gemini-pro-1.5",
       "primary_candidates": [
         "OpenRouter"
       ],
+      "fallback_candidates": [
+        "Google Gemini API",
+        "OpenAI compatible gateway"
+      ],
       "required_env": [
         "OPENROUTER_API_KEY"
+      ],
+      "events": [
+        "ai_core.model_run.completed",
+        "api_hub.integration_run.completed"
       ],
       "sensitive_data": [
         "prompt_context",

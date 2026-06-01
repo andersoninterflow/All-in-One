@@ -1,5 +1,7 @@
 # All-in-One
 
+![All-in-One](assets/brand/all-in-one-logo-official.png)
+
 SuperApp modular com identidade unica para consumidores, empresas, riders,
 prestadores, mobilidade, Jobs, saude e operacoes empresariais. Este repositorio
 implementa a plataforma arquitetural e executavel definida no documento mestre:

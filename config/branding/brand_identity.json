@@ -1,0 +1,33 @@
+{
+  "version": "2026-06-01",
+  "platform_brand": {
+    "name": "All-in-One",
+    "logo_asset": "assets/brand/all-in-one-logo-official.png",
+    "light_logo_asset": "assets/brand/all-in-one-logo-light-official.png",
+    "wordmark": "All-in-One",
+    "placement": "top-left app shell or authenticated header",
+    "minimum_width_px": 120,
+    "safe_area_px": 16,
+    "primary_color": "#111827",
+    "accent_color": "#22D3EE"
+  },
+  "valley_brand": {
+    "name": "Valley",
+    "logo_asset": "assets/brand/valley-logo-official.png",
+    "wordmark": "Valley",
+    "placement": "top-left inside every Valley surface, near the All-in-One platform mark when both brands appear",
+    "minimum_width_px": 104,
+    "safe_area_px": 16,
+    "primary_color": "#120B2E",
+    "accent_color": "#22D3EE",
+    "secondary_color": "#7C3AED"
+  },
+  "valley_apps": ["valley", "valley-business", "valley-rider"],
+  "rules": [
+    "Every Stitch screen must include the All-in-One platform wordmark or logo in the global shell/header.",
+    "Every screen generated for valley, valley-business or valley-rider must also include the Valley logo and Valley wordmark.",
+    "Do not redraw, recolor, stretch, crop or rotate the logos; preserve safe area and minimum width.",
+    "Use text alternatives: All-in-One and Valley.",
+    "Never place secrets, document images, biometric samples or sensitive records inside logo examples or brand mockups."
+  ]
+}

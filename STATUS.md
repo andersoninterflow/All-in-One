@@ -1,5 +1,38 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-01 Sincronizacao Remota Stitch Persistente
+
+### Concluido neste ciclo
+
+- Logomarcas oficiais incorporadas ao repo em `assets/brand/all-in-one-logo-official.png`, `assets/brand/all-in-one-logo-light-official.png` e `assets/brand/valley-logo-official.png`.
+- Criado contrato mandatorio `config/branding/brand_identity.json`, com All-in-One como marca guarda-chuva e Valley obrigatorio para `valley`, `valley-business` e `valley-rider`.
+- `README.md` passou a exibir a imagem oficial All-in-One no topo para apresentacao do projeto no GitHub.
+- Prompts Stitch agora instruem uso padronizado das logos oficiais, proibindo redesenho, distorcao, corte, rotacao ou recoloracao.
+- Criado `scripts/stitch_auto_sync.py` para executar plano, validacao de politica, sync remoto e conferência de completude do estado Stitch.
+- `scripts/stitch_orchestrator.py` ganhou comando `status` e resumo comparando `screen_manifest.json` com `sync_state.json`.
+- Criado workflow `.github/workflows/stitch-sync.yml` com execucao manual, agendada a cada 6 horas e por push em artefatos Stitch.
+- O workflow usa somente `secrets.STITCH_API_KEY`, executa `python scripts/stitch_auto_sync.py --require-remote` e commita `config/stitch/sync_state.json` quando o MCP remoto retorna IDs.
+- `tests/test_stitch_orchestrator.py` e `scripts/validate_repository.py` agora bloqueiam remocao da automacao persistente e do uso de secret.
+- Corrigido helper `get_erp_store()` para manter os endpoints ERP customizados importaveis.
+- `modules/erp/main.py` passou a ser preservado pelo scaffold por ser entrypoint especializado.
+
+### Estado atual da sincronia
+
+- Manifesto local: 25 projetos Stitch planejados.
+- Estado remoto local versionado: 2 projetos e 15 telas registrados em `config/stitch/sync_state.json`.
+- Branding remoto: `identity/overview` recebeu `branding_version` 2026-06-01 via `edit_screens`; telas antigas restantes seguem rastreadas em `branding_pending` para execucao resumivel.
+- Sync remoto real: validado com `STITCH_API_KEY` no Windows e automatizado no GitHub Actions quando `secrets.STITCH_API_KEY` existir.
+
+### Validacoes executadas
+
+- `python3 scripts/validate_stitch_mcp_config.py --require-secret` via Windows: sucesso.
+- `python3 scripts/stitch_orchestrator.py discover` via Windows: sucesso, com tools oficiais Stitch listadas.
+- `python3 scripts/stitch_orchestrator.py sync --max-operations 1` via Windows: sucesso, aplicando branding oficial em tela remota existente.
+- `.venv/Scripts/python.exe -m pytest -q`: sucesso, 195 testes aprovados e 29 pulados.
+- `python3 scripts/scaffold_modules.py --check`: sucesso.
+- `python3 scripts/validate_repository.py`: sucesso.
+- `python3 scripts/validate_openapi.py`: sucesso.
+
 ## STATUS OPERACIONAL - 2026-06-01 PrometheusRule Retencao LGPD
 
 ### Concluido neste ciclo

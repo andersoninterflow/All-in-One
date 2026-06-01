@@ -3,11 +3,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "config" / "module_catalog.json"
+BRAND_PATH = ROOT / "config" / "branding" / "brand_identity.json"
 MANIFEST_PATH = ROOT / "config" / "stitch" / "screen_manifest.json"
 STATE_PATH = ROOT / "config" / "stitch" / "sync_state.json"
 STITCH_ENDPOINT = "https://stitch.googleapis.com/mcp"
@@ -16,13 +18,13 @@ APP_ASSIGNMENTS = {
     "identity": ["all-in-one-user", "all-in-one-business", "all-in-one-riders", "all-in-one-services", "all-in-one-health", "all-in-one-mobility"],
     "business": ["all-in-one-business"],
     "permissions": ["all-in-one-business"],
-    "finance": ["all-in-one-user", "all-in-one-business", "all-in-one-riders", "all-in-one-services", "all-in-one-mobility"],
-    "marketplace": ["all-in-one-user", "all-in-one-business"],
-    "stock": ["all-in-one-business"],
-    "delivery": ["all-in-one-user", "all-in-one-business", "all-in-one-riders"],
-    "riders": ["all-in-one-riders"],
-    "services": ["all-in-one-user", "all-in-one-services"],
-    "mobility": ["all-in-one-user", "all-in-one-riders", "all-in-one-mobility"],
+    "finance": ["all-in-one-user", "all-in-one-business", "all-in-one-riders", "all-in-one-services", "all-in-one-mobility", "valley", "valley-business"],
+    "marketplace": ["all-in-one-user", "all-in-one-business", "valley", "valley-business"],
+    "stock": ["all-in-one-business", "valley", "valley-business"],
+    "delivery": ["all-in-one-user", "all-in-one-business", "all-in-one-riders", "valley", "valley-business", "valley-rider"],
+    "riders": ["all-in-one-riders", "valley-rider"],
+    "services": ["all-in-one-user", "all-in-one-services", "valley"],
+    "mobility": ["all-in-one-user", "all-in-one-riders", "all-in-one-mobility", "valley", "valley-rider"],
     "jobs": ["all-in-one-user", "all-in-one-business"],
     "erp": ["all-in-one-business"],
     "wms": ["all-in-one-business"],
@@ -65,9 +67,39 @@ def load_catalog() -> dict[str, Any]:
     return json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
 
 
+def load_brand_identity() -> dict[str, Any]:
+    return json.loads(BRAND_PATH.read_text(encoding="utf-8"))
+
+
+def brand_prompt(apps: list[str]) -> str:
+    brand = load_brand_identity()
+    platform = brand["platform_brand"]
+    valley = brand["valley_brand"]
+    valley_apps = set(brand["valley_apps"])
+    text = (
+        f"Marca obrigatoria: aplique a logomarca oficial {platform['name']} em todas as telas, "
+        f"usando o ativo {platform['logo_asset']} no shell/header global, com palavra-marca "
+        f"{platform['wordmark']}, area de respiro de {platform['safe_area_px']} px e largura minima "
+        f"de {platform['minimum_width_px']} px. Nao redesenhe, distorca, corte, rotacione ou recolora a logo. "
+    )
+    if valley_apps.intersection(apps):
+        text += (
+            f"Para superficies Valley ({', '.join(sorted(valley_apps.intersection(apps)))}), aplique tambem "
+            f"a logo oficial {valley['name']} usando o ativo {valley['logo_asset']}, palavra-marca "
+            f"{valley['wordmark']}, area de respiro de {valley['safe_area_px']} px e largura minima "
+            f"de {valley['minimum_width_px']} px. A marca Valley deve estar padronizada em todos os apps Valley. "
+        )
+    return text
+
+
+def branding_version() -> str:
+    return load_brand_identity()["version"]
+
+
 def screen_prompt(module: dict[str, Any], name: str, purpose: str, apps: list[str]) -> str:
     return (
         f"Crie uma tela de produto profissional para All-in-One, modulo {module['title']}. "
+        f"{brand_prompt(apps)} "
         f"Objetivo: {purpose} "
         f"Contexto do dominio: {module['description']} "
         f"Superficies consumidoras: {', '.join(apps)}. "
@@ -127,6 +159,7 @@ def build_manifest(catalog: dict[str, Any]) -> dict[str, Any]:
         "schema_version": 1,
         "strategy": "one_stitch_project_per_microservice",
         "source": "config/module_catalog.json",
+        "branding_source": "config/branding/brand_identity.json",
         "project_count": len(projects),
         "screen_count": sum(len(project["screens"]) for project in projects),
         "projects": projects,
@@ -138,6 +171,7 @@ def versioned_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         "schema_version": manifest["schema_version"],
         "strategy": manifest["strategy"],
         "source": manifest["source"],
+        "branding_source": manifest["branding_source"],
         "project_count": manifest["project_count"],
         "screen_count": manifest["screen_count"],
         "screen_generation": {
@@ -186,6 +220,8 @@ def sync_summary(manifest: dict[str, Any], state: dict[str, Any]) -> dict[str, A
     synced_screens = 0
     missing_projects: list[str] = []
     incomplete_projects: dict[str, list[str]] = {}
+    branding_pending: dict[str, list[str]] = {}
+    current_branding_version = branding_version()
     for module, screen_keys in expected_screens.items():
         project_state = projects.get(module, {})
         if project_state.get("project_id"):
@@ -197,6 +233,13 @@ def sync_summary(manifest: dict[str, Any], state: dict[str, Any]) -> dict[str, A
         missing_screens = sorted(screen_keys - synced_keys)
         if missing_screens:
             incomplete_projects[module] = missing_screens
+        pending = sorted(
+            key
+            for key in screen_keys & synced_keys
+            if project_state.get("screens", {}).get(key, {}).get("branding_version") != current_branding_version
+        )
+        if pending:
+            branding_pending[module] = pending
     return {
         "expected_projects": len(expected_screens),
         "synced_projects": synced_projects,
@@ -204,6 +247,8 @@ def sync_summary(manifest: dict[str, Any], state: dict[str, Any]) -> dict[str, A
         "synced_screens": synced_screens,
         "missing_projects": missing_projects,
         "incomplete_projects": incomplete_projects,
+        "branding_version": current_branding_version,
+        "branding_pending": branding_pending,
     }
 
 
@@ -224,7 +269,7 @@ class StitchMcpClient:
         else:
             headers["Authorization"] = f"Bearer {access_token}"
         self.endpoint = endpoint
-        self.client = httpx.Client(headers=headers, timeout=60)
+        self.client = httpx.Client(headers=headers, timeout=float(os.getenv("STITCH_TIMEOUT_SECONDS", "600")))
         self.session_id: str | None = None
         self.request_id = 0
 
@@ -299,6 +344,7 @@ def input_arguments(tool: dict[str, Any], values: dict[str, Any]) -> dict[str, A
         "name": ("name", "title", "project_name", "projectName"),
         "project_id": ("project_id", "projectId", "project"),
         "prompt": ("prompt", "description", "text"),
+        "selected_screen_ids": ("selectedScreenIds", "selected_screen_ids", "screenIds", "screen_ids"),
     }.items():
         for alias in aliases:
             if alias in properties and canonical_name in values:
@@ -309,46 +355,103 @@ def input_arguments(tool: dict[str, Any], values: dict[str, Any]) -> dict[str, A
     return arguments
 
 
-def extract_identifier(result: Any) -> str | None:
+def extract_identifier(result: Any, preferred_keys: tuple[str, ...] | None = None) -> str | None:
+    keys = preferred_keys or ("projectId", "project_id", "screenId", "screen_id", "sessionId", "session_id", "name", "id")
     if isinstance(result, dict):
-        for key in ("projectId", "project_id", "screenId", "screen_id", "id"):
+        for key in keys:
             if key in result and isinstance(result[key], str):
                 return result[key]
         for value in result.values():
-            identifier = extract_identifier(value)
+            identifier = extract_identifier(value, preferred_keys)
             if identifier:
                 return identifier
     if isinstance(result, list):
         for value in result:
-            identifier = extract_identifier(value)
+            identifier = extract_identifier(value, preferred_keys)
             if identifier:
                 return identifier
     if isinstance(result, str):
         try:
-            return extract_identifier(json.loads(result))
+            return extract_identifier(json.loads(result), preferred_keys)
         except json.JSONDecodeError:
+            resource = re.search(r"projects/[A-Za-z0-9_.:-]+(?:/screens/[A-Za-z0-9_.:-]+)?", result)
+            if resource:
+                return resource.group(0)
             return None
     return None
 
 
-def sync_projects(manifest: dict[str, Any]) -> dict[str, Any]:
+def result_shape(result: Any) -> Any:
+    if isinstance(result, dict):
+        return {key: result_shape(value) for key, value in list(result.items())[:12]}
+    if isinstance(result, list):
+        return [result_shape(value) for value in result[:3]]
+    if isinstance(result, str):
+        return f"<str len={len(result)} prefix={result[:80]!r}>"
+    return f"<{type(result).__name__}>"
+
+
+def normalize_project_id(identifier: str) -> str:
+    return identifier.removeprefix("projects/")
+
+
+def sync_projects(manifest: dict[str, Any], max_operations: int | None = None) -> dict[str, Any]:
     state = load_state()
     modules = {module["slug"]: module for module in load_catalog()["modules"]}
     client = StitchMcpClient()
+    operations = 0
+
+    def operation_done() -> bool:
+        nonlocal operations
+        operations += 1
+        return max_operations is not None and operations >= max_operations
+
     try:
         client.initialize()
         tools = client.tools()
         create_project = choose_tool(tools, ("create_project", "new_project"))
         generate_screen = choose_tool(tools, ("generate_screen", "create_screen"))
+        edit_screen = choose_tool(tools, ("edit_screens", "edit_screen"))
         for project in manifest["projects"]:
             project_state = state["projects"].setdefault(project["module"], {"screens": {}})
             if "project_id" not in project_state:
                 result = client.call_tool(create_project["name"], input_arguments(create_project, {"name": project["project_name"]}))
-                project_state["project_id"] = extract_identifier(result)
+                project_state["project_id"] = extract_identifier(result, ("projectId", "project_id", "name", "id"))
                 if not project_state["project_id"]:
                     raise RuntimeError(f"STITCH nao retornou project_id para {project['module']}.")
+                project_state["project_id"] = normalize_project_id(project_state["project_id"])
+                STATE_PATH.write_text(json.dumps(state, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+                if operation_done():
+                    return state
+            else:
+                normalized_project_id = normalize_project_id(project_state["project_id"])
+                if normalized_project_id != project_state["project_id"]:
+                    project_state["project_id"] = normalized_project_id
+                    STATE_PATH.write_text(json.dumps(state, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
             for screen in project["screens"]:
-                if screen["key"] in project_state["screens"]:
+                screen_state = project_state["screens"].get(screen["key"])
+                if screen_state and screen_state.get("branding_version") == branding_version():
+                    continue
+                if screen_state:
+                    client.call_tool(
+                        edit_screen["name"],
+                        input_arguments(
+                            edit_screen,
+                            {
+                                "project_id": project_state["project_id"],
+                                "prompt": (
+                                    "Atualize esta tela para aplicar rigorosamente a identidade visual oficial. "
+                                    f"{brand_prompt(project['integrated_apps'])} Preserve a estrutura funcional existente, "
+                                    "mas ajuste header, shell, navegacao e estados para refletir as marcas oficiais."
+                                ),
+                                "selected_screen_ids": [screen_state["screen_id"]],
+                            },
+                        ),
+                    )
+                    screen_state["branding_version"] = branding_version()
+                    STATE_PATH.write_text(json.dumps(state, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+                    if operation_done():
+                        return state
                     continue
                 result = client.call_tool(
                     generate_screen["name"],
@@ -365,19 +468,44 @@ def sync_projects(manifest: dict[str, Any]) -> dict[str, Any]:
                         },
                     ),
                 )
-                screen_id = extract_identifier(result)
+                screen_id = extract_identifier(result, ("screenId", "screen_id", "name", "sessionId", "session_id", "id"))
                 if not screen_id:
-                    raise RuntimeError(f"STITCH nao retornou screen_id para {project['module']}/{screen['key']}.")
-                project_state["screens"][screen["key"]] = {"screen_id": screen_id, "name": screen["name"]}
+                    raise RuntimeError(
+                        f"STITCH nao retornou screen_id para {project['module']}/{screen['key']}. "
+                        f"Formato recebido: {json.dumps(result_shape(result), ensure_ascii=True)}"
+                    )
+                project_state["screens"][screen["key"]] = {
+                    "screen_id": screen_id,
+                    "name": screen["name"],
+                    "branding_version": branding_version(),
+                }
                 STATE_PATH.write_text(json.dumps(state, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+                if operation_done():
+                    return state
         return state
     finally:
         client.close()
 
 
+def summarize_tools(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    summary: list[dict[str, Any]] = []
+    for tool in tools:
+        input_schema = tool.get("inputSchema", {})
+        properties = input_schema.get("properties", {})
+        summary.append(
+            {
+                "name": tool.get("name"),
+                "input_properties": list(properties),
+                "required": input_schema.get("required", []),
+            }
+        )
+    return summary
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Plan and synchronize All-in-One module screens with Google Stitch MCP.")
-    parser.add_argument("command", choices=("plan", "status", "discover", "sync"))
+    parser.add_argument("command", choices=("plan", "status", "discover", "tools", "sync"))
+    parser.add_argument("--max-operations", type=int, default=None, help="Limita criacoes/edicoes remotas para retomar em ciclos seguros.")
     args = parser.parse_args()
     manifest = write_manifest()
     if args.command == "plan":
@@ -395,7 +523,14 @@ def main() -> int:
             return 0
         finally:
             client.close()
-    state = sync_projects(manifest)
+    if args.command == "tools":
+        try:
+            client.initialize()
+            print(json.dumps(summarize_tools(client.tools()), indent=2, ensure_ascii=True))
+            return 0
+        finally:
+            client.close()
+    state = sync_projects(manifest, max_operations=args.max_operations)
     print(f"STITCH sync: {len(state['projects'])} projetos registrados em estado local.")
     return 0
 

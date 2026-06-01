@@ -167,6 +167,32 @@ class FiscalDocumentSandbox:
         return SandboxResult(self.provider_key, self.adapter, status, _stable_id("fiscal", invoice_id, document_type), payload, events)
 
 
+def local_fiscal_document_simulator(
+    document_id: str,
+    amount_brl: str | None = None,
+    company_id: str | None = None,
+    action: str = "authorize",
+    reason: str | None = None,
+) -> dict[str, Any]:
+    material = {
+        "document_id": document_id,
+        "amount_brl": str(_money(amount_brl or "0")),
+        "company_id_hash": _digest("company", company_id or "unknown"),
+        "action": action,
+        "reason_hash": _digest("reason", reason or ""),
+        "provider_environment": "sandbox",
+    }
+    status = "cancelled" if action == "cancel" else "authorized"
+    return {
+        "provider_key": FiscalDocumentSandbox.provider_key,
+        "adapter": FiscalDocumentSandbox.adapter,
+        "status": status,
+        "reference_id": _stable_id("fiscal", document_id, action),
+        "auth_code": _digest("fiscal", document_id, action, material["amount_brl"])[:16].upper(),
+        "payload": material,
+    }
+
+
 class CtpsSandbox:
     provider_key = "jobs_ctps_official"
     adapter = "local_ctps_pdf_importer_hash_only"
@@ -272,6 +298,28 @@ class SupplierCatalogSandbox:
         return SandboxResult(self.provider_key, self.adapter, status, _stable_id("supplier_product", supplier_id, external_sku), payload, events)
 
 
+class AiAgentSandbox:
+    provider_key = "ai_agent_superdesign"
+    adapter = "local_mock_ai_response"
+
+    def run_prompt(self, run_id: str, prompt: str, module: str = "ai_core") -> SandboxResult:
+        payload = {
+            "run_id": run_id,
+            "module": module,
+            "prompt_sha256": _digest("ai-prompt", prompt),
+            "provider_environment": "sandbox",
+            "cost_brl": "0.0000",
+        }
+        return SandboxResult(
+            self.provider_key,
+            self.adapter,
+            "completed",
+            _stable_id("ai_run", run_id, payload["prompt_sha256"]),
+            payload,
+            (_event("ai_core.model_run.completed", payload),),
+        )
+
+
 def sandbox_adapters() -> dict[str, object]:
     return {
         "identity_kyc_kyb": IdentityVerificationSandbox(),
@@ -282,4 +330,5 @@ def sandbox_adapters() -> dict[str, object]:
         "health_telemedicine_prescription": ClinicalConsentSandbox(),
         "api_hub_oauth_webhooks": ApiHubSandbox(),
         "stock_supplier_catalog": SupplierCatalogSandbox(),
+        "ai_agent_superdesign": AiAgentSandbox(),
     }

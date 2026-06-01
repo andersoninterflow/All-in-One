@@ -5,6 +5,60 @@ from uuid import uuid4
 from psycopg import Connection
 from .postgres_store import BasePostgresStore
 
+
+class ErpMemoryStore:
+    module = "erp"
+    backend = "memory_erp_typed_store"
+
+    def __init__(self) -> None:
+        self.documents: dict[str, dict[str, Any]] = {}
+        self.items: dict[str, list[dict[str, Any]]] = {}
+        self.idempotency: dict[str, str] = {}
+
+    def create_billing_document(
+        self,
+        user_id: str,
+        company_id: str,
+        payload: dict[str, Any],
+        items: list[dict[str, Any]] | None = None,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        if idempotency_key and idempotency_key in self.idempotency:
+            return self.get_billing_detail(self.idempotency[idempotency_key])  # type: ignore[return-value]
+        document_id = str(uuid4())
+        document = {
+            "id": document_id,
+            "user_id": user_id,
+            "entity_id": company_id,
+            "company_id": company_id,
+            "resource_type": "fiscal_documents",
+            "status": "pending",
+            "payload": payload,
+            "items_count": len(items or []),
+        }
+        self.documents[document_id] = document
+        self.items[document_id] = [
+            {"id": str(uuid4()), "fiscal_document_id": document_id, **item}
+            for item in (items or [])
+        ]
+        if idempotency_key:
+            self.idempotency[idempotency_key] = document_id
+        return {**document}
+
+    def get_billing_detail(self, document_id: str) -> dict[str, Any] | None:
+        document = self.documents.get(document_id)
+        if not document:
+            return None
+        return {**document, "items": [*self.items.get(document_id, [])]}
+
+    def cancel_billing_document(self, document_id: str, user_id: str, reason: str) -> dict[str, Any]:
+        document = self.documents.get(document_id)
+        if not document:
+            raise ValueError("Documento fiscal não encontrado.")
+        payload = {**document.get("payload", {}), "cancel_reason": reason}
+        document.update({"status": "cancelled", "payload": payload, "cancelled_by": user_id})
+        return self.get_billing_detail(document_id)  # type: ignore[return-value]
+
 class ErpPostgresStore(BasePostgresStore):
     """
     Especialização do store ERP para lidar com faturamento e documentos fiscais.

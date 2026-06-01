@@ -48,6 +48,7 @@ CUSTOMIZED_ARTIFACTS = {
     "modules/identity/main.py",
     "modules/finance/main.py",
     "modules/api_hub/main.py",
+    "modules/erp/main.py",
     # Dockerfiles copiam o pacote completo do modulo para preservar imports locais.
     "modules/identity/Dockerfile",
     "modules/finance/Dockerfile",

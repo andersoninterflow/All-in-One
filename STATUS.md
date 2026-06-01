@@ -1,5 +1,35 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Worker De Retencao LGPD
+
+### Concluido neste ciclo
+
+- `modules/shared/retention_worker.py` criado como motor executavel de retencao LGPD com dry-run, anonimizacao, descarte com recibo hash, legal hold e revisao legal para acoes destrutivas.
+- `workers/retention_worker/main.py` e `workers/retention_worker/Dockerfile` criados para execucao operacional por JSONL.
+- `tests/test_retention_worker.py` criado cobrindo anonimizacao, descarte, dry-run, legal hold, revisao legal, lote e payloads aninhados.
+- `scripts/validate_repository.py` passou a exigir o worker de retencao LGPD e o modulo compartilhado.
+- `docs/COMPLIANCE.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 44%.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_worker.py tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 19 testes aprovados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `python3 -m compileall -q modules/shared/retention_worker.py workers/retention_worker tests/test_retention_worker.py scripts`: aprovado.
+- `python3 -m workers.retention_worker.main --help`: aprovado.
+- `.venv/Scripts/python.exe -m pytest -q`: 167 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Conectar o worker de retencao LGPD aos stores PostgreSQL.
+- Registrar DPIA assinada para modulos criticos.
+- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Jobs De Retencao LGPD
 
 ### Concluido neste ciclo

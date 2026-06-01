@@ -150,6 +150,9 @@ def main() -> int:
             fail("Task pytest deve usar ${config:python.defaultInterpreterPath}.", errors)
     if not (ROOT / "workers" / "outbox_dispatcher" / "main.py").is_file():
         fail("Worker da outbox RabbitMQ ausente.", errors)
+    for relative in ["workers/retention_worker/main.py", "modules/shared/retention_worker.py"]:
+        if not (ROOT / relative).is_file():
+            fail(f"Worker de retencao LGPD ausente: {relative}", errors)
     if not STITCH_MANIFEST.is_file():
         fail("Manifesto de telas Stitch ausente.", errors)
     else:

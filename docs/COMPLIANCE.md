@@ -95,6 +95,12 @@ evidencia. Descartes produtivos exigem dry-run inicial, auditoria imutavel e
 revisao legal para registros financeiros, fiscais, medicos, trabalhistas ou
 contratos assinados.
 
+A primeira implementacao executavel esta em
+`modules/shared/retention_worker.py` e pode ser acionada por
+`python -m workers.retention_worker.main --job <job> --input <arquivo.jsonl>`.
+Ela processa candidatos em JSONL, aplica dry-run, bloqueia legal hold, redige
+campos sensiveis em anonimizacao e gera recibo hash para descarte.
+
 ## Evidencia Atual
 
 - `docs/SECURITY.md` descreve controles implementados e obrigatorios.
@@ -106,16 +112,19 @@ contratos assinados.
   evidencias, guardrails e cobertura por modulo para direitos do titular.
 - `config/compliance/retention_jobs.json` versiona jobs de retencao,
   anonimizacao, descarte e legal hold por modulo.
+- `modules/shared/retention_worker.py` e `workers/retention_worker/main.py`
+  executam o processamento local dos candidatos de retencao.
 - `tests/test_compliance_matrix.py` bloqueia ausencia de modulo, campos
   obrigatorios e classificacao invalida.
 - `tests/test_data_subject_rights.py` bloqueia ausencia de direito, SLA
   invalido, modulo sem cobertura e exportacao de dados proibidos.
 - `tests/test_retention_jobs.py` bloqueia ausencia de job, modulo sem regra,
   evidencia fraca e descarte destrutivo sem revisao legal.
+- `tests/test_retention_worker.py` valida dry-run, anonimizacao, descarte,
+  legal hold, revisao legal e processamento em lote.
 
 ## Pendencias
 
-- Implementar workers reais de retencao, anonimizacao e descarte a partir do
-  contrato versionado.
+- Conectar o worker de retencao a stores PostgreSQL e agendamento produtivo.
 - Gerar evidencias de DPIA assinadas por modulo critico.
 - Integrar scans SAST/SCA/DAST obrigatorios ao CI com severidade bloqueante.

@@ -75,6 +75,18 @@ Por seguranca, revisao, anonimizacao e descarte permanecem em `--dry-run` nos
 agendamentos ate homologacao por modulo. A liberacao de mutacoes definitivas
 exige DPIA/revisao legal e evidencia de dry-run sem bloqueios.
 
+Alertas obrigatorios ficam versionados em
+`config/observability/retention_alerts.json`:
+
+- `RetentionCronJobFailed`: falha do job nas ultimas janelas.
+- `RetentionCronJobDelayed`: atraso de conclusao acima de duas janelas.
+- `RetentionBacklogHigh`: backlog de candidatos pendentes acima do limite.
+- `RetentionOldestCandidateTooOld`: candidato mais antigo acima de 24 horas.
+- `RetentionDecisionMissing`: candidatos pendentes sem novas decisoes.
+
+As notificacoes nunca devem carregar payload sensivel; evidencias aceitas sao
+hashes, contadores, logs do worker e ticket de incidente.
+
 ## Incidentes
 
 Revogue sessoes/API keys, preserve trilha imutavel, suspenda publicacao ou

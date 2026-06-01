@@ -136,6 +136,8 @@ O agendamento declarativo foi adicionado em dois modos:
   PostgreSQL de candidatos e a tabela append-by-policy de decisoes.
 - `infra/docker/docker-compose.yml` e `infra/kubernetes/base/platform.yaml`
   declaram o agendamento seguro do worker de retencao.
+- `config/observability/retention_alerts.json` versiona alertas de falha,
+  atraso, backlog, idade do candidato mais antigo e ausencia de decisoes.
 - `tests/test_compliance_matrix.py` bloqueia ausencia de modulo, campos
   obrigatorios e classificacao invalida.
 - `tests/test_data_subject_rights.py` bloqueia ausencia de direito, SLA
@@ -145,11 +147,13 @@ O agendamento declarativo foi adicionado em dois modos:
 - `tests/test_retention_worker.py` valida dry-run, anonimizacao, descarte,
   legal hold, revisao legal e processamento em lote.
 - `tests/test_retention_scheduling.py` valida Compose e CronJob de retencao.
+- `tests/test_retention_alerts.py` valida cobertura, expressoes Prometheus,
+  SLA de resposta e proibicao de payload sensivel nos alertas.
 
 ## Pendencias
 
 - Aplicar mutacoes definitivas nos stores de dominio apos homologacao de dry-run
   por modulo.
-- Criar alertas de falha/atraso do CronJob de retencao.
+- Conectar alertas de retencao ao stack Prometheus/Alertmanager real.
 - Gerar evidencias de DPIA assinadas por modulo critico.
 - Integrar scans SAST/SCA/DAST obrigatorios ao CI com severidade bloqueante.

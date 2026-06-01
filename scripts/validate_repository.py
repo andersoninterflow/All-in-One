@@ -11,6 +11,7 @@ STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
 COMPLIANCE_MATRIX = ROOT / "config" / "compliance" / "data_classification.json"
 DATA_SUBJECT_RIGHTS = ROOT / "config" / "compliance" / "data_subject_rights.json"
 RETENTION_JOBS = ROOT / "config" / "compliance" / "retention_jobs.json"
+RETENTION_ALERTS = ROOT / "config" / "observability" / "retention_alerts.json"
 ENV_EXAMPLE = ROOT / ".env.example"
 VSCODE_SETTINGS = ROOT / ".vscode" / "settings.json"
 VSCODE_TASKS = ROOT / ".vscode" / "tasks.json"
@@ -62,6 +63,13 @@ REQUIRED_RETENTION_JOBS = {
     "anonymization_worker_hourly",
     "deletion_worker_daily",
     "legal_hold_reconciliation_daily",
+}
+REQUIRED_RETENTION_ALERTS = {
+    "RetentionCronJobFailed",
+    "RetentionCronJobDelayed",
+    "RetentionBacklogHigh",
+    "RetentionOldestCandidateTooOld",
+    "RetentionDecisionMissing",
 }
 
 
@@ -215,6 +223,17 @@ def main() -> int:
         safety = retention_jobs.get("safety_rules", {})
         if not safety.get("requires_subject_rights_link") or not safety.get("requires_immutable_audit"):
             fail("Jobs de retencao devem exigir vinculo com direitos do titular e auditoria imutavel.", errors)
+    if not RETENTION_ALERTS.is_file():
+        fail(f"Contrato de alertas de retencao ausente: {RETENTION_ALERTS}", errors)
+    else:
+        retention_alerts = json.loads(RETENTION_ALERTS.read_text(encoding="utf-8"))
+        if set(retention_alerts.get("alerts", {})) != REQUIRED_RETENTION_ALERTS:
+            fail("Alertas de retencao devem cobrir falha, atraso, backlog, idade e ausencia de decisao.", errors)
+        if retention_alerts.get("notification_policy", {}).get("include_sensitive_payload") is not False:
+            fail("Alertas de retencao nao podem incluir payload sensivel.", errors)
+        for alert_name, alert in retention_alerts.get("alerts", {}).items():
+            if not alert.get("expr") or not alert.get("evidence") or "incident_ticket" not in alert.get("evidence", []):
+                fail(f"Alerta de retencao incompleto: {alert_name}", errors)
 
     if errors:
         print("\nFalhas de validacao encontradas:")

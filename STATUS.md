@@ -1,5 +1,36 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Alertas Retencao LGPD
+
+### Concluido neste ciclo
+
+- `config/observability/retention_alerts.json` criado com alertas para falha, atraso, backlog, idade do candidato mais antigo e ausencia de novas decisoes.
+- Alertas declaram severidade, expressao Prometheus, janela `for`, SLA de resposta e evidencias permitidas sem payload sensivel.
+- `tests/test_retention_alerts.py` criado para validar cobertura, expressoes esperadas, evidencias e proibicao de payload sensivel.
+- `scripts/validate_repository.py` passou a exigir o contrato de alertas de retencao e bloquear notificacoes com payload sensivel.
+- `docs/COMPLIANCE.md`, `docs/OPERATIONS.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 56%.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_alerts.py tests/test_retention_scheduling.py tests/test_retention_worker.py tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 27 testes aprovados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `python3 -m json.tool config/observability/retention_alerts.json`: aprovado.
+- `python3 -m compileall -q scripts tests/test_retention_alerts.py`: aprovado.
+- `.venv/Scripts/python.exe -m pytest -q`: 176 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Conectar alertas de retencao ao stack Prometheus/Alertmanager real.
+- Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
+- Registrar DPIA assinada para modulos criticos.
+- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Agendamento Retencao LGPD
 
 ### Concluido neste ciclo

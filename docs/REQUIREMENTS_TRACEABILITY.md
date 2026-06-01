@@ -23,7 +23,7 @@ necessarios para producao.
 | Infraestrutura | `infra/docker/`, `infra/kubernetes/`, `infra/terraform/` |
 | CI/CD | `.github/workflows/` |
 | Testes de modulo e Jobs | `modules/*/tests/`, `tests/test_identity_jobs_domain.py` |
-| Seguranca, monetizacao, compliance e operacao | `docs/SECURITY.md`, `docs/COMPLIANCE.md`, `config/compliance/data_classification.json`, `config/compliance/data_subject_rights.json`, `config/compliance/retention_jobs.json`, `database/postgres/migrations/016_compliance_retention_jobs.sql`, `modules/shared/retention_worker.py`, `workers/retention_worker/main.py`, `infra/docker/docker-compose.yml`, `infra/kubernetes/base/platform.yaml`, `docs/MONETIZATION.md`, `docs/OPERATIONS.md` |
+| Seguranca, monetizacao, compliance e operacao | `docs/SECURITY.md`, `docs/COMPLIANCE.md`, `config/compliance/data_classification.json`, `config/compliance/data_subject_rights.json`, `config/compliance/retention_jobs.json`, `config/observability/retention_alerts.json`, `database/postgres/migrations/016_compliance_retention_jobs.sql`, `modules/shared/retention_worker.py`, `workers/retention_worker/main.py`, `infra/docker/docker-compose.yml`, `infra/kubernetes/base/platform.yaml`, `docs/MONETIZATION.md`, `docs/OPERATIONS.md` |
 
 ## Limite correto do baseline
 

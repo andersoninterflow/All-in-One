@@ -128,6 +128,8 @@ def main() -> int:
         "idx_finance_gold_ledger_entity_lookup",
         "idx_jobs_resumes_visibility",
         "idx_business_membership_lookup",
+        "erp.invoice_items",
+        "idx_invoice_items_document",
     ]:
         if needle not in migrations:
             fail(f"Controle SQL ausente: {needle}", errors)

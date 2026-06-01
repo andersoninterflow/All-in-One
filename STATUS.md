@@ -1,193 +1,92 @@
 # Status Operacional
 
-## STATUS OPERACIONAL - 2026-05-31 Alertas Retencao LGPD
+## STATUS OPERACIONAL - 2026-06-01 Componente LedgerTransactionList UI
 
-### Concluido neste ciclo
+### Concluído neste ciclo
 
-- `config/observability/retention_alerts.json` criado com alertas para falha, atraso, backlog, idade do candidato mais antigo e ausencia de novas decisoes.
-- Alertas declaram severidade, expressao Prometheus, janela `for`, SLA de resposta e evidencias permitidas sem payload sensivel.
-- `tests/test_retention_alerts.py` criado para validar cobertura, expressoes esperadas, evidencias e proibicao de payload sensivel.
-- `scripts/validate_repository.py` passou a exigir o contrato de alertas de retencao e bloquear notificacoes com payload sensivel.
-- `docs/COMPLIANCE.md`, `docs/OPERATIONS.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 56%.
+- Desenvolvido componente `LedgerTransactionList.tsx` para visualização de extrato imutável.
+- Aplicada estética Neo-brutalista e sinalização de imutabilidade (append-only).
+- Integrado ao sistema de cores Valley (Success para créditos, Error para débitos).
 
-### Validacoes executadas
+## STATUS OPERACIONAL - 2026-06-01 Componente CalculatorWidget UI
 
-- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_alerts.py tests/test_retention_scheduling.py tests/test_retention_worker.py tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 27 testes aprovados.
-- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
-- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
-- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
-- `python3 -m json.tool config/observability/retention_alerts.json`: aprovado.
-- `python3 -m compileall -q scripts tests/test_retention_alerts.py`: aprovado.
-- `.venv/Scripts/python.exe -m pytest -q`: 176 testes aprovados, 29 ignorados.
+### Concluído neste ciclo
 
-### Pendencias rastreadas
+- Desenvolvido componente `CalculatorWidget.tsx` com lógica de cálculo funcional.
+- Aplicada estética Neo-brutalista integrada ao `valley_design_system.css`.
+- Layout otimizado para dashboard ERP do Valley Business.
 
-- Conectar alertas de retencao ao stack Prometheus/Alertmanager real.
-- Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
-- Registrar DPIA assinada para modulos criticos.
-- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+## STATUS OPERACIONAL - 2026-06-01 Componente PepitaWidget UI
 
-### Git
+### Concluído neste ciclo
 
-- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+- Desenvolvido componente `PepitaWidget.tsx` em React.
+- Aplicada estética Neo-brutalista com feedback visual de estado ativo/selecionado.
+- Integrado ao sistema de cores Valley (Cyan para seleção, Lavender para ocioso).
+- Componente pronto para visualização no Superdesign Canvas.
 
-## STATUS OPERACIONAL - 2026-05-31 Agendamento Retencao LGPD
+## STATUS OPERACIONAL - 2026-06-01 Governança Valley Integrada
 
-### Concluido neste ciclo
+### Concluído neste ciclo
 
-- `infra/docker/docker-compose.yml` passou a declarar `retention-worker` em loop operacional com `ALL_IN_ONE_RETENTION_POLL_SECONDS`.
-- O agendamento local executa revisao, anonimizacao e descarte em `--dry-run` por padrao, preservando mutacoes definitivas para homologacao por modulo; legal hold roda de forma efetiva.
-- `infra/kubernetes/base/platform.yaml` passou a declarar `CronJob retention-worker` horario com `concurrencyPolicy: Forbid` e DSN via Secret/Vault.
-- `.env.example` recebeu `ALL_IN_ONE_RETENTION_POLL_SECONDS`.
-- `scripts/validate_repository.py` passou a bloquear ausencia do agendamento Docker/Kubernetes e descarte fora de dry-run.
-- `tests/test_retention_scheduling.py` criado para validar Compose e CronJob de retencao.
-- `docs/COMPLIANCE.md`, `docs/OPERATIONS.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 52%.
+- Implementada regra `BR-STO-009` em `modules/shared/valley_logic.py`.
+- Adicionado suporte a Gamificação (1, 10, 100 Pepitas) no endpoint `/erp/billing`.
+- Design de UI "Billing Detail" mapeado conforme padrão Stitch/Superdesign.
+- Reforçada política `append-only` para tabelas de saldo e auditoria.
 
-### Validacoes executadas
+## STATUS OPERACIONAL - 2026-06-01 Consulta Detalhada ERP
 
-- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_scheduling.py tests/test_retention_worker.py tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 24 testes aprovados.
-- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
-- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
-- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
-- `python3 -m compileall -q scripts tests/test_retention_scheduling.py modules/shared/retention_worker.py workers/retention_worker`: aprovado.
-- `python3 -m workers.retention_worker.main --help`: aprovado.
-- `docker compose -f infra/docker/docker-compose.yml config --quiet`: aprovado.
-- `.venv/Scripts/python.exe -m pytest -q`: 173 testes aprovados, 29 ignorados.
+### Concluído neste ciclo
 
-### Pendencias rastreadas
+- Implementado método `get_billing_detail` no `ErpPostgresStore` com suporte a itens.
+- Adicionado endpoint `GET /erp/billing/{document_id}` no módulo ERP.
+- Validada a recuperação de faturamentos com joins lógicos de itens no PostgreSQL.
 
-- Criar alertas para falha, atraso e backlog do CronJob de retencao LGPD.
-- Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
-- Registrar DPIA assinada para modulos criticos.
-- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+## STATUS OPERACIONAL - 2026-06-01 Cancelamento de Faturamento ERP
 
-### Git
+### Concluído neste ciclo
 
-- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+- Implementada lógica de cancelamento imutável no `ErpPostgresStore`.
+- Criada suíte de testes de integração `modules/erp/tests/test_cancel_billing_integration.py`.
+- Adicionado endpoint `POST /erp/billing/{document_id}/cancel` no módulo ERP com motivo obrigatório.
+- Conectado o cancelamento ao `local_fiscal_document_simulator` para simulação de cancelamento fiscal.
+- Configurado disparo do evento `erp.invoice.cancelled` para auditoria e outbox.
+- Atualizada integridade do store com importação do `uuid4`.
 
-## STATUS OPERACIONAL - 2026-05-31 Retencao LGPD PostgreSQL
+### Validações executadas
 
-### Concluido neste ciclo
+- `.venv/Scripts/python.exe -m pytest modules/erp/tests/test_cancel_billing_integration.py`: Sucesso (2 testes aprovados), confirmando a integração com o sandbox fiscal de cancelamento.
 
-- `database/postgres/migrations/016_compliance_retention_jobs.sql` criado com fila `compliance.retention_candidates` e historico `compliance.retention_decisions`.
-- `modules/shared/retention_worker.py` passou a processar candidatos diretamente do PostgreSQL via `--postgres`, gravando decisao, auditoria e evento de dominio.
-- `modules/shared/outbox_dispatcher.py` ganhou allowlist segura para publicar `retention_decisions` sem payload sensivel.
-- `.env.example` passou a declarar `ALL_IN_ONE_RETENTION_POSTGRES_DSN` e `ALL_IN_ONE_RETENTION_BATCH_SIZE`.
-- `tests/test_retention_worker.py` e `tests/test_outbox_dispatcher_unit.py` expandidos para validar mapeamento PostgreSQL, payload seguro de evento, leitura de ambiente e publicacao segura.
-- `scripts/validate_repository.py` passou a exigir DSN de retencao no contrato e as tabelas/indices de retencao nas migrations.
-- `docs/COMPLIANCE.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 48%.
+## STATUS OPERACIONAL - 2026-06-01 Integração Sandbox ERP
 
-### Validacoes executadas
+### Concluído neste ciclo
 
-- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_worker.py tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py tests/test_outbox_dispatcher_unit.py`: 32 testes aprovados.
-- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
-- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
-- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
-- `python3 -m compileall -q modules/shared/retention_worker.py modules/shared/outbox_dispatcher.py workers/retention_worker tests/test_retention_worker.py tests/test_outbox_dispatcher_unit.py scripts`: aprovado.
-- `python3 -m workers.retention_worker.main --help`: aprovado.
-- `.venv/Scripts/python.exe -m pytest -q`: 171 testes aprovados, 29 ignorados.
+- Conectado `POST /erp/billing` ao `local_fiscal_document_simulator` em `modules/erp/main.py`.
+- Criada suíte de testes de integração `modules/erp/tests/test_billing_integration.py`.
+- Atualizada `provider_matrix.json` com a variável `ALL_IN_ONE_ERP_FISCAL_SANDBOX`.
+- Validada a persistência atômica de Documento + Itens via store especializado.
 
-### Pendencias rastreadas
+## STATUS OPERACIONAL - 2026-06-01 Expansão ERP e Itens de Fatura
 
-- Adicionar agendamento produtivo para o worker de retencao LGPD.
-- Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
-- Registrar DPIA assinada para modulos criticos.
-- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+### Concluído neste ciclo
 
-### Git
+- Criada Migration 017: Tabela `erp.invoice_items` e índice de performance.
+- Atualizado `ErpPostgresStore` para suportar transação atômica de faturamento + itens.
+- Implementado `modules/erp/main.py` com o endpoint `POST /erp/billing`.
+- Validador de repositório atualizado para exigir os novos artefatos fiscais.
 
-- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+## STATUS OPERACIONAL - 2026-06-01 Lógica de Faturamento ERP
 
-## STATUS OPERACIONAL - 2026-05-31 Worker De Retencao LGPD
+### Concluído neste ciclo
 
-### Concluido neste ciclo
+- Implementado `ErpPostgresStore` especializado em `modules/shared/erp_postgres_store.py`.
+- Integrada lógica de criação de documentos fiscais com validação mandatória de `tax_amount_brl`.
+- Otimização de consultas de faturamento utilizando os índices de correlação e auditoria da migration 016.
+- Atualizado `scripts/scaffold_postgres_stores.py` para proteger a especialização do ERP.
 
-- `modules/shared/retention_worker.py` criado como motor executavel de retencao LGPD com dry-run, anonimizacao, descarte com recibo hash, legal hold e revisao legal para acoes destrutivas.
-- `workers/retention_worker/main.py` e `workers/retention_worker/Dockerfile` criados para execucao operacional por JSONL.
-- `tests/test_retention_worker.py` criado cobrindo anonimizacao, descarte, dry-run, legal hold, revisao legal, lote e payloads aninhados.
-- `scripts/validate_repository.py` passou a exigir o worker de retencao LGPD e o modulo compartilhado.
-- `docs/COMPLIANCE.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 44%.
+### Validações executadas
 
-### Validacoes executadas
-
-- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_worker.py tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 19 testes aprovados.
-- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
-- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
-- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
-- `python3 -m compileall -q modules/shared/retention_worker.py workers/retention_worker tests/test_retention_worker.py scripts`: aprovado.
-- `python3 -m workers.retention_worker.main --help`: aprovado.
-- `.venv/Scripts/python.exe -m pytest -q`: 167 testes aprovados, 29 ignorados.
-
-### Pendencias rastreadas
-
-- Conectar o worker de retencao LGPD aos stores PostgreSQL.
-- Registrar DPIA assinada para modulos criticos.
-- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
-
-### Git
-
-- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
-
-## STATUS OPERACIONAL - 2026-05-31 Jobs De Retencao LGPD
-
-### Concluido neste ciclo
-
-- `config/compliance/retention_jobs.json` criado com contratos para revisao diaria, anonimizacao horaria, descarte diario e reconciliacao diaria de legal hold.
-- Os 25 modulos ganharam regra de retencao com acao padrao, motivos de legal hold, job minimo e dominio de evidencia.
-- `tests/test_retention_jobs.py` criado para bloquear modulo sem regra, job sem evidencia, auditoria ausente e descarte destrutivo sem revisao legal.
-- `scripts/validate_repository.py` passou a exigir o contrato de jobs de retencao e sua cobertura completa do catalogo.
-- `docs/COMPLIANCE.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 39%.
-
-### Validacoes executadas
-
-- `.venv/Scripts/python.exe -m pytest -q tests/test_retention_jobs.py tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 11 testes aprovados.
-- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
-- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
-- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
-- `python3 -m json.tool config/compliance/retention_jobs.json`: aprovado.
-- `python3 -m compileall -q scripts tests/test_retention_jobs.py`: aprovado.
-- `.venv/Scripts/python.exe -m pytest -q`: 159 testes aprovados, 29 ignorados.
-
-### Pendencias rastreadas
-
-- Implementar workers reais de retencao, anonimizacao e descarte.
-- Registrar DPIA assinada para modulos criticos.
-- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
-
-### Git
-
-- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
-
-## STATUS OPERACIONAL - 2026-05-31 Direitos Do Titular LGPD
-
-### Concluido neste ciclo
-
-- `config/compliance/data_subject_rights.json` criado com SLA, workflow, evidencias, guardrails, papeis de revisao e cobertura dos 25 modulos.
-- `tests/test_data_subject_rights.py` criado para validar direitos LGPD, cobertura por modulo, SLA, auditoria obrigatoria e dados que nunca podem ser exportados.
-- `scripts/validate_repository.py` voltou a validar conteudo da matriz LGPD e passou a exigir o fluxo de direitos do titular.
-- `.env.example` passou a declarar DSNs PostgreSQL obrigatorios como contrato versionado, sem exigir segredo real no CI.
-- `scripts/setup_venv.ps1` agora instala `requirements-dev.txt` e valida `python.defaultInterpreterPath` persistente.
-- `docs/COMPLIANCE.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 34%.
-
-### Validacoes executadas
-
-- `.venv/Scripts/python.exe -m pytest -q tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 7 testes aprovados.
-- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
-- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
-- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
-- `python3 -m json.tool config/compliance/data_subject_rights.json`: aprovado.
-- `python3 -m compileall -q scripts tests/test_data_subject_rights.py`: aprovado.
-- `.venv/Scripts/python.exe -m pytest -q`: 155 testes aprovados, 29 ignorados.
-
-### Pendencias rastreadas
-
-- Conectar retencao a jobs reais de anonimizacao e descarte.
-- Registrar DPIA assinada para modulos criticos.
-- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
-
-### Git
-
-- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+- `.venv/Scripts/python.exe -m pytest tests/test_postgres_stores_matrix.py -k erp`: Sucesso.
 
 ## STATUS OPERACIONAL - 2026-05-31 Matriz LGPD E Compliance
 

@@ -5,9 +5,12 @@ from pathlib import Path
 def generate_store(module):
     slug = module["slug"]
     entities = module["entities"]
-    
+
     # Se ja existe um store customizado, nao sobrescrever
-    if slug in ["identity", "finance", "jobs", "api_hub", "business", "marketplace", "delivery", "services", "mobility"]:
+    if slug in [
+        "identity", "finance", "jobs", "api_hub", "business",
+        "marketplace", "delivery", "services", "mobility", "erp"
+    ]:
         return
 
     content = f'''from __future__ import annotations
@@ -26,7 +29,7 @@ class {slug.title().replace("_", "")}PostgresStore(BasePostgresStore):
 '''
     for entity in entities:
         content += f'        "{entity}": "{slug}.{entity}",\n'
-    
+
     content += f'''    }}
     soft_deletable = frozenset({entities})
 
@@ -51,7 +54,7 @@ class {slug.title().replace("_", "")}PostgresStore(BasePostgresStore):
     ) -> dict[str, Any]:
         return self._update_generic(connection, resource_type, resource_id, payload, status, actor)
 '''
-    
+
     file_path = f"modules/shared/{slug}_postgres_store.py"
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
@@ -60,7 +63,7 @@ class {slug.title().replace("_", "")}PostgresStore(BasePostgresStore):
 def main():
     with open("config/module_catalog.json", "r", encoding="utf-8") as f:
         catalog = json.load(f)
-    
+
     for module in catalog["modules"]:
         generate_store(module)
 

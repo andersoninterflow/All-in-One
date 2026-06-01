@@ -377,9 +377,49 @@
           "screen_id": "2414067732066204309",
           "name": "One Services - Visits",
           "branding_version": "2026-06-01"
+        },
+        "entity_quotes": {
+          "screen_id": "820271538672718144",
+          "name": "One Services - Quotes",
+          "branding_version": "2026-06-01"
+        },
+        "entity_service_contracts": {
+          "screen_id": "13649115953706376040",
+          "name": "One Services - Service Contracts",
+          "branding_version": "2026-06-01"
+        },
+        "entity_evidence": {
+          "screen_id": "14177721915399518161",
+          "name": "One Services - Evidence",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "9468117255149625208",
+          "name": "One Services - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "3200465488170705510"
+    },
+    "mobility": {
+      "screens": {
+        "overview": {
+          "screen_id": "13506917001236092961",
+          "name": "Mobility - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_rides": {
+          "screen_id": "17101939353798382328",
+          "name": "Mobility - Rides",
+          "branding_version": "2026-06-01"
+        },
+        "entity_routes": {
+          "screen_id": "14133988927571672213",
+          "name": "Mobility - Routes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "18282092513082869357"
     }
   }
 }

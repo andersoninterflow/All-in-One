@@ -10,7 +10,9 @@ from pydantic import BaseModel, Field
 from .security import Actor, actor_from_headers, demand_active_business, demand_valley_master_stock, enforce_essential_plan
 from .valley_catalog import (
     build_valley_offers,
+    find_valley_offer,
     search_valley_offers,
+    valley_business_activities,
     valley_categories,
     valley_modules,
 )
@@ -111,17 +113,24 @@ def register_valley_routes(
     def valley_catalog_categories() -> list[dict[str, Any]]:
         return valley_categories()
 
-    @app.get("/valley/catalog/offers")
-    def valley_catalog_offers() -> list[dict[str, Any]]:
-        return build_valley_offers(module_name, store)
+    @app.get("/valley/catalog/business-activities")
+    def valley_catalog_business_activities() -> list[dict[str, Any]]:
+        return valley_business_activities()
 
-    @app.get("/valley/catalog/search")
-    def valley_catalog_search(
+    @app.get("/valley/catalog")
+    def valley_catalog_home(
         q: str | None = None,
         category: str | None = None,
         offer_type: str | None = None,
         lat: float | None = None,
         lng: float | None = None,
+        company_type: str | None = None,
+        company_category: str | None = None,
+        business_activity: str | None = None,
+        price_min: float | None = None,
+        price_max: float | None = None,
+        availability: str | None = None,
+        verified_only: bool = False,
     ) -> list[dict[str, Any]]:
         return search_valley_offers(
             build_valley_offers(module_name, store),
@@ -130,6 +139,55 @@ def register_valley_routes(
             offer_type=offer_type,
             lat=lat,
             lng=lng,
+            company_type=company_type,
+            company_category=company_category,
+            business_activity=business_activity,
+            price_min=price_min,
+            price_max=price_max,
+            availability=availability,
+            verified_only=verified_only,
+        )
+
+    @app.get("/valley/catalog/offers")
+    def valley_catalog_offers() -> list[dict[str, Any]]:
+        return build_valley_offers(module_name, store)
+
+    @app.get("/valley/catalog/offers/{offer_id}")
+    def valley_catalog_offer_detail(offer_id: str) -> dict[str, Any]:
+        offer = find_valley_offer(build_valley_offers(module_name, store), offer_id)
+        if offer is None:
+            raise HTTPException(status_code=404, detail="Oferta nao encontrada no catalogo Valley.")
+        return offer
+
+    @app.get("/valley/catalog/search")
+    def valley_catalog_search(
+        q: str | None = None,
+        category: str | None = None,
+        offer_type: str | None = None,
+        lat: float | None = None,
+        lng: float | None = None,
+        company_type: str | None = None,
+        company_category: str | None = None,
+        business_activity: str | None = None,
+        price_min: float | None = None,
+        price_max: float | None = None,
+        availability: str | None = None,
+        verified_only: bool = False,
+    ) -> list[dict[str, Any]]:
+        return search_valley_offers(
+            build_valley_offers(module_name, store),
+            q=q,
+            category=category,
+            offer_type=offer_type,
+            lat=lat,
+            lng=lng,
+            company_type=company_type,
+            company_category=company_category,
+            business_activity=business_activity,
+            price_min=price_min,
+            price_max=price_max,
+            availability=availability,
+            verified_only=verified_only,
         )
 
     if module_name == "marketplace":

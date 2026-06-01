@@ -52,8 +52,13 @@ def test_valley_catalog_search_filters_food_product_service_and_radius() -> None
                 "price_brl": "29.90",
                 "stock_location_type": "local_physical",
                 "stock_quantity": 10,
+                "publish_to_valley": True,
+                "publication_status": "approved",
                 "offer_type": "food",
                 "consumer_category": "Comida e Mercado",
+                "company_type": "mei",
+                "company_category": "Comercio",
+                "business_activity_id": "alimentacao",
                 "service_area": "local",
                 "service_radius_km": 5,
                 "latitude": -23.5505,
@@ -79,8 +84,13 @@ def test_valley_catalog_search_filters_food_product_service_and_radius() -> None
                 "price_brl": "32.90",
                 "stock_location_type": "local_physical",
                 "stock_quantity": 10,
+                "publish_to_valley": True,
+                "publication_status": "approved",
                 "offer_type": "food",
                 "consumer_category": "Comida e Mercado",
+                "company_type": "mei",
+                "company_category": "Comercio",
+                "business_activity_id": "alimentacao",
                 "service_area": "local",
                 "service_radius_km": 2,
                 "latitude": -22.9068,
@@ -105,8 +115,13 @@ def test_valley_catalog_search_filters_food_product_service_and_radius() -> None
                 "price_brl": "49.90",
                 "stock_location_type": "local_physical",
                 "stock_quantity": 99,
+                "publish_to_valley": True,
+                "publication_status": "approved",
                 "offer_type": "product",
                 "consumer_category": "Compras e Produtos",
+                "company_type": "microempresa",
+                "company_category": "Comercio",
+                "business_activity_id": "educacao",
                 "service_area": "online",
                 "region_label": "Online",
             },
@@ -128,8 +143,13 @@ def test_valley_catalog_search_filters_food_product_service_and_radius() -> None
                 "price_brl": "19.90",
                 "stock_location_type": "local_physical",
                 "stock_quantity": 3,
+                "publish_to_valley": True,
+                "publication_status": "approved",
                 "offer_type": "product",
                 "consumer_category": "Compras e Produtos",
+                "company_type": "microempresa",
+                "company_category": "Comercio",
+                "business_activity_id": "varejo",
                 "service_area": "local",
                 "latitude": -23.5505,
                 "longitude": -46.6333,
@@ -159,6 +179,21 @@ def test_valley_catalog_search_filters_food_product_service_and_radius() -> None
     assert "Curso digital" in product_titles
     assert "Produto local incompleto" not in product_titles
 
+    mei_food = marketplace.get(
+        "/valley/catalog",
+        params={"company_type": "mei", "company_category": "Comercio", "business_activity": "alimentacao"},
+    )
+    assert mei_food.status_code == 200
+    assert any(item["title"] == "Marmita local" for item in mei_food.json())
+    food_offer = next(item for item in mei_food.json() if item["title"] == "Marmita local")
+    assert food_offer["primary_action_label"] == "Comprar"
+    assert food_offer["short_description"]
+    assert len(food_offer["short_description"]) <= 160
+
+    detail = marketplace.get(f"/valley/catalog/offers/{food_offer['offer_id']}")
+    assert detail.status_code == 200
+    assert detail.json()["business_activity_label"] == "Restaurantes e mercados"
+
 
 def test_valley_catalog_groups_repair_health_and_food_in_plain_language() -> None:
     services = fresh_client_for("services")
@@ -174,7 +209,12 @@ def test_valley_catalog_groups_repair_health_and_food_in_plain_language() -> Non
                 "public_title": "Eletricista residencial",
                 "public_description": "Reparos eletricos para casas e apartamentos",
                 "offer_type": "service",
+                "publish_to_valley": True,
+                "publication_status": "approved",
                 "consumer_category": "Casa, Reparos e Imoveis",
+                "company_type": "pf_profissional",
+                "company_category": "Servicos",
+                "business_activity_id": "servicos_domesticos",
                 "service_radius_km": 12,
                 "latitude": -23.5505,
                 "longitude": -46.6333,
@@ -196,3 +236,76 @@ def test_valley_catalog_groups_repair_health_and_food_in_plain_language() -> Non
     assert health.status_code == 200
     assert any(item["source_module"] == "health" for item in health.json())
     assert all("consumer_category" in item for item in health.json())
+
+
+def test_valley_catalog_hides_business_offers_without_publication_authorization() -> None:
+    marketplace = fresh_client_for("marketplace")
+    merchant_id = str(uuid4())
+    business_id = str(uuid4())
+
+    draft = marketplace.post(
+        "/resources/products",
+        headers=actor_headers(merchant_id, "merchant", business_id=business_id),
+        json={
+            "user_id": merchant_id,
+            "entity_id": business_id,
+            "payload": {
+                "store_id": "store-hidden",
+                "sku": "HIDDEN-ALPHA",
+                "name": "Produto ainda nao autorizado",
+                "description": "Nao deve aparecer no Valley sem aprovacao Business",
+                "price_brl": "10.00",
+                "stock_location_type": "local_physical",
+                "stock_quantity": 1,
+                "offer_type": "product",
+                "consumer_category": "Compras e Produtos",
+                "service_area": "online",
+            },
+        },
+    )
+    assert draft.status_code == 201
+
+    visible = marketplace.post(
+        "/resources/products",
+        headers=actor_headers(merchant_id, "merchant", business_id=business_id),
+        json={
+            "user_id": merchant_id,
+            "entity_id": business_id,
+            "payload": {
+                "store_id": "store-visible",
+                "sku": "VISIBLE-ALPHA",
+                "name": "Produto autorizado",
+                "description": "Configurado no Business para publicacao no Valley",
+                "price_brl": "20.00",
+                "stock_location_type": "local_physical",
+                "stock_quantity": 4,
+                "offer_type": "product",
+                "consumer_category": "Compras e Produtos",
+                "company_type": "microempresa",
+                "company_category": "Comercio",
+                "business_activity_id": "varejo",
+                "service_area": "online",
+                "publish_to_valley": True,
+                "publication_status": "approved",
+                "verified_seller": True,
+            },
+        },
+    )
+    assert visible.status_code == 201
+
+    results = marketplace.get("/valley/catalog/search", params={"q": "Produto", "verified_only": True})
+    assert results.status_code == 200
+    titles = [item["title"] for item in results.json()]
+    assert "Produto autorizado" in titles
+    assert "Produto ainda nao autorizado" not in titles
+
+
+def test_valley_catalog_exposes_business_activity_reference() -> None:
+    marketplace = fresh_client_for("marketplace")
+
+    activities = marketplace.get("/valley/catalog/business-activities")
+    assert activities.status_code == 200
+    payload = activities.json()
+    ids = {item["business_activity_id"] for item in payload}
+    assert {"alimentacao", "varejo", "saude", "servicos_domesticos", "logistica"} <= ids
+    assert all("label_for_consumer" in item for item in payload)

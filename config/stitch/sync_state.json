@@ -195,6 +195,26 @@
         }
       },
       "project_id": "10421166672889982759"
+    },
+    "marketplace": {
+      "screens": {
+        "overview": {
+          "screen_id": "3500286639505939336",
+          "name": "Marketplace - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_stores": {
+          "screen_id": "15230320726132038295",
+          "name": "Marketplace - Stores",
+          "branding_version": "2026-06-01"
+        },
+        "entity_products": {
+          "screen_id": "15068183542581814647",
+          "name": "Marketplace - Products",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "567184365367232368"
     }
   }
 }

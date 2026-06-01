@@ -109,6 +109,29 @@ def lifecycle_flow(prefix: str) -> dict[str, Transition]:
     }
 
 
+def catalog_offer_flow(prefix: str) -> dict[str, Transition]:
+    flow = lifecycle_flow(prefix)
+    flow.update(
+        {
+            "publish": Transition(
+                frozenset({"approved", "active", "published"}),
+                "published",
+                APPROVER_ROLES,
+                True,
+                "valley.catalog.offer.synced",
+            ),
+            "pause": Transition(
+                frozenset({"approved", "active", "published"}),
+                "paused",
+                APPROVER_ROLES,
+                True,
+                f"{prefix}.paused",
+            ),
+        }
+    )
+    return flow
+
+
 RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
     ("identity", "users"): ResourceRule(
         ("full_name", "email", "password_hash"),
@@ -195,7 +218,7 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         ("sku",),
         protected_content=True,
         monetary_fields=("price_brl",),
-        transitions=lifecycle_flow("marketplace.product"),
+        transitions=catalog_offer_flow("marketplace.product"),
     ),
     ("marketplace", "orders"): ResourceRule(
         ("store_id", "total_brl", "escrow_id"),
@@ -215,6 +238,7 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         ("supplier_id", "external_sku", "name", "list_price_brl"),
         ("external_sku",),
         monetary_fields=("list_price_brl",),
+        transitions=catalog_offer_flow("stock.catalog_product"),
     ),
     ("marketplace", "pepita_grants"): ResourceRule(
         ("order_id", "customer_user_id", "pepitas", "merchant_gold_ledger_id"),
@@ -249,7 +273,7 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         ("rider_profile_id", "type", "license_plate"), initial_status="pending_review", transitions=review_flow("rider.vehicle")
     ),
     ("services", "providers"): ResourceRule(
-        ("category",), initial_status="pending_review", protected_content=True, transitions=review_flow("services.provider")
+        ("category",), initial_status="pending_review", protected_content=True, transitions=catalog_offer_flow("services.provider")
     ),
     ("services", "service_contracts"): ResourceRule(
         ("provider_user_id", "escrow_id", "visit_price_brl"),
@@ -329,10 +353,10 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
     ("document", "documents"): ResourceRule(("storage_key", "filename"), sensitive=True, transitions=lifecycle_flow("document")),
     ("hr", "employees"): ResourceRule(("company_id", "employment_type"), sensitive=True, transitions=review_flow("hr.employee")),
     ("health", "patients"): ResourceRule(("health_identifier",), sensitive=True),
-    ("health", "appointments"): ResourceRule(("patient_id", "professional_user_id", "scheduled_at"), sensitive=True, transitions=lifecycle_flow("health.appointment")),
+    ("health", "appointments"): ResourceRule(("patient_id", "professional_user_id", "scheduled_at"), sensitive=True, transitions=catalog_offer_flow("health.appointment")),
     ("vision", "devices"): ResourceRule(("device_fingerprint",), sensitive=True, transitions=lifecycle_flow("vision.device")),
     ("legal", "cases"): ResourceRule(("case_number",), sensitive=True, monetary_fields=("risk_brl",), transitions=lifecycle_flow("legal.case")),
-    ("property", "properties"): ResourceRule(("address", "property_type"), transitions=lifecycle_flow("property")),
+    ("property", "properties"): ResourceRule(("address", "property_type"), transitions=catalog_offer_flow("property")),
     ("bi", "dashboards"): ResourceRule(("name", "definition"), transitions=lifecycle_flow("bi.dashboard")),
     ("ai_core", "moderation_decisions"): ResourceRule(("module", "risk_score"), sensitive=True, transitions=review_flow("ai.moderation")),
     ("api_hub", "api_clients"): ResourceRule(("client_name", "scopes"), sensitive=True, transitions=review_flow("api.client")),

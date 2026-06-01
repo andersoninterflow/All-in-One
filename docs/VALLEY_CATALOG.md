@@ -1,13 +1,39 @@
 # Catalogo Valley Super App
 
 O Valley apresenta o ecossistema em linguagem de consumo, sem obrigar o usuario
-final a conhecer nomes internos de modulos. Toda oferta agregada deve declarar:
+final a conhecer nomes internos de modulos. O All-in-One Business e a retaguarda
+onde PF, MEI, PJ, franquias e parceiros configuram produtos e servicos; o
+Marketplace normaliza essas configuracoes; o Valley exibe somente ofertas claras,
+aprovadas e autorizadas para o consumidor.
+
+Toda oferta agregada deve declarar:
 
 - `offer_type`: `food`, `product` ou `service`.
 - `consumer_category`: agrupamento simples exibido ao consumidor.
 - `source_module`: modulo tecnico de origem, mantido para auditoria e roteamento.
+- `source_entity_id`, `business_id` e `seller_user_id`: origem rastreavel.
+- `publish_to_valley` e `publication_status`: controle de publicacao no Valley.
+- `company_type`, `company_category` e `business_activity_id`: filtros comerciais.
 - `service_radius_km`: raio regional em quilometros quando a oferta for local.
 - `region_label`: area amigavel, sem endereco sensivel.
+- `primary_action_label`: texto simples como Comprar, Agendar, Contratar ou
+  Solicitar.
+
+## Regra de publicacao
+
+Recursos reais vindos de Marketplace, Stock, Services, Health, Delivery, Mobility,
+Jobs, Property e Finance so entram no catalogo se:
+
+- `publish_to_valley = true`;
+- `publication_status` estiver em `approved` ou `published`;
+- `visible_to_consumer` nao estiver desativado;
+- a oferta nao estiver cancelada, rejeitada, bloqueada, suspensa ou arquivada;
+- modulos regulados, como Health, Legal, Finance e Document, tiverem
+  `compliance_status` aprovado ou verificado quando a oferta real for publicada.
+
+Modulos sem oferta operacional continuam aparecendo como `coming_soon`, para que
+o usuario entenda o ecossistema sem confundir promessa futura com oferta
+contratavel.
 
 ## Categorias amigaveis
 
@@ -37,10 +63,33 @@ Regras:
 
 ## Endpoints
 
+- `GET /valley/catalog`
 - `GET /valley/catalog/modules`
 - `GET /valley/catalog/categories`
+- `GET /valley/catalog/business-activities`
 - `GET /valley/catalog/offers`
+- `GET /valley/catalog/offers/{offer_id}`
 - `GET /valley/catalog/search?q=&category=&offer_type=&lat=&lng=`
+
+A busca tambem aceita `company_type`, `company_category`, `business_activity`,
+`price_min`, `price_max`, `availability` e `verified_only`.
+
+## Ramos de atividade
+
+O catalogo mantem uma referencia inicial de ramos comerciais com nome para o
+negocio e rotulo simples para o consumidor. Exemplos:
+
+- `alimentacao`: Restaurantes e mercados.
+- `varejo`: Produtos e lojas.
+- `saude`: Saude e bem-estar.
+- `servicos_domesticos`: Casa e manutencao.
+- `juridico`: Advogados e documentos.
+- `educacao`: Cursos e aulas.
+- `logistica`: Entregas e transportes.
+- `imobiliario`: Imoveis e condominio.
+- `empregos`: Vagas e carreira.
+- `financeiro`: Pagamentos e credito.
+- `tecnologia`: Tecnologia e automacao.
 
 O evento `valley.catalog.offer.synced` usa allowlist segura no outbox e nao
 publica custo interno, margem, markup, endereco sensivel ou observacoes privadas.

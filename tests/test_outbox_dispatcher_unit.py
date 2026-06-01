@@ -153,15 +153,35 @@ def test_valley_catalog_publication_uses_safe_payload() -> None:
                 "offer_type": "food",
                 "consumer_category": "Comida e Mercado",
                 "title": "Marmita local",
+                "short_description": "Marmita local para entrega regional.",
+                "consumer_friendly_label": "Marmita local",
                 "source_module": "marketplace",
                 "source_resource_type": "products",
+                "source_entity_id": "123",
+                "business_id": "business-1",
                 "availability_status": "available",
+                "publication_status": "published",
                 "price_brl": "29.90",
+                "price_type": "fixed",
+                "price_amount": "29.90",
+                "currency": "BRL",
                 "benefits": ["entrega regional"],
                 "rewards": ["Pepitas"],
                 "region_label": "Centro",
                 "service_radius_km": 5,
                 "consumer_action": "buy",
+                "primary_action_label": "Comprar",
+                "company_type": "mei",
+                "company_type_label": "MEI",
+                "company_category": "Comercio",
+                "business_activity_id": "alimentacao",
+                "business_activity_label": "Restaurantes e mercados",
+                "category_id": "comida_e_mercado",
+                "availability_type": "stock",
+                "stock_quantity": 10,
+                "service_duration_minutes": None,
+                "compliance_status": "not_required",
+                "verified_seller": True,
                 "internal_margin_brl": "private",
                 "supplier_cost_brl": "private",
                 "street_address": "must-not-publish",
@@ -172,6 +192,8 @@ def test_valley_catalog_publication_uses_safe_payload() -> None:
     assert message["payload"]["offer_type"] == "food"
     assert message["payload"]["consumer_category"] == "Comida e Mercado"
     assert message["payload"]["service_radius_km"] == 5
+    assert message["payload"]["business_activity_id"] == "alimentacao"
+    assert message["payload"]["primary_action_label"] == "Comprar"
     assert "internal_margin_brl" not in message["payload"]
     assert "supplier_cost_brl" not in message["payload"]
     assert "street_address" not in message["payload"]

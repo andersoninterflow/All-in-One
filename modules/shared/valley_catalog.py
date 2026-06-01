@@ -10,6 +10,9 @@ ROOT = Path(__file__).resolve().parents[2]
 CATALOG_PATH = ROOT / "config" / "module_catalog.json"
 
 OFFER_TYPES = {"food", "product", "service"}
+PUBLISHABLE_STATUSES = {"approved", "published", "active", "available"}
+VISIBLE_PUBLICATION_STATUSES = {"approved", "published"}
+REGULATED_MODULES = {"health", "legal", "finance", "document"}
 OFFER_TYPE_ALIASES = {
     "alimento": "food",
     "comida": "food",
@@ -22,6 +25,99 @@ OFFER_TYPE_ALIASES = {
 }
 LOCAL_AREAS = {"local", "regional"}
 GLOBAL_AREAS = {"online", "national"}
+
+COMPANY_TYPE_ALIASES = {
+    "pf_profissional": "Profissional autonomo",
+    "pf_vendedor": "Vendedor pessoa fisica",
+    "mei": "MEI",
+    "microempresa": "Microempresa",
+    "pequena_empresa": "Pequena empresa",
+    "media_empresa": "Media empresa",
+    "grande_empresa": "Grande empresa",
+    "franquia": "Franquia",
+    "instituicao": "Instituicao",
+    "parceiro_integrado": "Parceiro integrado",
+}
+
+BUSINESS_ACTIVITY_DEFINITIONS: dict[str, dict[str, Any]] = {
+    "alimentacao": {
+        "name": "Alimentacao",
+        "parent_category": "Comercio",
+        "label_for_consumer": "Restaurantes e mercados",
+        "allowed_offer_types": ("food", "product"),
+        "requires_compliance_review": False,
+    },
+    "varejo": {
+        "name": "Varejo",
+        "parent_category": "Comercio",
+        "label_for_consumer": "Produtos e lojas",
+        "allowed_offer_types": ("product",),
+        "requires_compliance_review": False,
+    },
+    "saude": {
+        "name": "Saude",
+        "parent_category": "Saude",
+        "label_for_consumer": "Saude e bem-estar",
+        "allowed_offer_types": ("service",),
+        "requires_compliance_review": True,
+    },
+    "servicos_domesticos": {
+        "name": "Servicos domesticos",
+        "parent_category": "Servicos",
+        "label_for_consumer": "Casa e manutencao",
+        "allowed_offer_types": ("service", "product"),
+        "requires_compliance_review": False,
+    },
+    "juridico": {
+        "name": "Juridico",
+        "parent_category": "Juridico",
+        "label_for_consumer": "Advogados e documentos",
+        "allowed_offer_types": ("service",),
+        "requires_compliance_review": True,
+    },
+    "educacao": {
+        "name": "Educacao",
+        "parent_category": "Educacao",
+        "label_for_consumer": "Cursos e aulas",
+        "allowed_offer_types": ("product", "service"),
+        "requires_compliance_review": False,
+    },
+    "logistica": {
+        "name": "Logistica",
+        "parent_category": "Logistica",
+        "label_for_consumer": "Entregas e transportes",
+        "allowed_offer_types": ("service",),
+        "requires_compliance_review": False,
+    },
+    "imobiliario": {
+        "name": "Imobiliario",
+        "parent_category": "Imobiliario",
+        "label_for_consumer": "Imoveis e condominio",
+        "allowed_offer_types": ("service", "product"),
+        "requires_compliance_review": False,
+    },
+    "empregos": {
+        "name": "Empregos",
+        "parent_category": "RH e empregos",
+        "label_for_consumer": "Vagas e carreira",
+        "allowed_offer_types": ("service",),
+        "requires_compliance_review": False,
+    },
+    "financeiro": {
+        "name": "Financeiro",
+        "parent_category": "Financeiro",
+        "label_for_consumer": "Pagamentos e credito",
+        "allowed_offer_types": ("service", "product"),
+        "requires_compliance_review": True,
+    },
+    "tecnologia": {
+        "name": "Tecnologia",
+        "parent_category": "Tecnologia",
+        "label_for_consumer": "Tecnologia e automacao",
+        "allowed_offer_types": ("service",),
+        "requires_compliance_review": False,
+    },
+}
 
 CATEGORY_DEFINITIONS: dict[str, dict[str, Any]] = {
     "Comida e Mercado": {
@@ -110,6 +206,13 @@ def valley_categories() -> list[dict[str, Any]]:
     ]
 
 
+def valley_business_activities() -> list[dict[str, Any]]:
+    return [
+        {"business_activity_id": activity_id, **definition}
+        for activity_id, definition in BUSINESS_ACTIVITY_DEFINITIONS.items()
+    ]
+
+
 def valley_modules() -> list[dict[str, Any]]:
     catalog = load_module_catalog()
     return [
@@ -162,7 +265,37 @@ def module_fallback_offers() -> list[dict[str, Any]]:
             "region_label": "Disponibilidade em expansao",
             "service_area": "national",
             "consumer_action": "coming_soon",
+            "primary_action_label": "Em breve",
             "media": [],
+            "source_entity_id": None,
+            "business_id": None,
+            "seller_user_id": None,
+            "short_description": short_description(module["description"], friendly_module_title(module["slug"], module["title"])),
+            "long_description": module["description"],
+            "consumer_friendly_label": friendly_module_title(module["slug"], module["title"]),
+            "company_type": "parceiro_integrado",
+            "company_type_label": COMPANY_TYPE_ALIASES["parceiro_integrado"],
+            "company_category": company_category_for(module["slug"], None),
+            "business_activity_id": business_activity_for(module["slug"], "records", module["title"], module["description"]),
+            "business_activity_label": business_activity_label(
+                business_activity_for(module["slug"], "records", module["title"], module["description"])
+            ),
+            "category_id": slugify(infer_category(module["slug"], "records", module["title"], module["description"])),
+            "price_type": "sob_consulta",
+            "price_amount": None,
+            "currency": "BRL",
+            "availability_type": "sob_consulta",
+            "stock_quantity": None,
+            "service_duration_minutes": None,
+            "attributes": {},
+            "requirements": [],
+            "compliance_status": "not_required",
+            "publication_status": "coming_soon",
+            "publish_to_valley": False,
+            "visible_to_consumer": True,
+            "ranking_score": 0,
+            "provider_label": "All-in-One",
+            "verified_seller": False,
         }
         for module in catalog["modules"]
     ]
@@ -170,6 +303,8 @@ def module_fallback_offers() -> list[dict[str, Any]]:
 
 def offer_from_resource(module_name: str, resource_type: str, row: dict[str, Any]) -> dict[str, Any] | None:
     payload = row.get("payload") or {}
+    if not publishable_for_valley(module_name, row, payload):
+        return None
     title = first_text(
         payload,
         ("public_title", "name", "title", "headline", "category", "service_type", "route_code", "property_type"),
@@ -181,16 +316,28 @@ def offer_from_resource(module_name: str, resource_type: str, row: dict[str, Any
     service_area = str(payload.get("service_area") or default_service_area(module_name, resource_type)).casefold()
     origin = public_origin(payload)
     radius = number_or_none(payload.get("service_radius_km"))
+    business_activity_id = str(payload.get("business_activity_id") or business_activity_for(module_name, resource_type, title, description))
+    action = consumer_action_for(module_name, resource_type, payload)
+    price_amount = price_for(payload)
     return {
         "offer_id": f"{module_name}:{resource_type}:{row['id']}",
+        "source_entity_id": str(row["id"]),
+        "business_id": str(row.get("entity_id") or payload.get("business_id") or payload.get("company_id") or ""),
+        "seller_user_id": str(row.get("user_id") or payload.get("seller_user_id") or ""),
         "offer_type": offer_type,
         "consumer_category": consumer_category,
         "title": title,
         "description": description,
+        "short_description": short_description(description, title),
+        "long_description": str(payload.get("long_description") or description),
+        "consumer_friendly_label": str(payload.get("consumer_friendly_label") or title),
         "source_module": module_name,
         "source_resource_type": resource_type,
         "availability_status": availability_for(row.get("status")),
-        "price_brl": price_for(payload),
+        "price_brl": price_amount,
+        "price_type": str(payload.get("price_type") or default_price_type(price_amount)),
+        "price_amount": price_amount,
+        "currency": str(payload.get("currency") or "BRL"),
         "benefits": list_or_empty(payload.get("benefits")),
         "rewards": list_or_empty(payload.get("rewards")),
         "service_origin": origin,
@@ -198,8 +345,27 @@ def offer_from_resource(module_name: str, resource_type: str, row: dict[str, Any
         "distance_km": None,
         "region_label": str(payload.get("region_label") or default_region_label(service_area)),
         "service_area": service_area,
-        "consumer_action": consumer_action_for(module_name, resource_type),
+        "consumer_action": action,
+        "primary_action_label": action_label_for(action, business_activity_id),
         "media": list_or_empty(payload.get("media")),
+        "company_type": str(payload.get("company_type") or "microempresa"),
+        "company_type_label": company_type_label(payload.get("company_type")),
+        "company_category": str(payload.get("company_category") or company_category_for(module_name, business_activity_id)),
+        "business_activity_id": business_activity_id,
+        "business_activity_label": business_activity_label(business_activity_id),
+        "category_id": str(payload.get("category_id") or slugify(consumer_category)),
+        "availability_type": str(payload.get("availability_type") or default_availability_type(module_name, resource_type)),
+        "stock_quantity": integer_or_none(payload.get("stock_quantity")),
+        "service_duration_minutes": integer_or_none(payload.get("service_duration_minutes")),
+        "attributes": dict_or_empty(payload.get("attributes")),
+        "requirements": list_or_empty(payload.get("requirements")),
+        "compliance_status": default_compliance_status(module_name, payload),
+        "publication_status": publication_status_for(row, payload),
+        "publish_to_valley": True,
+        "visible_to_consumer": payload.get("visible_to_consumer") is not False,
+        "ranking_score": number_or_none(payload.get("ranking_score")) or 0,
+        "provider_label": str(payload.get("provider_label") or payload.get("store_name") or "Prestador verificado"),
+        "verified_seller": bool(payload.get("verified_seller") or payload.get("identity_validated")),
     }
 
 
@@ -211,6 +377,13 @@ def search_valley_offers(
     offer_type: str | None = None,
     lat: float | None = None,
     lng: float | None = None,
+    company_type: str | None = None,
+    company_category: str | None = None,
+    business_activity: str | None = None,
+    price_min: float | None = None,
+    price_max: float | None = None,
+    availability: str | None = None,
+    verified_only: bool = False,
 ) -> list[dict[str, Any]]:
     normalized_type = normalize_offer_type(offer_type) if offer_type else None
     terms = (q or "").strip().casefold()
@@ -220,6 +393,26 @@ def search_valley_offers(
         if normalized_type and offer["offer_type"] != normalized_type:
             continue
         if selected_category and selected_category not in str(offer["consumer_category"]).casefold():
+            continue
+        if company_type and str(company_type).casefold() != str(offer.get("company_type")).casefold():
+            continue
+        if company_category and str(company_category).casefold() not in str(offer.get("company_category", "")).casefold():
+            continue
+        if business_activity:
+            selected_activity = str(business_activity).casefold()
+            if selected_activity not in {
+                str(offer.get("business_activity_id", "")).casefold(),
+                str(offer.get("business_activity_label", "")).casefold(),
+            }:
+                continue
+        if availability and str(availability).casefold() != str(offer.get("availability_status")).casefold():
+            continue
+        if verified_only and not offer.get("verified_seller"):
+            continue
+        price_value = number_or_none(offer.get("price_amount"))
+        if price_min is not None and (price_value is None or price_value < price_min):
+            continue
+        if price_max is not None and (price_value is None or price_value > price_max):
             continue
         if terms:
             material = " ".join(
@@ -233,6 +426,13 @@ def search_valley_offers(
             continue
         results.append(localized)
     return sorted(results, key=offer_sort_key)
+
+
+def find_valley_offer(offers: list[dict[str, Any]], offer_id: str) -> dict[str, Any] | None:
+    for offer in offers:
+        if offer.get("offer_id") == offer_id:
+            return offer
+    return None
 
 
 def with_distance(offer: dict[str, Any], lat: float | None, lng: float | None) -> dict[str, Any]:
@@ -335,11 +535,22 @@ def number_or_none(value: Any) -> float | None:
         return None
 
 
+def integer_or_none(value: Any) -> int | None:
+    number = number_or_none(value)
+    if number is None:
+        return None
+    return int(number)
+
+
 def price_for(payload: dict[str, Any]) -> str | None:
     for key in ("price_brl", "list_price_brl", "visit_price_brl", "fare_brl", "amount_brl", "contracted_price_brl"):
         if payload.get(key) not in (None, ""):
             return str(payload[key])
     return None
+
+
+def default_price_type(price_amount: str | None) -> str:
+    return "fixed" if price_amount not in (None, "") else "sob_orcamento"
 
 
 def first_text(payload: dict[str, Any], keys: tuple[str, ...], fallback: str) -> str:
@@ -356,6 +567,12 @@ def list_or_empty(value: Any) -> list[Any]:
     return []
 
 
+def dict_or_empty(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    return {}
+
+
 def availability_for(status: Any) -> str:
     normalized = str(status or "").casefold()
     if normalized in {"active", "approved", "published", "available", "posted", "quoted", "completed"}:
@@ -367,7 +584,39 @@ def availability_for(status: Any) -> str:
     return "limited"
 
 
-def consumer_action_for(module_name: str, resource_type: str) -> str:
+def publication_status_for(row: dict[str, Any], payload: dict[str, Any]) -> str:
+    explicit = payload.get("publication_status")
+    if explicit:
+        return str(explicit).casefold()
+    status = str(row.get("status") or "").casefold()
+    if status == "published":
+        return "published"
+    if status in PUBLISHABLE_STATUSES:
+        return "approved"
+    if status in {"rejected", "cancelled", "blocked", "suspended"}:
+        return "rejected"
+    if status in {"draft", "pending_review", "pending_validation", "created", "requested"}:
+        return "draft"
+    return "pending_review"
+
+
+def publishable_for_valley(module_name: str, row: dict[str, Any], payload: dict[str, Any]) -> bool:
+    if payload.get("publish_to_valley") is not True:
+        return False
+    if payload.get("visible_to_consumer") is False:
+        return False
+    if publication_status_for(row, payload) not in VISIBLE_PUBLICATION_STATUSES:
+        return False
+    if availability_for(row.get("status")) == "unavailable":
+        return False
+    if module_name in REGULATED_MODULES and default_compliance_status(module_name, payload) not in {"approved", "verified"}:
+        return False
+    return True
+
+
+def consumer_action_for(module_name: str, resource_type: str, payload: dict[str, Any] | None = None) -> str:
+    if payload and payload.get("consumer_action"):
+        return str(payload["consumer_action"])
     if module_name in {"marketplace", "stock"} and resource_type in {"products", "catalog_products", "discount_quotes"}:
         return "buy"
     if module_name in {"health", "services"}:
@@ -377,6 +626,22 @@ def consumer_action_for(module_name: str, resource_type: str) -> str:
     if module_name in {"delivery", "mobility", "property"}:
         return "request"
     return "view"
+
+
+def action_label_for(action: str, business_activity_id: str | None) -> str:
+    if action == "buy":
+        return "Comprar"
+    if action == "book":
+        return "Marcar consulta" if business_activity_id == "saude" else "Agendar"
+    if action == "hire":
+        return "Falar com advogado" if business_activity_id == "juridico" else "Contratar"
+    if action == "apply":
+        return "Candidatar-se"
+    if action == "request":
+        return "Solicitar"
+    if action == "coming_soon":
+        return "Em breve"
+    return "Ver detalhes"
 
 
 def default_service_area(module_name: str, resource_type: str) -> str:
@@ -393,6 +658,82 @@ def default_region_label(service_area: str) -> str:
     if service_area == "national":
         return "Brasil"
     return "Regiao cadastrada"
+
+
+def default_availability_type(module_name: str, resource_type: str) -> str:
+    if module_name in {"marketplace", "stock", "wms", "erp"}:
+        return "stock"
+    if resource_type in {"appointments", "job_postings"}:
+        return "agenda"
+    if module_name in {"services", "delivery", "mobility", "riders", "property"}:
+        return "region"
+    return "sob_consulta"
+
+
+def default_compliance_status(module_name: str, payload: dict[str, Any] | None = None) -> str:
+    if payload and payload.get("compliance_status"):
+        return str(payload["compliance_status"]).casefold()
+    return "pending_review" if module_name in REGULATED_MODULES else "not_required"
+
+
+def business_activity_for(module_name: str, resource_type: str, title: str, description: str) -> str:
+    category = infer_category(module_name, resource_type, title, description)
+    if category == "Comida e Mercado":
+        return "alimentacao"
+    if category == "Compras e Produtos":
+        return "varejo"
+    if category == "Saude e Bem-estar":
+        return "saude"
+    if category == "Casa, Reparos e Imoveis":
+        return "imobiliario" if module_name == "property" else "servicos_domesticos"
+    if category == "Mobilidade, Entregas e Logistica":
+        return "logistica"
+    if module_name == "jobs":
+        return "empregos"
+    if module_name in {"legal", "document"}:
+        return "juridico"
+    if module_name == "finance":
+        return "financeiro"
+    if category == "Tecnologia, Seguranca e IA":
+        return "tecnologia"
+    return "varejo" if module_name in {"marketplace", "stock"} else "tecnologia"
+
+
+def business_activity_label(activity_id: str) -> str:
+    definition = BUSINESS_ACTIVITY_DEFINITIONS.get(activity_id)
+    if not definition:
+        return "Ofertas profissionais"
+    return str(definition["label_for_consumer"])
+
+
+def company_category_for(module_name: str, business_activity_id: str | None) -> str:
+    if business_activity_id and business_activity_id in BUSINESS_ACTIVITY_DEFINITIONS:
+        return str(BUSINESS_ACTIVITY_DEFINITIONS[business_activity_id]["parent_category"])
+    if module_name in {"marketplace", "stock", "wms", "erp"}:
+        return "Comercio"
+    if module_name in {"services", "delivery", "mobility", "riders"}:
+        return "Servicos"
+    if module_name == "health":
+        return "Saude"
+    if module_name in {"legal", "document"}:
+        return "Juridico"
+    return "Tecnologia"
+
+
+def company_type_label(company_type: Any) -> str:
+    key = str(company_type or "microempresa").casefold()
+    return COMPANY_TYPE_ALIASES.get(key, "Empresa participante")
+
+
+def short_description(description: str, fallback: str) -> str:
+    text = " ".join(str(description or fallback).split())
+    if len(text) <= 160:
+        return text
+    return text[:157].rstrip() + "..."
+
+
+def slugify(value: str) -> str:
+    return value.casefold().replace(" ", "_").replace(",", "").replace("-", "_").replace("__", "_")
 
 
 def friendly_module_title(slug: str, title: str) -> str:

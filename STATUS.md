@@ -4,6 +4,14 @@
 
 ### Concluido neste ciclo
 
+- Catálogo Valley/Marketplace expandido conforme `docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md`, com regra Business -> Marketplace -> Valley para ofertas reais.
+- Ofertas reais agora exigem `publish_to_valley = true`, `publication_status` aprovado/publicado e `visible_to_consumer` ativo para aparecer no Valley.
+- Payload público do catálogo passou a incluir rastreabilidade (`source_entity_id`, `business_id`, `seller_user_id`), tipo/categoria de empresa, ramo de atividade, status de publicação, descrição curta, ação principal simples e filtros comerciais.
+- Criados endpoints `GET /valley/catalog`, `GET /valley/catalog/business-activities` e `GET /valley/catalog/offers/{offer_id}`.
+- Busca Valley aceita filtros por `company_type`, `company_category`, `business_activity`, preço, disponibilidade e `verified_only`, preservando regionalização por raio.
+- Transições de publicação de ofertas comerciais passaram a emitir `valley.catalog.offer.synced` via outbox seguro.
+- `docs/VALLEY_CATALOG.md` e `docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md` documentam a regra operacional e linguagem simples do usuário final.
+- Ciclo remoto Stitch avançou o módulo `marketplace`, criando o quinto projeto registrado no estado local.
 - Logomarcas oficiais incorporadas ao repo em `assets/brand/all-in-one-logo-official.png`, `assets/brand/all-in-one-logo-light-official.png` e `assets/brand/valley-logo-official.png`.
 - Criado contrato mandatorio `config/branding/brand_identity.json`, com All-in-One como marca guarda-chuva e Valley obrigatorio para `valley`, `valley-business` e `valley-rider`.
 - `README.md` passou a exibir a imagem oficial All-in-One no topo para apresentacao do projeto no GitHub.
@@ -19,13 +27,19 @@
 ### Estado atual da sincronia
 
 - Manifesto local: 25 projetos Stitch planejados.
-- Estado remoto local versionado: 4 projetos e 35 telas registrados em `config/stitch/sync_state.json`.
-- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 35 telas registradas carregam `branding_version` 2026-06-01.
+- Estado remoto local versionado: 5 projetos e 38 telas registrados em `config/stitch/sync_state.json`.
+- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 38 telas registradas carregam `branding_version` 2026-06-01.
 - Modulos remotos completos neste estado: `identity`, `business`, `permissions` e `finance`.
+- Modulo `marketplace`: projeto criado e 3 telas registradas; ainda faltam `audit_permissions`, `entity_carts`, `entity_disputes`, `entity_orders`, `entity_pepita_grants` e `entity_reviews`.
+- Proximo passo natural Stitch: concluir telas pendentes de `marketplace` e seguir para `stock`, pois ambos abastecem diretamente produtos do catálogo Valley.
 - Sync remoto real: validado com `STITCH_API_KEY` no Windows e automatizado no GitHub Actions quando `secrets.STITCH_API_KEY` existir.
 
 ### Validacoes executadas
 
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\validate_stitch_mcp_config.py --require-secret && .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, registrando 5 projetos Stitch.
+- `.venv/Scripts/python.exe -m pytest -q tests/test_valley_catalog.py tests/test_outbox_dispatcher_unit.py`: sucesso, 15 testes aprovados.
+- `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py`: sucesso, 12 testes aprovados.
+- `python3 scripts/validate_repository.py`: sucesso.
 - `python3 scripts/validate_stitch_mcp_config.py --require-secret` via Windows: sucesso.
 - `python3 scripts/stitch_orchestrator.py discover` via Windows: sucesso, com tools oficiais Stitch listadas.
 - `python3 scripts/stitch_orchestrator.py sync --max-operations 1` via Windows: sucesso, aplicando branding oficial em tela remota existente.

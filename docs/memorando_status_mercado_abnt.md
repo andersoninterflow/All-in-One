@@ -1,16 +1,16 @@
 # MEMORANDO TÉCNICO-COMERCIAL
 
-**Projeto:** All-in-One  
-**Assunto:** Status de progresso, módulos, serviços, microserviços, concorrência, preços e estratégia de entrada no mercado brasileiro  
-**Data-base:** 30 de maio de 2026  
-**Origem:** Levantamento do repositório local e pesquisa de mercado em fontes públicas  
+**Projeto:** All-in-One
+**Assunto:** Status de progresso, módulos, serviços, microserviços, concorrência, preços e estratégia de entrada no mercado brasileiro
+**Data-base:** 01 de junho de 2026
+**Origem:** Levantamento do repositório local e pesquisa de mercado em fontes públicas
 **Formato:** Memorando em padrão ABNT simplificado, com seções numeradas, resumo, desenvolvimento, recomendações e referências.
 
 ## RESUMO
 
-Este memorando consolida o estado atual do desenvolvimento da plataforma All-in-One, com detalhamento por módulos, serviços e microserviços, percentual de conclusão, próximos passos naturais e análise comercial comparativa no mercado brasileiro. A leitura técnica parte dos documentos `STATUS.md`, `docs/EXECUTION_PLAN.md`, `docs/ARCHITECTURE.md`, `docs/MONETIZATION.md`, contratos em `contracts/` e status individuais em `modules/*/STATUS.md` e `apps/*/STATUS.md`.
+Este memorando consolida o estado atual da plataforma All-in-One (~62% global). O backend estabilizou a persistência PostgreSQL, mas identificou gargalos de validação nos módulos ERP e TMS. A estratégia comercial foca em preços 20% abaixo do mercado nacional e entrada com custo de aquisição zero via parcerias com contadores e associações.
 
-O projeto possui 25 microserviços de domínio com contratos definidos, runtime FastAPI, documentação, testes-base, Dockerfile, OpenAPI e camada de persistência contratual. A camada de infraestrutura local está avançada: Docker Compose estabilizado, PostgreSQL, RabbitMQ, MongoDB, Redis, migrations e 13 APIs FastAPI saudáveis no ambiente local. O backend e a arquitetura de dados estão próximos de uma beta técnica; as maiores lacunas estão em interfaces finais, jornadas E2E por app, integrações homologadas, compliance, observabilidade produtiva e estratégia comercial por vertical.
+O projeto possui 25 microserviços. A camada de infraestrutura local está em 95%. O backend está próximo da beta técnica; as lacunas residem em interfaces Stitch e homologações de provedores reais de pagamento e KYC.
 
 ## 1 INTRODUÇÃO
 
@@ -93,7 +93,7 @@ O objetivo de mercado é concorrer com soluções nacionais fragmentadas, oferec
 
 ## 6 ESTRATÉGIA DE PREÇOS POR MÓDULO
 
-A política recomendada é vender por módulo com bundle progressivo. O preço de entrada deve ser agressivo, mas limitado por volume para não gerar custo operacional sem receita. A regra comercial deve ser: beta gratuito controlado, plano Starter barato, Pro 20% abaixo do concorrente nacional comparável e take rate menor em transações para acelerar aquisição.
+A política comercial é o "Preço de Desestabilização" (20% abaixo do mercado). O custo de entrada para o cliente é zero através de migração assistida de planilhas.
 
 | Módulo | Preço de entrada recomendado | Monetização adicional | Estratégia de menor custo possível |
 | --- | ---: | --- | --- |
@@ -151,6 +151,15 @@ O All-in-One deve entrar como uma suíte modular para PMEs brasileiras que hoje 
 ### 7.4 Estratégia contra concorrentes
 
 Contra ERPs e CRMs tradicionais, vender integração nativa entre módulos, preço menor e ausência de implantação pesada. Contra marketplaces e delivery, vender take rate menor e autonomia do lojista. Contra healthtechs e ATS consultivos, vender preço público, rápido onboarding e pacote para pequenas operações. Contra big techs de IA, vender governança, custo previsível e integração aos dados operacionais do cliente.
+
+### 7.5 Estratégia de Custo Zero para Entrada
+
+Para cada módulo, a estratégia de entrada com custo zero de marketing foca em:
+- **Identity/Business:** Parceria com Juntas Comerciais e Contadores (onboarding nativo).
+- **Finance:** Cashback de transação para cobrir mensalidade (receita transacional paga o SaaS).
+- **Jobs:** Integração com currículos universitários e centros de tecnologia.
+- **Health:** Modelo freemium para médicos residentes e pequenas clínicas de bairro.
+- **Marketplace/Delivery:** "Taxa Zero" nos primeiros 90 dias para lojistas que migrarem do iFood/Nuvemshop.
 
 ## 8 RISCOS E BLOQUEADORES
 

@@ -121,6 +121,13 @@ def main() -> int:
         "compliance.retention_candidates",
         "compliance.retention_decisions",
         "idx_retention_candidates_status",
+        "idx_outbox_dispatcher_ready",
+        "idx_audit_logs_correlation",
+        "idx_finance_ledger_wallet_lookup",
+        "idx_audit_events_correlation",
+        "idx_finance_gold_ledger_entity_lookup",
+        "idx_jobs_resumes_visibility",
+        "idx_business_membership_lookup",
     ]:
         if needle not in migrations:
             fail(f"Controle SQL ausente: {needle}", errors)

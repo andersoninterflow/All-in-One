@@ -94,7 +94,18 @@ def seed_identity_and_company(nonce: str, *, seed_user: bool = True) -> tuple[st
     return user_id, company_id
 
 
-def payload_for(module: str, resource_type: str, user_id: str, company_id: str, nonce: str) -> dict:
+def seed_tms_carrier(carrier_id: str, company_id: str, user_id: str, nonce: str) -> None:
+    with psycopg.connect(POSTGRES_DSN) as connection:
+        connection.execute(
+            """INSERT INTO tms.carriers (id, company_id, name, status, created_by, updated_by)
+               VALUES (%s, %s, %s, 'active', %s, %s)""",
+            (carrier_id, company_id, f"Carrier Matrix {nonce}", user_id, user_id),
+        )
+
+
+def payload_for(
+    module: str, resource_type: str, user_id: str, company_id: str, nonce: str, carrier_id: str = None
+) -> dict:
     common = {
         "company_id": company_id,
         "company_status": "active",
@@ -141,7 +152,7 @@ def payload_for(module: str, resource_type: str, user_id: str, company_id: str, 
         "jobs": {"headline": f"Pessoa candidata {nonce}", "recruiter_visibility": "private"},
         "erp": {"company_id": company_id, "document_type": "nfe", "amount_brl": "10.00", "tax_amount_brl": "2.00"},
         "wms": {"company_id": company_id, "name": f"Armazem {nonce}", "addressing_rules": {"mode": "zone"}},
-        "tms": {"company_id": company_id, "freight_brl": "10.00", "toll_brl": "1.00", "carrier_id": str(uuid4())},
+        "tms": {"company_id": company_id, "freight_brl": "10.00", "toll_brl": "1.00", "carrier_id": carrier_id or str(uuid4())},
         "crm": {"company_id": company_id, "title": f"Oportunidade {nonce}", "expected_value_brl": "10.00"},
         "bpm": {"company_id": company_id, "process_key": f"process-{nonce}"},
         "document": {"company_id": company_id, "storage_key": f"matrix/{nonce}.pdf", "filename": f"{nonce}.pdf"},
@@ -169,9 +180,14 @@ def payload_for(module: str, resource_type: str, user_id: str, company_id: str, 
 def test_postgres_store_matrix_core_contract(module: str, resource_type: str) -> None:
     nonce = uuid4().hex[:12]
     user_id, company_id = seed_identity_and_company(nonce, seed_user=module != "identity")
+
+    carrier_id = str(uuid4())
+    if module == "tms":
+        seed_tms_carrier(carrier_id, company_id, user_id, nonce)
+
     store = store_for(module)
     rule = rule_for(module, resource_type)
-    payload = payload_for(module, resource_type, user_id, company_id, nonce)
+    payload = payload_for(module, resource_type, user_id, company_id, nonce, carrier_id=carrier_id)
     idempotency_key = f"matrix-{module}-{nonce}"
     entity_id = None if module == "identity" else company_id
 

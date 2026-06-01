@@ -164,11 +164,13 @@ def main() -> int:
         fail("Configuracao VS Code ausente: .vscode/settings.json", errors)
     else:
         settings = json.loads(VSCODE_SETTINGS.read_text(encoding="utf-8"))
-        expected_python = "${workspaceFolder}/.venv/Scripts/python.exe"
+        expected_python = "C:\\Users\\ereta\\.codex\\worktrees\\all-in-one\\.venv\\Scripts\\python.exe"
         if settings.get("python.defaultInterpreterPath") != expected_python:
             fail(f"python.defaultInterpreterPath deve ser {expected_python}. Corrija no .vscode/settings.json e execute python -m venv .venv", errors)
         if settings.get("python.testing.pytestArgs") not in ([], None):
             fail("python.testing.pytestArgs deve ficar vazio; pytest.ini e a fonte obrigatoria.", errors)
+        if settings.get("mdb.presetConnections") not in ([], None):
+            fail("mdb.presetConnections deve ficar vazio para nao tentar conectar automaticamente ao Mongo local.", errors)
     if not VSCODE_TASKS.is_file():
         fail("Configuracao VS Code ausente: .vscode/tasks.json", errors)
     else:

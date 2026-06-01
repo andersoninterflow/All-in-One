@@ -20,7 +20,7 @@ if (-not (Test-Path ".vscode\settings.json")) {
 }
 
 $settings = Get-Content ".vscode\settings.json" -Raw | ConvertFrom-Json
-$expectedInterpreter = '${workspaceFolder}/.venv/Scripts/python.exe'
+$expectedInterpreter = 'C:\Users\ereta\.codex\worktrees\all-in-one\.venv\Scripts\python.exe'
 if ($settings.'python.defaultInterpreterPath' -ne $expectedInterpreter) {
     throw "python.defaultInterpreterPath deve ser $expectedInterpreter"
 }

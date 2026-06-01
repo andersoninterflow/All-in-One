@@ -23,6 +23,7 @@ VSCODE_SETTINGS = ROOT / ".vscode" / "settings.json"
 VSCODE_TASKS = ROOT / ".vscode" / "tasks.json"
 DOCKER_COMPOSE = ROOT / "infra" / "docker" / "docker-compose.yml"
 KUBERNETES_PLATFORM = ROOT / "infra" / "kubernetes" / "base" / "platform.yaml"
+KUBERNETES_RETENTION_ALERTING = ROOT / "infra" / "kubernetes" / "base" / "retention-alerting.yaml"
 REQUIRED_MODULE_FILES = {
     "README.md",
     "main.py",
@@ -256,6 +257,12 @@ def main() -> int:
         for alert_name, alert in retention_alerts.get("alerts", {}).items():
             if not alert.get("expr") or not alert.get("evidence") or "incident_ticket" not in alert.get("evidence", []):
                 fail(f"Alerta de retencao incompleto: {alert_name}", errors)
+        retention_alerting = KUBERNETES_RETENTION_ALERTING.read_text(encoding="utf-8") if KUBERNETES_RETENTION_ALERTING.is_file() else ""
+        if "kind: PrometheusRule" not in retention_alerting or "kind: AlertmanagerConfig" not in retention_alerting:
+            fail("Alertas de retencao devem ter PrometheusRule e AlertmanagerConfig Kubernetes.", errors)
+        for alert_name, alert in retention_alerts.get("alerts", {}).items():
+            if f"alert: {alert_name}" not in retention_alerting or alert["expr"] not in retention_alerting:
+                fail(f"PrometheusRule de retencao nao materializa alerta: {alert_name}", errors)
 
     if errors:
         print("\nFalhas de validacao encontradas:")

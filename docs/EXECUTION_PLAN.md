@@ -17,7 +17,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 63% | 9 apps catalogados, catalogo Valley backend regionalizado, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
 | Integracoes externas | 38% | Contratos, matriz versionada, adapters sandbox e endpoints administrativos locais existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
-| Producao/compliance | 56% | `docs/COMPLIANCE.md`, matriz LGPD por modulo, fluxo de direitos do titular, contrato, worker local, fila PostgreSQL, agendamento seguro e alertas de retencao LGPD | Faltam conectar alertas ao stack real, mutacoes finais nos stores de dominio, DPIA assinada, pentest, carga, DR, backup/restore e observabilidade produtiva. |
+| Producao/compliance | 59% | `docs/COMPLIANCE.md`, matriz LGPD por modulo, fluxo de direitos do titular, contrato, worker local, fila PostgreSQL, agendamento seguro e PrometheusRule/AlertmanagerConfig de retencao LGPD | Faltam aplicar os manifests no cluster real, mutacoes finais nos stores de dominio, DPIA assinada, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
 ## 2. Ordem mandataria de execucao
 
@@ -217,11 +217,11 @@ Proximos passos naturais:
 
 Objetivo: sair de beta tecnica para producao auditavel.
 
-Status: 56%
+Status: 59%
 
 Pendencias:
 - Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
-- Conectar alertas de retencao ao stack Prometheus/Alertmanager real.
+- Aplicar manifests de monitoramento no cluster real e validar disparo controlado dos alertas.
 - DPIA assinada por modulo critico.
 - Pentest e SAST/DAST.
 - Testes de carga.
@@ -231,7 +231,7 @@ Pendencias:
 - Revisao de permissoes para dados sensiveis de saude, identidade, financeiro e trabalho.
 
 Proximos passos naturais:
-1. Conectar alertas de retencao ao stack Prometheus/Alertmanager real.
+1. Aplicar manifests de monitoramento no cluster real e validar disparo controlado dos alertas.
 2. Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run.
 3. Adicionar scans obrigatorios no CI.
 4. Testar restore de Postgres/Mongo.

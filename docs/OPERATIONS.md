@@ -87,6 +87,11 @@ Alertas obrigatorios ficam versionados em
 As notificacoes nunca devem carregar payload sensivel; evidencias aceitas sao
 hashes, contadores, logs do worker e ticket de incidente.
 
+Para Kubernetes com Prometheus Operator, as regras aplicaveis ficam em
+`infra/kubernetes/base/retention-alerting.yaml`, contendo `PrometheusRule` e
+`AlertmanagerConfig` para rotear severidade critica tambem ao plantao de
+plataforma.
+
 ## Incidentes
 
 Revogue sessoes/API keys, preserve trilha imutavel, suspenda publicacao ou

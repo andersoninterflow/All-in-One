@@ -44,6 +44,7 @@ REQUIRED_ENV_VARS = {
     "ALL_IN_ONE_JOBS_POSTGRES_DSN",
     "ALL_IN_ONE_FINANCE_POSTGRES_DSN",
     "ALL_IN_ONE_IDENTITY_POSTGRES_DSN",
+    "ALL_IN_ONE_RETENTION_POSTGRES_DSN",
 }
 REQUIRED_SUBJECT_RIGHTS = {
     "acesso",
@@ -106,6 +107,9 @@ def main() -> int:
         "immutable_jobs_resume_access_logs",
         "storage_encryption",
         "idx_jobs_documents_idempotency",
+        "compliance.retention_candidates",
+        "compliance.retention_decisions",
+        "idx_retention_candidates_status",
     ]:
         if needle not in migrations:
             fail(f"Controle SQL ausente: {needle}", errors)

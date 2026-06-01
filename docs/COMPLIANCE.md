@@ -101,6 +101,17 @@ A primeira implementacao executavel esta em
 Ela processa candidatos em JSONL, aplica dry-run, bloqueia legal hold, redige
 campos sensiveis em anonimizacao e gera recibo hash para descarte.
 
+O modo operacional PostgreSQL usa `compliance.retention_candidates` como fila de
+entrada e grava cada resultado em `compliance.retention_decisions`, `audit.logs`
+e `audit.domain_events`. Para executar um lote:
+
+```bash
+python -m workers.retention_worker.main --postgres --job retention_review_daily --dry-run
+```
+
+O DSN vem de `ALL_IN_ONE_RETENTION_POSTGRES_DSN` e o tamanho do lote de
+`ALL_IN_ONE_RETENTION_BATCH_SIZE`.
+
 ## Evidencia Atual
 
 - `docs/SECURITY.md` descreve controles implementados e obrigatorios.
@@ -114,6 +125,8 @@ campos sensiveis em anonimizacao e gera recibo hash para descarte.
   anonimizacao, descarte e legal hold por modulo.
 - `modules/shared/retention_worker.py` e `workers/retention_worker/main.py`
   executam o processamento local dos candidatos de retencao.
+- `database/postgres/migrations/016_compliance_retention_jobs.sql` cria a fila
+  PostgreSQL de candidatos e a tabela append-by-policy de decisoes.
 - `tests/test_compliance_matrix.py` bloqueia ausencia de modulo, campos
   obrigatorios e classificacao invalida.
 - `tests/test_data_subject_rights.py` bloqueia ausencia de direito, SLA
@@ -125,6 +138,8 @@ campos sensiveis em anonimizacao e gera recibo hash para descarte.
 
 ## Pendencias
 
-- Conectar o worker de retencao a stores PostgreSQL e agendamento produtivo.
+- Conectar o worker de retencao ao agendamento produtivo.
+- Aplicar mutacoes definitivas nos stores de dominio apos homologacao de dry-run
+  por modulo.
 - Gerar evidencias de DPIA assinadas por modulo critico.
 - Integrar scans SAST/SCA/DAST obrigatorios ao CI com severidade bloqueante.

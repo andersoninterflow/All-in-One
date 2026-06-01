@@ -84,6 +84,17 @@ SAFE_PAYLOAD_FIELDS: dict[str, frozenset[str]] = {
             "consumer_action",
         }
     ),
+    "retention_decisions": frozenset(
+        {
+            "candidate_id",
+            "module",
+            "resource_type",
+            "action",
+            "decision_status",
+            "job_name",
+            "evidence",
+        }
+    ),
 }
 
 

@@ -17,7 +17,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 | Docker local | 95% | Postgres, RabbitMQ, MongoDB, Redis, outbox e 13 APIs FastAPI healthy | Falta gate CI para impedir regressao de compose. |
 | Apps/frontend | 63% | 9 apps catalogados, catalogo Valley backend regionalizado, plano Stitch com 25 projetos/177 telas e jornadas contratuais locais por pytest | Ainda falta app funcional real e Playwright E2E. |
 | Integracoes externas | 38% | Contratos, matriz versionada, adapters sandbox e endpoints administrativos locais existem | Provedores reais dependem de credenciais/homologacao e testes de contrato externos. |
-| Producao/compliance | 44% | `docs/COMPLIANCE.md`, matriz LGPD por modulo, fluxo de direitos do titular, contrato e worker local de retencao LGPD | Faltam conexao do worker aos stores PostgreSQL, agendamento produtivo, DPIA assinada, pentest, carga, DR, backup/restore e observabilidade produtiva. |
+| Producao/compliance | 48% | `docs/COMPLIANCE.md`, matriz LGPD por modulo, fluxo de direitos do titular, contrato, worker local e fila PostgreSQL de retencao LGPD | Faltam agendamento produtivo, mutacoes finais nos stores de dominio, DPIA assinada, pentest, carga, DR, backup/restore e observabilidade produtiva. |
 
 ## 2. Ordem mandataria de execucao
 
@@ -217,10 +217,11 @@ Proximos passos naturais:
 
 Objetivo: sair de beta tecnica para producao auditavel.
 
-Status: 44%
+Status: 48%
 
 Pendencias:
-- Conectar o worker de retencao LGPD aos stores PostgreSQL e ao agendamento produtivo.
+- Conectar o worker de retencao LGPD ao agendamento produtivo.
+- Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run por modulo.
 - DPIA assinada por modulo critico.
 - Pentest e SAST/DAST.
 - Testes de carga.
@@ -230,11 +231,11 @@ Pendencias:
 - Revisao de permissoes para dados sensiveis de saude, identidade, financeiro e trabalho.
 
 Proximos passos naturais:
-1. Conectar o worker de retencao LGPD aos stores PostgreSQL.
-2. Adicionar scans obrigatorios no CI.
-3. Testar restore de Postgres/Mongo.
-4. Definir SLOs e alertas.
-5. Registrar evidencias de DPIA para modulos criticos.
+1. Adicionar agendamento produtivo para o worker de retencao LGPD.
+2. Aplicar mutacoes finais nos stores de dominio apos homologacao de dry-run.
+3. Adicionar scans obrigatorios no CI.
+4. Testar restore de Postgres/Mongo.
+5. Definir SLOs e alertas.
 
 ## 3. Matriz por modulo
 

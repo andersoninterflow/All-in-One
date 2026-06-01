@@ -177,6 +177,37 @@ def test_valley_catalog_publication_uses_safe_payload() -> None:
     assert "street_address" not in message["payload"]
 
 
+def test_retention_decision_publication_uses_safe_payload() -> None:
+    message = publication_message(
+        {
+            "id": uuid4(),
+            "routing_key": "compliance.data.anonymized",
+            "schema_version": 1,
+            "aggregate_type": "retention_decisions",
+            "aggregate_id": uuid4(),
+            "correlation_id": uuid4(),
+            "entity_id": None,
+            "created_at": datetime.now(timezone.utc),
+            "payload": {
+                "candidate_id": str(uuid4()),
+                "module": "crm",
+                "resource_type": "leads",
+                "action": "delete_or_anonymize_opted_out_leads",
+                "decision_status": "applied",
+                "job_name": "anonymization_worker_hourly",
+                "evidence": {"record_selector_hash": "hash", "policy_version": "2026-05-31"},
+                "payload": {"email": "must-not-publish"},
+                "raw_before": {"name": "private"},
+            },
+        }
+    )
+    assert message["payload"]["module"] == "crm"
+    assert message["payload"]["decision_status"] == "applied"
+    assert message["payload"]["evidence"]["record_selector_hash"] == "hash"
+    assert "payload" not in message["payload"]
+    assert "raw_before" not in message["payload"]
+
+
 def test_retry_observation_uses_exponential_backoff_with_cap() -> None:
     settings = OutboxSettings(
         postgres_dsn="postgresql://example",

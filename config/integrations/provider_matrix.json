@@ -315,6 +315,29 @@
       ],
       "zero_cost_entry": "CSV/manual e fixture local ate fornecedor liberar sandbox",
       "go_live_gate": "SLA de estoque, politica de devolucao, margem minima e conciliacao de pedido"
+    },
+    {
+      "key": "ai_agent_superdesign",
+      "modules": [
+        "ai_core",
+        "api_hub"
+      ],
+      "capability": "Agente de design e codificacao assistida via LLM",
+      "stage": "active",
+      "sandbox_adapter": "local_mock_ai_response",
+      "primary_model": "google/gemini-pro-1.5",
+      "primary_candidates": [
+        "OpenRouter"
+      ],
+      "required_env": [
+        "OPENROUTER_API_KEY"
+      ],
+      "sensitive_data": [
+        "prompt_context",
+        "api_key"
+      ],
+      "zero_cost_entry": "utilizar modelos gratuitos via OpenRouter em ambiente de dev",
+      "go_live_gate": "auditoria de prompts e revisao de custos"
     }
   ]
 }

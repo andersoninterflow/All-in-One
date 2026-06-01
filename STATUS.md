@@ -1,5 +1,14 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-01 Componente CheckoutModal UI
+
+### Concluído neste ciclo
+
+- Desenvolvido `checkout_modal_1.html` em `.superdesign/design_iterations/`.
+- Implementada lógica visual de Pepitas (1, 10, 100) e regra de descontos `BR-STO-009`.
+- Estética Neo-brutalista aplicada com variáveis de marca Valley.
+- Sinalização de imutabilidade e proteção de Ledger adicionada ao rodapé da interface.
+
 ## STATUS OPERACIONAL - 2026-06-01 Componente LedgerTransactionList UI
 
 ### Concluído neste ciclo

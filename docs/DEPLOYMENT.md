@@ -11,6 +11,8 @@
    `ALL_IN_ONE_RABBITMQ_URL`; o Compose ja fornece valores locais.
    Para coordenar designs Stitch configure uma credencial rotacionada em
    `STITCH_API_KEY` ou `STITCH_ACCESS_TOKEN` apenas no ambiente local/CI.
+Para o agente de IA Superdesign, configure `OPENROUTER_API_KEY` no seu ambiente local
+e aponte a URL base para `https://openrouter.ai/api/v1`.
 2. Execute `docker compose -f infra/docker/docker-compose.yml up --build`.
 3. Aplique migrations automaticamente pelo container `migrations` ou rode
    `psql` em ambiente limpo.

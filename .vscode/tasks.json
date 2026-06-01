@@ -15,6 +15,19 @@
             "problemMatcher": []
         },
         {
+            "label": "cleanup: artifacts",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": [
+                "scripts/cleanup_artifacts.py"
+            ],
+            "post_command": "powershell -Command \"$ws = New-Object -ComObject WScript.Shell; $ws.Popup('A limpeza de artefatos do All-in-One foi concluída com sucesso!', 0, 'Cleanup Success', 64)\"",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
             "label": "test: pytest completo",
             "type": "shell",
             "command": "${config:python.defaultInterpreterPath}",
@@ -22,6 +35,9 @@
                 "-m",
                 "pytest",
                 "-q"
+            ],
+            "dependsOn": [
+                "cleanup: artifacts"
             ],
             "group": "test",
             "problemMatcher": []

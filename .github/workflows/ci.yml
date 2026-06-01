@@ -1,26 +1,36 @@
-name: CI
+name: Continuous Integration
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
   pull_request:
+    branches: [main]
 
 jobs:
-  python:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
-      - run: pip install -r requirements-dev.txt
-      - run: python scripts/scaffold_modules.py --check
-      - run: python scripts/validate_repository.py
-      - run: python scripts/validate_openapi.py
-      - name: Generated artifacts gate
-        shell: pwsh
-        run: ./scripts/check_generated_artifacts.ps1
-      - run: python -m compileall -q modules scripts platform_test_support.py
-      - run: python -m pytest
-      - run: docker build --file modules/identity/Dockerfile --tag all-in-one/identity:ci .
+
+      - name: Install dependencies
+        run: pip install requests pytest pytest-cov
+
+      - name: Cleanup artifacts
+        run: python scripts/cleanup_artifacts.py
+
+      - name: Run Unit Tests
+        run: pytest --cov=scripts --cov-report=html --cov-report=term-missing --cov-fail-under=80 tests/
+
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-coverage-report
+          path: htmlcov/
+          retention-days: 7

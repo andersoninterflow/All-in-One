@@ -3,6 +3,8 @@
 Este documento consolida a primeira matriz operacional de compliance do
 All-in-One. A fonte versionada esta em
 `config/compliance/data_classification.json` e cobre os 25 modulos do catalogo.
+O fluxo operacional de direitos do titular fica em
+`config/compliance/data_subject_rights.json`.
 
 ## Principios
 
@@ -43,6 +45,35 @@ Antes de producao ampla:
 6. Validar backup/restore e retencao para PostgreSQL, MongoDB e storage privado.
 7. Rodar pentest, SAST/SCA, DAST e testes negativos de permissao.
 
+## Direitos Do Titular
+
+O atendimento operacional LGPD passa a ter contrato versionado. Cada pedido
+deve informar `request_id`, `subject_id`, `right_type`,
+`identity_verification_level`, `requested_at` e `source_channel`.
+
+Direitos cobertos:
+
+- Acesso aos dados.
+- Correcao de dados.
+- Portabilidade.
+- Anonimizacao.
+- Revogacao de consentimento.
+- Exclusao quando legalmente permitida.
+
+Regras obrigatorias:
+
+- Todo fluxo comeca por validacao de identidade.
+- Todo fluxo termina com auditoria em
+  `compliance.data_subject_request.processed`.
+- Saidas publicas nunca incluem segredos reais, chaves privadas, dados de
+  cartao, biometria bruta, prontuario de terceiros ou documentos brutos sem
+  revalidacao do titular.
+- Modulos criticos (`identity`, `finance`, `jobs`, `document`, `hr`,
+  `health`, `vision`, `ai_core` e `api_hub`) exigem cobertura completa dos
+  direitos e revisao por papel de compliance quando houver dado sensivel.
+- Quando houver obrigacao legal, contrato ativo, defesa de direito ou disputa,
+  o pedido pode ser parcialmente atendido com justificativa registrada.
+
 ## Evidencia Atual
 
 - `docs/SECURITY.md` descreve controles implementados e obrigatorios.
@@ -50,12 +81,15 @@ Antes de producao ampla:
   provedor externo.
 - `config/compliance/data_classification.json` versiona a classificacao de
   dados, base legal, retencao e gates por modulo.
+- `config/compliance/data_subject_rights.json` versiona SLA, workflow,
+  evidencias, guardrails e cobertura por modulo para direitos do titular.
 - `tests/test_compliance_matrix.py` bloqueia ausencia de modulo, campos
   obrigatorios e classificacao invalida.
+- `tests/test_data_subject_rights.py` bloqueia ausencia de direito, SLA
+  invalido, modulo sem cobertura e exportacao de dados proibidos.
 
 ## Pendencias
 
-- Criar fluxo operacional de direitos do titular.
 - Conectar retencao a jobs de anonimizacao e descarte.
 - Gerar evidencias de DPIA assinadas por modulo critico.
 - Integrar scans SAST/SCA/DAST obrigatorios ao CI com severidade bloqueante.

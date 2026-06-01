@@ -1,5 +1,36 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-05-31 Direitos Do Titular LGPD
+
+### Concluido neste ciclo
+
+- `config/compliance/data_subject_rights.json` criado com SLA, workflow, evidencias, guardrails, papeis de revisao e cobertura dos 25 modulos.
+- `tests/test_data_subject_rights.py` criado para validar direitos LGPD, cobertura por modulo, SLA, auditoria obrigatoria e dados que nunca podem ser exportados.
+- `scripts/validate_repository.py` voltou a validar conteudo da matriz LGPD e passou a exigir o fluxo de direitos do titular.
+- `.env.example` passou a declarar DSNs PostgreSQL obrigatorios como contrato versionado, sem exigir segredo real no CI.
+- `scripts/setup_venv.ps1` agora instala `requirements-dev.txt` e valida `python.defaultInterpreterPath` persistente.
+- `docs/COMPLIANCE.md`, `docs/REQUIREMENTS_TRACEABILITY.md` e `docs/EXECUTION_PLAN.md` atualizados; Producao/compliance avanca para 34%.
+
+### Validacoes executadas
+
+- `.venv/Scripts/python.exe -m pytest -q tests/test_data_subject_rights.py tests/test_compliance_matrix.py`: 7 testes aprovados.
+- `python3 scripts/validate_repository.py`: aprovado para 25 modulos e controles centrais.
+- `python3 scripts/scaffold_modules.py --check`: 456 artefatos verificados e 12 customizados preservados.
+- `python3 scripts/validate_openapi.py`: aprovado para 25 modulos e operacoes minimas.
+- `python3 -m json.tool config/compliance/data_subject_rights.json`: aprovado.
+- `python3 -m compileall -q scripts tests/test_data_subject_rights.py`: aprovado.
+- `.venv/Scripts/python.exe -m pytest -q`: 155 testes aprovados, 29 ignorados.
+
+### Pendencias rastreadas
+
+- Conectar retencao a jobs reais de anonimizacao e descarte.
+- Registrar DPIA assinada para modulos criticos.
+- Adicionar scans SAST/SCA/DAST obrigatorios no CI.
+
+### Git
+
+- Incremento pronto para commit e push automatico em `origin/main` e `fork/main`.
+
 ## STATUS OPERACIONAL - 2026-05-31 Matriz LGPD E Compliance
 
 ### Concluido neste ciclo

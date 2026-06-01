@@ -19,8 +19,9 @@
 ### Estado atual da sincronia
 
 - Manifesto local: 25 projetos Stitch planejados.
-- Estado remoto local versionado: 2 projetos e 15 telas registrados em `config/stitch/sync_state.json`.
-- Branding remoto: `identity/overview` recebeu `branding_version` 2026-06-01 via `edit_screens`; telas antigas restantes seguem rastreadas em `branding_pending` para execucao resumivel.
+- Estado remoto local versionado: 2 projetos e 18 telas registrados em `config/stitch/sync_state.json`.
+- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 18 telas registradas carregam `branding_version` 2026-06-01.
+- Avanco remoto adicional: Business passou de 1 para 4 telas sincronizadas, restando `audit_permissions` e `entity_user_company_memberships` para fechar o modulo.
 - Sync remoto real: validado com `STITCH_API_KEY` no Windows e automatizado no GitHub Actions quando `secrets.STITCH_API_KEY` existir.
 
 ### Validacoes executadas
@@ -28,7 +29,12 @@
 - `python3 scripts/validate_stitch_mcp_config.py --require-secret` via Windows: sucesso.
 - `python3 scripts/stitch_orchestrator.py discover` via Windows: sucesso, com tools oficiais Stitch listadas.
 - `python3 scripts/stitch_orchestrator.py sync --max-operations 1` via Windows: sucesso, aplicando branding oficial em tela remota existente.
+- `python3 scripts/stitch_orchestrator.py sync --max-operations 5` via Windows: sucesso, reduzindo `branding_pending` de 14 para 9.
+- `python3 scripts/stitch_orchestrator.py sync --max-operations 5` via Windows: sucesso, reduzindo `branding_pending` de 9 para 4.
+- `python3 scripts/stitch_orchestrator.py sync --max-operations 4` via Windows: sucesso, zerando `branding_pending`.
+- `python3 scripts/stitch_orchestrator.py sync --max-operations 3` via Windows: sucesso, criando 3 novas telas Business com branding oficial.
 - `.venv/Scripts/python.exe -m pytest -q`: sucesso, 195 testes aprovados e 29 pulados.
+- `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py`: sucesso, 12 testes aprovados.
 - `python3 scripts/scaffold_modules.py --check`: sucesso.
 - `python3 scripts/validate_repository.py`: sucesso.
 - `python3 scripts/validate_openapi.py`: sucesso.

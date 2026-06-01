@@ -10,55 +10,68 @@
         },
         "entity_users": {
           "screen_id": "15620840531103559001",
-          "name": "Identity - Users"
+          "name": "Identity - Users",
+          "branding_version": "2026-06-01"
         },
         "entity_documents": {
           "screen_id": "10044704592434529777",
-          "name": "Identity - Documents"
+          "name": "Identity - Documents",
+          "branding_version": "2026-06-01"
         },
         "entity_biometrics": {
           "screen_id": "4006685918359021277",
-          "name": "Identity - Biometrics"
+          "name": "Identity - Biometrics",
+          "branding_version": "2026-06-01"
         },
         "entity_sessions": {
           "screen_id": "1599962449736746644",
-          "name": "Identity - Sessions"
+          "name": "Identity - Sessions",
+          "branding_version": "2026-06-01"
         },
         "entity_identity_verifications": {
           "screen_id": "14317294756111226582",
-          "name": "Identity - Identity Verifications"
+          "name": "Identity - Identity Verifications",
+          "branding_version": "2026-06-01"
         },
         "entity_consent_records": {
           "screen_id": "10877092216159681621",
-          "name": "Identity - Consent Records"
+          "name": "Identity - Consent Records",
+          "branding_version": "2026-06-01"
         },
         "auth_gateway": {
           "screen_id": "18248888577235785350",
-          "name": "Identity - Auth Gateway"
+          "name": "Identity - Auth Gateway",
+          "branding_version": "2026-06-01"
         },
         "kyc_verification": {
           "screen_id": "11910615811010722712",
-          "name": "Identity - Kyc Verification"
+          "name": "Identity - Kyc Verification",
+          "branding_version": "2026-06-01"
         },
         "kyb_business": {
           "screen_id": "1703182347812851036",
-          "name": "Identity - Kyb Business"
+          "name": "Identity - Kyb Business",
+          "branding_version": "2026-06-01"
         },
         "mfa_manager": {
           "screen_id": "4774257304834379917",
-          "name": "Identity - Mfa Manager"
+          "name": "Identity - Mfa Manager",
+          "branding_version": "2026-06-01"
         },
         "consent_lgpd": {
           "screen_id": "2486399194428573431",
-          "name": "Identity - Consent Lgpd"
+          "name": "Identity - Consent Lgpd",
+          "branding_version": "2026-06-01"
         },
         "session_control": {
           "screen_id": "13803597707122133042",
-          "name": "Identity - Session Control"
+          "name": "Identity - Session Control",
+          "branding_version": "2026-06-01"
         },
         "audit_permissions": {
           "screen_id": "58579948138110050",
-          "name": "Identity - Auditoria E Permissoes"
+          "name": "Identity - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "6639913763402881744"
@@ -67,7 +80,23 @@
       "screens": {
         "overview": {
           "screen_id": "5649105063330541501",
-          "name": "Business - Visao Geral"
+          "name": "Business - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_companies": {
+          "screen_id": "16170543802202538958",
+          "name": "Business - Companies",
+          "branding_version": "2026-06-01"
+        },
+        "entity_branches": {
+          "screen_id": "9819233722633322193",
+          "name": "Business - Branches",
+          "branding_version": "2026-06-01"
+        },
+        "entity_company_documents": {
+          "screen_id": "2117323080064012635",
+          "name": "Business - Company Documents",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "17923603857789960283"

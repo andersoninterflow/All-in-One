@@ -695,6 +695,26 @@
         }
       },
       "project_id": "11272449965029223454"
+    },
+    "document": {
+      "screens": {
+        "overview": {
+          "screen_id": "3751935248737398905",
+          "name": "GED ECM - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_folders": {
+          "screen_id": "5088055264925117973",
+          "name": "GED ECM - Folders",
+          "branding_version": "2026-06-01"
+        },
+        "entity_documents": {
+          "screen_id": "15796191646283836925",
+          "name": "GED ECM - Documents",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "5984312485344028157"
     }
   }
 }

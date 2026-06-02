@@ -522,6 +522,26 @@
           "screen_id": "7400637468084657377",
           "name": "ERP - Payables",
           "branding_version": "2026-06-01"
+        },
+        "entity_receivables": {
+          "screen_id": "648158157442890708",
+          "name": "ERP - Receivables",
+          "branding_version": "2026-06-01"
+        },
+        "entity_cost_centers": {
+          "screen_id": "14726905845708999683",
+          "name": "ERP - Cost Centers",
+          "branding_version": "2026-06-01"
+        },
+        "entity_fiscal_documents": {
+          "screen_id": "4493019805260221674",
+          "name": "ERP - Fiscal Documents",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "617244461933537724",
+          "name": "ERP - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "5021553112129158952"

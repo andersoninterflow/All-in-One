@@ -27,12 +27,12 @@
 ### Estado atual da sincronia
 
 - Manifesto local: 25 projetos Stitch planejados.
-- Estado remoto local versionado: 12 projetos e 93 telas registrados em `config/stitch/sync_state.json`.
-- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 93 telas registradas carregam `branding_version` 2026-06-01.
-- Modulos remotos completos neste estado: `identity`, `business`, `permissions`, `finance`, `marketplace`, `stock`, `delivery`, `riders`, `services`, `mobility` e `jobs`.
+- Estado remoto local versionado: 12 projetos e 97 telas registrados em `config/stitch/sync_state.json`.
+- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 97 telas registradas carregam `branding_version` 2026-06-01.
+- Modulos remotos completos neste estado: `identity`, `business`, `permissions`, `finance`, `marketplace`, `stock`, `delivery`, `riders`, `services`, `mobility`, `jobs` e `erp`.
 - Modulo `jobs`: concluido com telas de vagas, candidatura, curriculo, documentos, CTPS, auditoria e revisao por recrutador.
-- Modulo `erp`: projeto criado com telas iniciais `overview`, `entity_accounts` e `entity_payables`; ainda faltam `audit_permissions`, `entity_cost_centers`, `entity_fiscal_documents` e `entity_receivables`.
-- Proximo passo natural Stitch: concluir telas pendentes de `erp` e seguir para `wms`, conectando retaguarda operacional, fiscal, financeira e estoque avancado ao ecossistema Valley.
+- Modulo `erp`: concluido com visao geral, contas, contas a pagar, contas a receber, centros de custo, documentos fiscais e auditoria/permissoes.
+- Proximo passo natural Stitch: iniciar `wms`, conectando estoque avancado, armazenagem, separacao, remessas e inventario ao ecossistema Valley.
 - Sync remoto real: validado com `STITCH_API_KEY` no Windows e automatizado no GitHub Actions quando `secrets.STITCH_API_KEY` existir.
 
 ### Validacoes executadas
@@ -55,6 +55,10 @@
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\validate_stitch_mcp_config.py --require-secret && .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, criando projeto `jobs` e registrando 4 telas iniciais.
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\validate_stitch_mcp_config.py --require-secret && .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 5"`: sucesso, concluindo as telas pendentes de `jobs`.
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, criando projeto `erp` e registrando 3 telas iniciais.
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 1"`: sucesso, registrando `erp/entity_receivables` apos falha remota transitoria de credencial OAuth.
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 1"`: sucesso, registrando `erp/entity_cost_centers`.
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 1"`: sucesso, registrando `erp/entity_fiscal_documents`.
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 1"`: sucesso, registrando `erp/audit_permissions` e concluindo `erp`.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py tests/test_valley_catalog.py`: sucesso, 17 testes aprovados.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_valley_catalog.py tests/test_outbox_dispatcher_unit.py`: sucesso, 15 testes aprovados.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py`: sucesso, 12 testes aprovados.

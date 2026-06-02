@@ -545,6 +545,26 @@
         }
       },
       "project_id": "5021553112129158952"
+    },
+    "wms": {
+      "screens": {
+        "overview": {
+          "screen_id": "13452900719833363515",
+          "name": "WMS - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_warehouses": {
+          "screen_id": "37100678490191511",
+          "name": "WMS - Warehouses",
+          "branding_version": "2026-06-01"
+        },
+        "entity_bins": {
+          "screen_id": "2787855573238366145",
+          "name": "WMS - Bins",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "9401578481038204091"
     }
   }
 }

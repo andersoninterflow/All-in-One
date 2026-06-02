@@ -677,6 +677,21 @@
           "screen_id": "3472229764566460919",
           "name": "BPM - Workflow Instances",
           "branding_version": "2026-06-01"
+        },
+        "entity_tasks": {
+          "screen_id": "1504066023793412203",
+          "name": "BPM - Tasks",
+          "branding_version": "2026-06-01"
+        },
+        "entity_sla_policies": {
+          "screen_id": "4984809311688481608",
+          "name": "BPM - Sla Policies",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "11288783375217801157",
+          "name": "BPM - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "11272449965029223454"

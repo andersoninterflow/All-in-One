@@ -427,9 +427,39 @@
           "screen_id": "7850684981516067536",
           "name": "Mobility - Tickets",
           "branding_version": "2026-06-01"
+        },
+        "entity_fare_rules": {
+          "screen_id": "14446439038156744579",
+          "name": "Mobility - Fare Rules",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "262286457982041337",
+          "name": "Mobility - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "18282092513082869357"
+    },
+    "jobs": {
+      "screens": {
+        "overview": {
+          "screen_id": "15508142992717482076",
+          "name": "Jobs - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_resumes": {
+          "screen_id": "12496231675381664529",
+          "name": "Jobs - Resumes",
+          "branding_version": "2026-06-01"
+        },
+        "entity_employment_records": {
+          "screen_id": "1501429023660782360",
+          "name": "Jobs - Employment Records",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "18028857710888326682"
     }
   }
 }

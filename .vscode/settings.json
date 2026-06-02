@@ -18,5 +18,6 @@
         }
     },
     "geminicodeassist.outlines.automaticOutlineGeneration": true,
-    "mdb.presetConnections": []
+    "mdb.presetConnections": [],
+    "workbench.editor.preferHistoryBasedLanguageDetection": true
 }

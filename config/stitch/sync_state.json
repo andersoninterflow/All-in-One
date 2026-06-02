@@ -417,6 +417,16 @@
           "screen_id": "14133988927571672213",
           "name": "Mobility - Routes",
           "branding_version": "2026-06-01"
+        },
+        "entity_stops": {
+          "screen_id": "15767328986061262875",
+          "name": "Mobility - Stops",
+          "branding_version": "2026-06-01"
+        },
+        "entity_tickets": {
+          "screen_id": "7850684981516067536",
+          "name": "Mobility - Tickets",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "18282092513082869357"

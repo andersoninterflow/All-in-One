@@ -730,6 +730,26 @@
         }
       },
       "project_id": "5984312485344028157"
+    },
+    "hr": {
+      "screens": {
+        "overview": {
+          "screen_id": "5740201400410635897",
+          "name": "HR HCM ATS LMS - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_employees": {
+          "screen_id": "8837109635780405793",
+          "name": "HR HCM ATS LMS - Employees",
+          "branding_version": "2026-06-01"
+        },
+        "entity_payroll_runs": {
+          "screen_id": "4436367858276767248",
+          "name": "HR HCM ATS LMS - Payroll Runs",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "4474436353819127007"
     }
   }
 }

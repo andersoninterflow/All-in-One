@@ -625,6 +625,26 @@
         }
       },
       "project_id": "9584658268205833693"
+    },
+    "crm": {
+      "screens": {
+        "overview": {
+          "screen_id": "3842134291269340897",
+          "name": "CRM - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_leads": {
+          "screen_id": "4927885525713511431",
+          "name": "CRM - Leads",
+          "branding_version": "2026-06-01"
+        },
+        "entity_opportunities": {
+          "screen_id": "15377478781447521501",
+          "name": "CRM - Opportunities",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "9617278423170347795"
     }
   }
 }

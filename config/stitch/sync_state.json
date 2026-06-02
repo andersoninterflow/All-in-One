@@ -602,6 +602,26 @@
           "screen_id": "9505332719108198375",
           "name": "TMS - Freights",
           "branding_version": "2026-06-01"
+        },
+        "entity_routes": {
+          "screen_id": "8579923313153645781",
+          "name": "TMS - Routes",
+          "branding_version": "2026-06-01"
+        },
+        "entity_proofs_of_delivery": {
+          "screen_id": "266323982581583004",
+          "name": "TMS - Proofs Of Delivery",
+          "branding_version": "2026-06-01"
+        },
+        "entity_freight_audits": {
+          "screen_id": "17538210878499165230",
+          "name": "TMS - Freight Audits",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "10455329524313397771",
+          "name": "TMS - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "9584658268205833693"

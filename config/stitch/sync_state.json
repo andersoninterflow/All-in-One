@@ -660,6 +660,26 @@
         }
       },
       "project_id": "9617278423170347795"
+    },
+    "bpm": {
+      "screens": {
+        "overview": {
+          "screen_id": "10365844915811776579",
+          "name": "BPM - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_processes": {
+          "screen_id": "17483490786326659231",
+          "name": "BPM - Processes",
+          "branding_version": "2026-06-01"
+        },
+        "entity_workflow_instances": {
+          "screen_id": "3472229764566460919",
+          "name": "BPM - Workflow Instances",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "11272449965029223454"
     }
   }
 }

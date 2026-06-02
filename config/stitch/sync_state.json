@@ -457,6 +457,51 @@
           "screen_id": "1501429023660782360",
           "name": "Jobs - Employment Records",
           "branding_version": "2026-06-01"
+        },
+        "entity_resume_documents": {
+          "screen_id": "15003987867042564169",
+          "name": "Jobs - Resume Documents",
+          "branding_version": "2026-06-01"
+        },
+        "entity_job_postings": {
+          "screen_id": "7298005851728772794",
+          "name": "Jobs - Job Postings",
+          "branding_version": "2026-06-01"
+        },
+        "entity_applications": {
+          "screen_id": "7727967173804696046",
+          "name": "Jobs - Applications",
+          "branding_version": "2026-06-01"
+        },
+        "entity_resume_access_logs": {
+          "screen_id": "10635073720866074592",
+          "name": "Jobs - Resume Access Logs",
+          "branding_version": "2026-06-01"
+        },
+        "candidate_resume": {
+          "screen_id": "13173609042072796125",
+          "name": "Jobs - Candidate Resume",
+          "branding_version": "2026-06-01"
+        },
+        "ctps_import": {
+          "screen_id": "13634572845064540620",
+          "name": "Jobs - Ctps Import",
+          "branding_version": "2026-06-01"
+        },
+        "vacancy_search": {
+          "screen_id": "2051619393421197553",
+          "name": "Jobs - Vacancy Search",
+          "branding_version": "2026-06-01"
+        },
+        "recruiter_resume_review": {
+          "screen_id": "7099477434703588506",
+          "name": "Jobs - Recruiter Resume Review",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "202723964940195591",
+          "name": "Jobs - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "18028857710888326682"

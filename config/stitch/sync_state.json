@@ -642,6 +642,21 @@
           "screen_id": "15377478781447521501",
           "name": "CRM - Opportunities",
           "branding_version": "2026-06-01"
+        },
+        "entity_activities": {
+          "screen_id": "15901030966510041041",
+          "name": "CRM - Activities",
+          "branding_version": "2026-06-01"
+        },
+        "entity_campaigns": {
+          "screen_id": "9919227450972941376",
+          "name": "CRM - Campaigns",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "3708103101164112151",
+          "name": "CRM - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "9617278423170347795"

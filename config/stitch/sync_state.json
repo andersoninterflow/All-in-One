@@ -505,6 +505,26 @@
         }
       },
       "project_id": "18028857710888326682"
+    },
+    "erp": {
+      "screens": {
+        "overview": {
+          "screen_id": "4727437277428208235",
+          "name": "ERP - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_accounts": {
+          "screen_id": "3938870969032030490",
+          "name": "ERP - Accounts",
+          "branding_version": "2026-06-01"
+        },
+        "entity_payables": {
+          "screen_id": "7400637468084657377",
+          "name": "ERP - Payables",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "5021553112129158952"
     }
   }
 }

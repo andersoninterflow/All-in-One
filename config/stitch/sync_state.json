@@ -585,6 +585,26 @@
         }
       },
       "project_id": "9401578481038204091"
+    },
+    "tms": {
+      "screens": {
+        "overview": {
+          "screen_id": "698992171357542331",
+          "name": "TMS - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_carriers": {
+          "screen_id": "1485717701963505660",
+          "name": "TMS - Carriers",
+          "branding_version": "2026-06-01"
+        },
+        "entity_freights": {
+          "screen_id": "9505332719108198375",
+          "name": "TMS - Freights",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "9584658268205833693"
     }
   }
 }

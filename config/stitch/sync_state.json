@@ -562,6 +562,26 @@
           "screen_id": "2787855573238366145",
           "name": "WMS - Bins",
           "branding_version": "2026-06-01"
+        },
+        "entity_inventory": {
+          "screen_id": "12511990750412161880",
+          "name": "WMS - Inventory",
+          "branding_version": "2026-06-01"
+        },
+        "entity_picking_waves": {
+          "screen_id": "2469587465472043203",
+          "name": "WMS - Picking Waves",
+          "branding_version": "2026-06-01"
+        },
+        "entity_shipments": {
+          "screen_id": "5911345239027529495",
+          "name": "WMS - Shipments",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "6012380442536300583",
+          "name": "WMS - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "9401578481038204091"

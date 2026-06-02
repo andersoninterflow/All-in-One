@@ -747,6 +747,26 @@
           "screen_id": "4436367858276767248",
           "name": "HR HCM ATS LMS - Payroll Runs",
           "branding_version": "2026-06-01"
+        },
+        "entity_candidates": {
+          "screen_id": "3648628250997955296",
+          "name": "HR HCM ATS LMS - Candidates",
+          "branding_version": "2026-06-01"
+        },
+        "entity_courses": {
+          "screen_id": "7462463376325222088",
+          "name": "HR HCM ATS LMS - Courses",
+          "branding_version": "2026-06-01"
+        },
+        "entity_occupational_records": {
+          "screen_id": "2115158367033872215",
+          "name": "HR HCM ATS LMS - Occupational Records",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "14303899499841469743",
+          "name": "HR HCM ATS LMS - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "4474436353819127007"

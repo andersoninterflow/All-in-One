@@ -27,8 +27,8 @@
 ### Estado atual da sincronia
 
 - Manifesto local: 25 projetos Stitch planejados.
-- Estado remoto local versionado: 18 projetos e 132 telas registrados em `config/stitch/sync_state.json`.
-- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 132 telas registradas carregam `branding_version` 2026-06-01.
+- Estado remoto local versionado: 18 projetos e 136 telas registrados em `config/stitch/sync_state.json`.
+- Branding remoto: `branding_pending` zerado para todas as telas existentes; todas as 136 telas registradas carregam `branding_version` 2026-06-01.
 - Modulos remotos completos neste estado: `identity`, `business`, `permissions`, `finance`, `marketplace`, `stock`, `delivery`, `riders`, `services`, `mobility`, `jobs` e `erp`.
 - Modulo `jobs`: concluido com telas de vagas, candidatura, curriculo, documentos, CTPS, auditoria e revisao por recrutador.
 - Modulo `erp`: concluido com visao geral, contas, contas a pagar, contas a receber, centros de custo, documentos fiscais e auditoria/permissoes.
@@ -37,8 +37,8 @@
 - Modulo `crm`: concluido com visao geral, leads, oportunidades, atividades, campanhas e auditoria/permissoes.
 - Modulo `bpm`: concluido com visao geral, processos, instancias de workflow, tarefas, politicas de SLA e auditoria/permissoes.
 - Modulo `document`: concluido com visao geral, pastas, documentos, versoes, politicas de retencao e auditoria/permissoes.
-- Modulo `hr`: projeto criado com telas iniciais `overview`, `entity_employees` e `entity_payroll_runs`; ainda faltam `audit_permissions`, `entity_candidates`, `entity_courses` e `entity_occupational_records`.
-- Proximo passo natural Stitch: concluir telas pendentes de `hr` e seguir para `health`, conectando relacionamento comercial, processos, documentos, pessoas, candidatos, cursos, folha, saude e bem-estar ao ecossistema Valley.
+- Modulo `hr`: concluido com visao geral, colaboradores, folha, candidatos, cursos, registros ocupacionais e auditoria/permissoes.
+- Proximo passo natural Stitch: iniciar `health`, conectando relacionamento comercial, processos, documentos, pessoas, candidatos, cursos, folha, saude e bem-estar ao ecossistema Valley.
 - Sync remoto real: validado com `STITCH_API_KEY` no Windows e automatizado no GitHub Actions quando `secrets.STITCH_API_KEY` existir.
 
 ### Validacoes executadas
@@ -77,6 +77,7 @@
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, criando projeto `document` e registrando 3 telas iniciais.
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 3"`: sucesso, registrando versoes, politicas de retencao e auditoria/permissoes, concluindo `document`.
 - `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, criando projeto `hr` e registrando 3 telas iniciais.
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 4"`: sucesso, registrando candidatos, cursos, registros ocupacionais e auditoria/permissoes, concluindo `hr`.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py tests/test_valley_catalog.py`: sucesso, 17 testes aprovados.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_valley_catalog.py tests/test_outbox_dispatcher_unit.py`: sucesso, 15 testes aprovados.
 - `.venv/Scripts/python.exe -m pytest -q tests/test_stitch_orchestrator.py tests/test_branding_assets.py`: sucesso, 12 testes aprovados.

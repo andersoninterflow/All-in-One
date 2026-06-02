@@ -770,6 +770,26 @@
         }
       },
       "project_id": "4474436353819127007"
+    },
+    "health": {
+      "screens": {
+        "overview": {
+          "screen_id": "1188120398055250637",
+          "name": "Health - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_patients": {
+          "screen_id": "1647548315620233665",
+          "name": "Health - Patients",
+          "branding_version": "2026-06-01"
+        },
+        "entity_appointments": {
+          "screen_id": "11461557121536639231",
+          "name": "Health - Appointments",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "17608165271835657543"
     }
   }
 }

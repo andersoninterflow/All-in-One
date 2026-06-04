@@ -25,7 +25,7 @@ Meta: transformar o MVP backend/data atual em beta operacional validado, com inf
 
 Objetivo: impedir regressao enquanto o projeto avanca.
 
-Status: 98%
+Status: 99%
 
 Entregas esperadas:
 - Manter `main` limpo e sincronizado com `origin` e `fork`.
@@ -36,12 +36,12 @@ Entregas esperadas:
 Pendencias:
 - Executar o gate de divergencia em ambiente com PowerShell Core disponivel e
   credenciais remotas configuradas.
-- Adicionar gate que falhe se existirem artefatos gerados nao commitados.
+- Gate Python/CI de artefatos gerados entregue; manter execucao em todo fechamento.
 
 Proximos passos naturais:
 1. Rodar `scripts/check_git_sync.ps1` no fechamento de cada incremento.
 2. Corrigir credenciais locais de push para `origin` ou `fork`.
-3. Adicionar verificacao de artefatos gerados nao commitados.
+3. Manter `scripts/check_generated_artifacts.py` no CI e nos fechamentos locais Linux.
 
 ### Fase 1 - Estabilizacao Docker e runtime local
 

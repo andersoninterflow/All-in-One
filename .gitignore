@@ -2,6 +2,14 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .pytest_tmp/
+
+# Artefatos locais gerados por execucao e validacao
+config/cache/
+config/logs/
+config/*.sqlite3
+config/codex.toml
+config/secret_key
+status_validacao_repositorio.md
 .venv/
 .env
 .env.*

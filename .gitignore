@@ -15,6 +15,7 @@ status_validacao_repositorio.md
 .env.*
 !.env.example
 coverage.xml
+.coverage
 htmlcov/
 .ruff_cache/
 .mypy_cache/

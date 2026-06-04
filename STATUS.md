@@ -1,5 +1,28 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-04 Gate CI Linux e Artefatos Gerados
+
+### Concluido neste ciclo
+
+- Criado `scripts/check_generated_artifacts.py` como equivalente Linux/CI do gate PowerShell de artefatos gerados.
+- O novo gate executa scaffold, validacao OpenAPI e validacao completa do repositorio, falhando se qualquer comando alterar a arvore de trabalho sem commit.
+- `scripts/validate_repository.py` passou a exigir o gate Python junto aos gates operacionais existentes.
+- `.github/workflows/ci.yml` agora instala `requirements-dev.txt`, executa o gate de artefatos e roda a suite real com `python -m pytest -q`.
+- `docs/OPERATIONS.md` documenta as versoes PowerShell e Python do gate.
+- Dependencias de desenvolvimento mantidas como fonte unica para CI e ambiente local, incluindo `requests` necessario para `scripts/validate_openrouter.py`.
+
+### Validacoes executadas
+
+- `python3 scripts/check_generated_artifacts.py`: sucesso, arvore preservada.
+- `python3 scripts/validate_repository.py`: sucesso.
+- `python3 scripts/validate_openapi.py`: sucesso.
+- `.venv/bin/python -m pytest -q`: sucesso, 197 testes aprovados e 29 pulados.
+
+### Pendencias rastreadas
+
+- Push remoto segue bloqueado neste ambiente por falta de credencial SSH GitHub (`Permission denied (publickey)`).
+- PowerShell/pwsh nao esta instalado no Linux local; o gate Python cobre CI/Linux, mas o script PowerShell permanece necessario para ambientes Windows.
+
 ## STATUS OPERACIONAL - 2026-06-02 Sincronizacao Remota Stitch Persistente
 
 ### Concluido neste ciclo

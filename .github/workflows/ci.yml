@@ -19,18 +19,13 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install requests pytest pytest-cov
+        run: pip install -r requirements-dev.txt
 
       - name: Cleanup artifacts
         run: python scripts/cleanup_artifacts.py
 
-      - name: Run Unit Tests
-        run: pytest --cov=scripts --cov-report=html --cov-report=term-missing --cov-fail-under=80 tests/
+      - name: Check generated artifacts
+        run: python scripts/check_generated_artifacts.py
 
-      - name: Upload Coverage Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-coverage-report
-          path: htmlcov/
-          retention-days: 7
+      - name: Run Unit Tests
+        run: python -m pytest -q

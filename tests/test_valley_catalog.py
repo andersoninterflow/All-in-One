@@ -3,8 +3,16 @@ from uuid import uuid4
 from platform_test_support import fresh_client_for
 
 
-def actor_headers(user_id: str, roles: str = "owner", *, business_id: str | None = None) -> dict[str, str]:
+def actor_headers(
+    user_id: str,
+    roles: str = "owner",
+    *,
+    business_id: str | None = None,
+    mfa: bool = False,
+) -> dict[str, str]:
     headers = {"X-Actor-User-Id": user_id, "X-Actor-Roles": roles, "X-Actor-Scopes": ""}
+    if mfa:
+        headers["X-MFA-Verified"] = "true"
     if business_id:
         headers["X-Business-Id"] = business_id
         headers["X-Business-Status"] = "active"
@@ -309,3 +317,142 @@ def test_valley_catalog_exposes_business_activity_reference() -> None:
     ids = {item["business_activity_id"] for item in payload}
     assert {"alimentacao", "varejo", "saude", "servicos_domesticos", "logistica"} <= ids
     assert all("label_for_consumer" in item for item in payload)
+
+
+def test_business_catalog_offer_publishes_product_to_valley_with_simple_filters() -> None:
+    business = fresh_client_for("business")
+    seller_id = str(uuid4())
+    business_id = str(uuid4())
+    headers = actor_headers(seller_id, "owner", business_id=business_id, mfa=True)
+
+    created = business.post(
+        "/resources/catalog_offers",
+        headers=headers,
+        json={
+            "user_id": seller_id,
+            "entity_id": business_id,
+            "payload": {
+                "title": "Kit cafe artesanal",
+                "description": "Produto local configurado no Business para aparecer no Valley.",
+                "offer_type": "product",
+                "consumer_category": "Compras e Produtos",
+                "source_module": "marketplace",
+                "source_resource_type": "products",
+                "company_type": "pf_vendedor",
+                "company_category": "Comercio",
+                "business_activity_id": "varejo",
+                "service_area": "online",
+                "region_label": "Online",
+                "price_brl": "79.90",
+                "publish_to_valley": True,
+                "publication_status": "approved",
+                "visible_to_consumer": True,
+                "verified_seller": True,
+            },
+        },
+    )
+    assert created.status_code == 201
+
+    offer_id = created.json()["id"]
+    approved = business.post(
+        f"/resources/catalog_offers/{offer_id}/actions/approve",
+        headers=headers,
+        json={"reason": "Oferta comercial revisada", "payload": {"publication_status": "approved"}},
+    )
+    assert approved.status_code == 200
+
+    results = business.get(
+        "/valley/catalog/search",
+        params={
+            "offer_type": "product",
+            "company_type": "pf_vendedor",
+            "company_category": "Comercio",
+            "business_activity": "varejo",
+            "verified_only": True,
+        },
+    )
+    assert results.status_code == 200
+    offer = next(item for item in results.json() if item["title"] == "Kit cafe artesanal")
+    assert offer["source_module"] == "marketplace"
+    assert offer["source_resource_type"] == "products"
+    assert offer["configured_in_module"] == "business"
+    assert offer["offer_type_label"] == "Produto"
+    assert offer["business_activity_label"] == "Produtos e lojas"
+    assert offer["seller_context_label"] == "Vendedor pessoa fisica em Produtos e lojas"
+    assert offer["primary_action_label"] == "Comprar"
+    assert "Produto em Compras e Produtos" in offer["consumer_filter_text"]
+
+    facets = business.get("/valley/catalog/facets")
+    assert facets.status_code == 200
+    facet_payload = facets.json()
+    assert any(item["id"] == "product" and item["label"] == "Produto" for item in facet_payload["offer_types"])
+    assert any(item["id"] == "pf_vendedor" for item in facet_payload["company_types"])
+    assert any(item["id"] == "varejo" and item["label"] == "Produtos e lojas" for item in facet_payload["business_activities"])
+
+
+def test_business_catalog_offer_publishes_service_to_valley_by_activity_and_radius() -> None:
+    business = fresh_client_for("business")
+    provider_id = str(uuid4())
+    business_id = str(uuid4())
+    headers = actor_headers(provider_id, "owner", business_id=business_id, mfa=True)
+
+    created = business.post(
+        "/resources/catalog_offers",
+        headers=headers,
+        json={
+            "user_id": provider_id,
+            "entity_id": business_id,
+            "payload": {
+                "title": "Montagem de moveis",
+                "description": "Servico residencial cadastrado no Business com atendimento regional.",
+                "offer_type": "service",
+                "consumer_category": "Casa, Reparos e Imoveis",
+                "source_module": "services",
+                "source_resource_type": "providers",
+                "company_type": "pf_profissional",
+                "company_category": "Servicos",
+                "business_activity_id": "servicos_domesticos",
+                "service_area": "local",
+                "service_radius_km": 8,
+                "latitude": -23.5505,
+                "longitude": -46.6333,
+                "region_label": "Centro de Sao Paulo",
+                "price_type": "sob_orcamento",
+                "publish_to_valley": True,
+                "publication_status": "approved",
+                "visible_to_consumer": True,
+            },
+        },
+    )
+    assert created.status_code == 201
+    offer_id = created.json()["id"]
+    approved = business.post(
+        f"/resources/catalog_offers/{offer_id}/actions/approve",
+        headers=headers,
+        json={"reason": "Prestador revisado", "payload": {"publication_status": "approved"}},
+    )
+    assert approved.status_code == 200
+
+    nearby = business.get(
+        "/valley/catalog/search",
+        params={
+            "category": "Casa",
+            "offer_type": "service",
+            "lat": -23.551,
+            "lng": -46.634,
+            "business_activity": "servicos_domesticos",
+        },
+    )
+    assert nearby.status_code == 200
+    offer = next(item for item in nearby.json() if item["title"] == "Montagem de moveis")
+    assert offer["distance_km"] is not None
+    assert offer["distance_km"] <= offer["service_radius_km"]
+    assert offer["primary_action_label"] == "Contratar"
+    assert offer["seller_context_label"] == "Profissional autonomo em Casa e manutencao"
+
+    far = business.get(
+        "/valley/catalog/search",
+        params={"q": "Montagem", "lat": -22.9068, "lng": -43.1729},
+    )
+    assert far.status_code == 200
+    assert "Montagem de moveis" not in [item["title"] for item in far.json()]

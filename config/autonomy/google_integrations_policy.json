@@ -12,8 +12,7 @@
     "alloydb",
     "google_code_cli",
     "gemini_cli_termux",
-    "gemini_cli_ubuntu",
-    "google_stitch_mcp"
+    "gemini_cli_ubuntu"
   ],
   "explicit_exceptions": [
     {
@@ -21,6 +20,12 @@
       "enabled": true,
       "scope": "antigravity_editor",
       "reason": "O usuario determinou que a extensao Gemini Code Assist deve continuar ativa aqui no Antigravity."
+    },
+    {
+      "name": "google_stitch_mcp",
+      "enabled": true,
+      "scope": "workspace",
+      "reason": "O usuario ordenou explicitamente a reativacao para que o Stitch assuma seu lugar na cadeia alimentar."
     }
   ],
   "rules": [
@@ -38,7 +43,7 @@
     "GOOGLE_CODE_CLI_ENABLED": "false",
     "ALLOYDB_ENABLED": "false",
     "GEMINI_CODE_ASSIST_ENABLED": "true",
-    "STITCH_REMOTE_SYNC_ENABLED": "false"
+    "STITCH_REMOTE_SYNC_ENABLED": "true"
   },
   "reactivation_requirements": [
     "ordem explicita do usuario",

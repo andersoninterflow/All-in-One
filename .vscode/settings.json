@@ -19,7 +19,7 @@
                                                                   "path":  "C:\\Program Files\\Git\\bin\\bash.exe"
                                                               }
                                              },
-    "geminicodeassist.outlines.automaticOutlineGeneration":  false,
+    "geminicodeassist.outlines.automaticOutlineGeneration":  true,
     "geminicodeassist.agentYoloMode":  false,
     "geminicodeassist.enable":  true,
     "mdb.presetConnections":  [

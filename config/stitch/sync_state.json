@@ -845,6 +845,181 @@
         }
       },
       "project_id": "628918265184082921"
+    },
+    "legal": {
+      "screens": {
+        "overview": {
+          "screen_id": "12084141964696999194",
+          "name": "Legal - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_cases": {
+          "screen_id": "2364927956875456838",
+          "name": "Legal - Cases",
+          "branding_version": "2026-06-01"
+        },
+        "entity_deadlines": {
+          "screen_id": "2761354796234277098",
+          "name": "Legal - Deadlines",
+          "branding_version": "2026-06-01"
+        },
+        "entity_hearings": {
+          "screen_id": "8592877403874633149",
+          "name": "Legal - Hearings",
+          "branding_version": "2026-06-01"
+        },
+        "entity_legal_contracts": {
+          "screen_id": "380550223211293057",
+          "name": "Legal - Legal Contracts",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "10906738460048531840",
+          "name": "Legal - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "7651315107214075958"
+    },
+    "property": {
+      "screens": {
+        "overview": {
+          "screen_id": "14561127217169453719",
+          "name": "Property - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_properties": {
+          "screen_id": "18277629637434462168",
+          "name": "Property - Properties",
+          "branding_version": "2026-06-01"
+        },
+        "entity_units": {
+          "screen_id": "3295484121324834343",
+          "name": "Property - Units",
+          "branding_version": "2026-06-01"
+        },
+        "entity_leases": {
+          "screen_id": "15883985830004566802",
+          "name": "Property - Leases",
+          "branding_version": "2026-06-01"
+        },
+        "entity_assemblies": {
+          "screen_id": "3874707698800743594",
+          "name": "Property - Assemblies",
+          "branding_version": "2026-06-01"
+        },
+        "entity_maintenance_orders": {
+          "screen_id": "7572178243699067728",
+          "name": "Property - Maintenance Orders",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "13015991046856912735",
+          "name": "Property - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "11070492544145043489"
+    },
+    "bi": {
+      "screens": {
+        "overview": {
+          "screen_id": "3269166578478688182",
+          "name": "BI - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_datasets": {
+          "screen_id": "4942797101637537084",
+          "name": "BI - Datasets",
+          "branding_version": "2026-06-01"
+        },
+        "entity_dashboards": {
+          "screen_id": "6777768492086507628",
+          "name": "BI - Dashboards",
+          "branding_version": "2026-06-01"
+        },
+        "entity_indicators": {
+          "screen_id": "1660027050819104762",
+          "name": "BI - Indicators",
+          "branding_version": "2026-06-01"
+        },
+        "entity_exports": {
+          "screen_id": "9854768912845641668",
+          "name": "BI - Exports",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "13749836652552509054",
+          "name": "BI - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "13614154937208349074"
+    },
+    "ai_core": {
+      "screens": {
+        "overview": {
+          "screen_id": "305118674698969059",
+          "name": "AI Core - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_ai_memories": {
+          "screen_id": "6370727001234471298",
+          "name": "AI Core - Ai Memories",
+          "branding_version": "2026-06-01"
+        },
+        "entity_moderation_decisions": {
+          "screen_id": "5137426030275513156",
+          "name": "AI Core - Moderation Decisions",
+          "branding_version": "2026-06-01"
+        },
+        "entity_model_runs": {
+          "screen_id": "14349760421327904718",
+          "name": "AI Core - Model Runs",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "12400693251218107704",
+          "name": "AI Core - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "10114581594515770845"
+    },
+    "api_hub": {
+      "screens": {
+        "overview": {
+          "screen_id": "10204921856485893889",
+          "name": "API Hub - Visao Geral",
+          "branding_version": "2026-06-01"
+        },
+        "entity_api_clients": {
+          "screen_id": "16369010353286810671",
+          "name": "API Hub - Api Clients",
+          "branding_version": "2026-06-01"
+        },
+        "entity_api_keys": {
+          "screen_id": "18123143884775183824",
+          "name": "API Hub - Api Keys",
+          "branding_version": "2026-06-01"
+        },
+        "entity_webhooks": {
+          "screen_id": "11338292337258036941",
+          "name": "API Hub - Webhooks",
+          "branding_version": "2026-06-01"
+        },
+        "entity_integration_runs": {
+          "screen_id": "7218424850183668311",
+          "name": "API Hub - Integration Runs",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "15961755396048513136",
+          "name": "API Hub - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
+        }
+      },
+      "project_id": "3716690386113661567"
     }
   }
 }

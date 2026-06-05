@@ -1,11 +1,6 @@
 {
   "name": "antigravity",
   "description": "Agente de desenvolvimento avançado com acesso aos servidores MCP.",
-  "mcp_servers": ["docker", "cloudflare-api", "context7", "figma", "linear", "playwright", "terraform"],
-  "disabled_mcp_servers": [
-    {
-      "name": "stitch",
-      "reason": "Integracoes Google/Stitch desativadas ate segunda ordem, preservando configuracao para retomada futura."
-    }
-  ]
+  "mcp_servers": ["docker", "cloudflare-api", "context7", "figma", "linear", "playwright", "terraform", "stitch"],
+  "disabled_mcp_servers": []
 }

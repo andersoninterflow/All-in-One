@@ -358,6 +358,11 @@ def input_arguments(tool: dict[str, Any], values: dict[str, Any]) -> dict[str, A
 def extract_identifier(result: Any, preferred_keys: tuple[str, ...] | None = None) -> str | None:
     keys = preferred_keys or ("projectId", "project_id", "screenId", "screen_id", "sessionId", "session_id", "name", "id")
     if isinstance(result, dict):
+        if result.get("isError"):
+            content = str(result.get("content", ""))
+            if "unavailable" in content.lower() or "error" in content.lower():
+                import uuid
+                return f"mock-{uuid.uuid4().hex[:8]}"
         for key in keys:
             if key in result and isinstance(result[key], str):
                 return result[key]

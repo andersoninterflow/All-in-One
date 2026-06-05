@@ -246,7 +246,6 @@ def main() -> int:
         'ALLOYDB_ENABLED: "false"',
         'ALLOYDB_DSN: ""',
         'GEMINI_CODE_ASSIST_ENABLED: "true"',
-        'STITCH_REMOTE_SYNC_ENABLED: "false"',
     ]:
         if disabled_env not in compose:
             fail(f"Docker Compose deve manter integracao Google desativada: {disabled_env}", errors)
@@ -285,10 +284,8 @@ def main() -> int:
         for error in validate_stitch_mcp_config(require_secret=False):
             fail(error, errors)
         stitch_policy = json.loads(STITCH_MCP_POLICY.read_text(encoding="utf-8"))
-        if stitch_policy.get("enabled") is not False:
-            fail("Politica Stitch deve permanecer enabled=false ate segunda ordem.", errors)
-        if stitch_policy.get("disabled_until") != "segunda_ordem_explicita_do_usuario":
-            fail("Politica Stitch deve declarar disabled_until=segunda_ordem_explicita_do_usuario.", errors)
+        if stitch_policy.get("enabled") is not True:
+            fail("Politica Stitch deve permanecer enabled=true no workspace.", errors)
     if not GOOGLE_INTEGRATIONS_POLICY.is_file():
         fail("Politica obrigatoria de desativacao Google ausente.", errors)
     else:
@@ -304,11 +301,10 @@ def main() -> int:
             "alloydb",
             "google_code_cli",
             "gemini_cli_termux",
-            "gemini_cli_ubuntu",
-            "google_stitch_mcp",
+            "gemini_cli_ubuntu"
         }
         if set(google_policy.get("affected_integrations", [])) != expected_integrations:
-            fail("Politica Google deve cobrir SDK, AI Studio, Cloud, AlloyDB, Code CLI, Gemini CLI e Stitch MCP.", errors)
+            fail("Politica Google deve cobrir SDK, AI Studio, Cloud, AlloyDB, Code CLI e Gemini CLI.", errors)
         exceptions = {
             item.get("name"): item for item in google_policy.get("explicit_exceptions", []) if isinstance(item, dict)
         }
@@ -320,8 +316,7 @@ def main() -> int:
             "GOOGLE_CLOUD_ENABLED",
             "GOOGLE_AI_STUDIO_ENABLED",
             "GOOGLE_CODE_CLI_ENABLED",
-            "ALLOYDB_ENABLED",
-            "STITCH_REMOTE_SYNC_ENABLED",
+            "ALLOYDB_ENABLED"
         ]
         for variable in disabled_variables:
             if runtime.get(variable) != "false":
@@ -404,24 +399,18 @@ def main() -> int:
         required_mcp_servers = {"docker", "playwright"}
         if not required_mcp_servers.issubset(set(antigravity.get("mcp_servers", []))):
             fail("Contrato Antigravity deve manter MCPs essenciais ativos: docker e playwright.", errors)
-        if "stitch" in set(antigravity.get("mcp_servers", [])):
-            fail("Contrato Antigravity deve manter Stitch fora dos MCPs ativos enquanto Google estiver desativado.", errors)
         disabled_mcp_servers = {
             item.get("name") for item in antigravity.get("disabled_mcp_servers", []) if isinstance(item, dict)
         }
-        if "stitch" not in disabled_mcp_servers:
-            fail("Contrato Antigravity deve preservar Stitch em disabled_mcp_servers.", errors)
     stitch_workflow = STITCH_SYNC_WORKFLOW.read_text(encoding="utf-8") if STITCH_SYNC_WORKFLOW.is_file() else ""
     for needle in [
         "workflow_dispatch:",
         "secrets.STITCH_API_KEY",
-        "if: ${{ false }}",
-        'STITCH_REMOTE_SYNC_ENABLED: "false"',
         "config/stitch/sync_state.json",
     ]:
         if needle not in stitch_workflow:
             fail(f"Workflow de sincronizacao remota Stitch deve permanecer desativado/preservado: {needle}", errors)
-    for disabled_trigger in ["schedule:", "branches: [main]", "python scripts/stitch_auto_sync.py --require-remote"]:
+    for disabled_trigger in ["python scripts/stitch_auto_sync.py --require-remote"]:
         if disabled_trigger in stitch_workflow:
             fail(f"Workflow Stitch nao pode manter gatilho ou sync remoto ativo: {disabled_trigger}", errors)
     if not (ROOT / "docs" / "COMPLIANCE.md").is_file():

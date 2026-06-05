@@ -1,79 +1,85 @@
-# Guia de Configuração: Ubuntu (Termux) & Codex CLI à Distância
+# Guia seguro: Ubuntu no Termux e Codex CLI remoto
 
-Este guia documenta o processo de ativação da sua Chave SSH segura (Ed25519) no ambiente **Ubuntu em execução no Termux**. Essa configuração permite acesso direto ao GitHub e ao seu Desktop (Windows), viabilizando o uso do **Codex CLI** pelo celular para evoluir o projeto All-in-One de forma remota.
+Este guia mantém Codex CLI, Antigravity e os demais agentes alinhados pelo Git,
+sem transportar senhas ou chaves privadas por mensageiros.
 
----
+## 1. Use uma chave exclusiva no telefone
 
-## Passo 1: Receba a Chave Privada
-Pelo seu desktop (Windows), copie todo o bloco de texto da **Chave Privada** que forneci anteriormente e envie para o seu próprio **Telegram** (na seção de Mensagens Salvas ou para um chat seguro). 
+No Ubuntu do Termux, gere uma chave própria para esse dispositivo:
 
-*A chave começa com `-----BEGIN OPENSSH PRIVATE KEY-----` e termina com `-----END OPENSSH PRIVATE KEY-----`.*
+```bash
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+ssh-keygen -t ed25519 -a 100 -f ~/.ssh/all_in_one_termux -C "all-in-one-termux"
+```
 
----
+Nunca copie a chave privada do desktop. Cadastre somente o conteúdo de
+`~/.ssh/all_in_one_termux.pub` no GitHub, com o menor escopo necessário.
 
-## Passo 2: Configure a Chave no Ubuntu (Termux)
+## 2. Configure o SSH
 
-1. No seu telefone, abra o Termux e inicie sua máquina virtual **Ubuntu**.
-2. Garanta que o diretório oculto SSH existe e tenha a permissão certa:
-   ```bash
-   mkdir -p ~/.ssh
-   chmod 700 ~/.ssh
-   ```
-3. Crie o arquivo que vai guardar a sua chave privada:
-   ```bash
-   nano ~/.ssh/termux_mobile_key
-   ```
-4. Cole todo o bloco da chave privada (que você resgatou do Telegram) dentro desse arquivo.
-5. Salve e saia do editor Nano (pressione `Ctrl+O`, dê `Enter`, e depois pressione `Ctrl+X`).
-6. **OBRIGATÓRIO:** O SSH rejeitará a chave se as permissões dela estiverem públicas. Trave o arquivo apenas para leitura do seu usuário do Ubuntu:
-   ```bash
-   chmod 600 ~/.ssh/termux_mobile_key
-   ```
+Crie `~/.ssh/config`:
 
----
+```text
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/all_in_one_termux
+    IdentitiesOnly yes
 
-## Passo 3: Automatize o Uso da Chave (Arquivo Config)
+Host all-in-one-desktop
+    HostName <HOST_VPN_OU_REDE_PRIVADA>
+    User <USUARIO_WINDOWS>
+    IdentityFile ~/.ssh/all_in_one_termux
+    IdentitiesOnly yes
+```
 
-Para que o Git, o SSH e o Codex CLI achem sua chave automaticamente sem que você precise digitar o caminho toda vez, crie um arquivo de configuração do SSH:
+Proteja os arquivos:
 
-1. Edite ou crie o arquivo `config`:
-   ```bash
-   nano ~/.ssh/config
-   ```
-2. Cole a configuração abaixo (substituindo `<IP_DO_SEU_DESKTOP>` pelo IP real do seu PC Windows na rede VPN ou local):
-   ```text
-   # Configuração para clonar/push do GitHub
-   Host github.com
-       HostName github.com
-       User git
-       IdentityFile ~/.ssh/termux_mobile_key
-       IdentitiesOnly yes
+```bash
+chmod 600 ~/.ssh/config ~/.ssh/all_in_one_termux
+chmod 644 ~/.ssh/all_in_one_termux.pub
+```
 
-   # Configuração para acesso SSH direto no Windows
-   Host pc
-       HostName <IP_DO_SEU_DESKTOP>
-       User ereta
-       IdentityFile ~/.ssh/termux_mobile_key
-   ```
-3. Salve e feche (`Ctrl+O`, `Enter`, `Ctrl+X`).
+O acesso ao desktop deve usar uma VPN privada ou rede confiável, autenticação
+por chave e firewall restrito. Senhas nunca devem aparecer neste repositório.
 
----
+## 3. Clone e alinhe antes de trabalhar
 
-## Passo 4: Evolua o Projeto à Distância
+```bash
+git clone git@github.com:andersoninterflow/All-in-One.git
+cd All-in-One
+git fetch origin main
+git status --short --branch
+```
 
-Agora você tem duas formas de usar o Codex CLI remotamente pelo celular:
+Antes de editar, confirme que `main` contém o estado remoto esperado. Se houver
+divergência ou mudanças locais, integre-as sem `reset --hard`, `clean` destrutivo
+ou force-push.
 
-### Opção A: Executar o Codex CLI dentro do Ubuntu (Local)
-1. Clone o repositório diretamente no Ubuntu do celular (ele usará a chave automaticamente):
-   ```bash
-   git clone git@github.com:andersoninterflow/All-in-One.git
-   cd All-in-One
-   ```
-2. Instale/inicie o Codex CLI localmente no Ubuntu do celular e programe de onde estiver. Toda vez que fizer _Push_, a sua chave o conectará ao GitHub de forma transparente.
+## 4. Respeite os contratos do workspace
 
-### Opção B: Acessar seu Desktop Windows via SSH e rodar lá
-1. Conecte-se remotamente no seu Windows (ele pedirá sua senha `@Aa3135930253` apenas para descriptografar a chave):
-   ```bash
-   ssh pc
-   ```
-2. Uma vez conectado pelo terminal no Windows, navegue para o repositório (`cd .codex/worktrees/all-in-one`) e acione o Codex CLI como se estivesse sentado na cadeira da sua casa.
+- Leia `AGENTS.md`, `GEMINI.md` e
+  `config/autonomy/multi_agent_sync_policy.json`.
+- Use Git como fonte compartilhada de verdade.
+- Não sobrescreva alterações locais ou commits de outro agente.
+- Mantenha Gemini CLI e integrações Google desativados enquanto
+  `config/autonomy/google_integrations_policy.json` estiver com
+  `enabled=false`.
+- Nunca versione tokens, senhas, chaves privadas ou arquivos `.env` reais.
+
+## 5. Valide e sincronize
+
+```bash
+python3 scripts/validate_repository.py
+git status --short
+```
+
+No Windows, o fechamento obrigatório usa:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_auto_sync.ps1 -Activity "<descricao>"
+```
+
+No Ubuntu/Termux, faça commit intencional e push somente depois de buscar e
+integrar o estado remoto mais recente.

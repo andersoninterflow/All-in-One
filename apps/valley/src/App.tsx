@@ -2,138 +2,190 @@ import { useEffect, useState } from 'react'
 import './index.css'
 
 interface Offer {
-  id: string
+  offer_id: string
   title: string
-  description: string
-  price?: number
-  category: string
-  _source_module: string
+  short_description?: string
+  description?: string
+  price_amount?: string | null
+  price_type: string
+  consumer_category: string
+  offer_type: 'food' | 'product' | 'service'
+  offer_type_label: string
+  source_module: string
+  provider_label: string
+  region_label: string
+  distance_km?: number | null
+  primary_action_label: string
+  verified_seller: boolean
 }
+
+interface CatalogResponse {
+  data: Offer[]
+  total: number
+  partial: boolean
+}
+
+const API_HUB_URL = import.meta.env.VITE_API_HUB_URL ?? ''
 
 function App() {
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
 
-  // Filtros Regionais
-  const [lat, setLat] = useState<string>('-23.5505') // São Paulo base
+  const [lat, setLat] = useState<string>('-23.5505')
   const [lng, setLng] = useState<string>('-46.6333')
-  const [radiusKm, setRadiusKm] = useState<number>(10)
-  
-  // Categorias (taxonomia amigável do Valley)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedType, setSelectedType] = useState<string | null>(null)
 
   const categories = [
-    { id: 'food', label: '🍔 Alimentação' },
-    { id: 'product', label: '🛍️ Produtos' },
-    { id: 'service', label: '🛠️ Serviços' },
-    { id: 'mobility', label: '🚗 Mobilidade' },
-    { id: 'health', label: '⚕️ Saúde' },
+    'Comida e Mercado',
+    'Compras e Produtos',
+    'Saude e Bem-estar',
+    'Casa, Reparos e Imoveis',
+    'Mobilidade, Entregas e Logistica',
+    'Negocios e Profissionais',
   ]
 
   const fetchOffers = () => {
     setLoading(true)
-    // Constrói URL dinamicamente
+    setError('')
     const params = new URLSearchParams()
-    params.append('limit', '20')
+    params.append('limit', '50')
     if (lat && lng) {
       params.append('lat', lat)
       params.append('lng', lng)
-      params.append('radius_km', radiusKm.toString())
     }
+    if (query.trim()) params.append('q', query.trim())
     if (selectedCategory) {
       params.append('category', selectedCategory)
     }
+    if (selectedType) params.append('offer_type', selectedType)
 
-    fetch(`http://localhost:8100/gateway/catalog/offers?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.data) {
-          setOffers(data.data)
-        }
+    fetch(`${API_HUB_URL}/gateway/catalog/offers?${params.toString()}`)
+      .then(async res => {
+        if (!res.ok) throw new Error(`Falha HTTP ${res.status}`)
+        return res.json() as Promise<CatalogResponse>
       })
-      .catch(err => console.error("API Hub desativado ou sem ofertas", err))
+      .then(data => {
+        setOffers(data.data ?? [])
+        if (data.partial) setError('Algumas fontes estao temporariamente indisponiveis.')
+      })
+      .catch(() => {
+        setOffers([])
+        setError('Nao foi possivel carregar as ofertas agora.')
+      })
       .finally(() => setLoading(false))
   }
 
-  // Effect inicial
   useEffect(() => {
     fetchOffers()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory])
+  }, [selectedCategory, selectedType])
 
   return (
     <>
       <header>
         <div className="logo">Valley</div>
         <nav>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Marketplace Global Integrado</span>
+          <span>Ofertas perto de voce</span>
         </nav>
       </header>
       
       <main className="container">
         <section className="hero">
-          <h1>Tudo o que você precisa,<br/>em um só lugar.</h1>
-          <p>Explore produtos, serviços, vagas e mobilidade no ecossistema definitivo All-in-One.</p>
+          <h1>Encontre o que precisa</h1>
+          <p>Produtos, alimentos e servicos organizados de um jeito simples.</p>
         </section>
 
         <section className="filters-section">
+          <form className="search-row" onSubmit={(event) => { event.preventDefault(); fetchOffers() }}>
+            <label className="search-field">
+              <span>O que voce procura?</span>
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ex.: eletricista, marmita, psicologo" />
+            </label>
+            <button className="btn-primary" type="submit">Buscar</button>
+          </form>
+
+          <div className="type-filter" aria-label="Tipo de oferta">
+            {[
+              { id: null, label: 'Tudo' },
+              { id: 'food', label: 'Alimentos' },
+              { id: 'product', label: 'Produtos' },
+              { id: 'service', label: 'Servicos' },
+            ].map(type => (
+              <button
+                type="button"
+                key={type.label}
+                className={selectedType === type.id ? 'active' : ''}
+                onClick={() => setSelectedType(type.id)}
+              >
+                {type.label}
+              </button>
+            ))}
+          </div>
+
           <div className="filters-row">
             <div className="filter-group">
-              <label>Sua Localização:</label>
-              <input type="text" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Lat" style={{ width: '100px' }} />
-              <input type="text" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Lng" style={{ width: '100px' }} />
+              <label htmlFor="latitude">Sua localizacao</label>
+              <input id="latitude" type="text" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitude" />
+              <input type="text" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitude" />
             </div>
-            <div className="filter-group">
-              <label>Raio (km):</label>
-              <select value={radiusKm} onChange={(e) => setRadiusKm(Number(e.target.value))}>
-                <option value={5}>5 km</option>
-                <option value={10}>10 km</option>
-                <option value={20}>20 km</option>
-                <option value={50}>50 km</option>
-                <option value={100}>100 km (Global)</option>
-              </select>
-            </div>
-            <button className="btn-primary" onClick={fetchOffers}>Buscar</button>
+            <button className="btn-secondary" onClick={fetchOffers}>Atualizar regiao</button>
           </div>
 
           <div className="pills-container">
-            <div 
+            <button
+              type="button"
               className={`pill ${selectedCategory === null ? 'active' : ''}`}
               onClick={() => setSelectedCategory(null)}
             >
-              🌟 Todos
-            </div>
-            {categories.map(cat => (
-              <div 
-                key={cat.id}
-                className={`pill ${selectedCategory === cat.id ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(cat.id)}
+              Todas as categorias
+            </button>
+            {categories.map(category => (
+              <button
+                type="button"
+                key={category}
+                className={`pill ${selectedCategory === category ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(category)}
               >
-                {cat.label}
-              </div>
+                {category}
+              </button>
             ))}
           </div>
         </section>
 
+        {error && <p className="notice" role="status">{error}</p>}
+
         {loading ? (
-          <div className="loader"></div>
+          <div className="loader" aria-label="Carregando ofertas"></div>
         ) : (
           <div className="offers-grid">
-            {offers.length > 0 ? offers.map((offer, idx) => (
-              <div className="offer-card" key={offer.id || idx}>
-                <div className="offer-title">{offer.title}</div>
-                <div className="offer-desc">{offer.description || "Nenhuma descrição fornecida."}</div>
-                <div className="offer-meta">
-                  <span className="badge">{offer.category || offer._source_module}</span>
-                  <span className="price">{offer.price ? `R$ ${offer.price.toFixed(2)}` : 'Sob orçamento'}</span>
+            {offers.length > 0 ? offers.map((offer) => (
+              <article className="offer-card" key={offer.offer_id}>
+                <div className="offer-tags">
+                  <span className="badge">{offer.offer_type_label}</span>
+                  <span>{offer.consumer_category}</span>
                 </div>
-              </div>
+                <div className="offer-title">{offer.title}</div>
+                <div className="offer-desc">{offer.short_description || offer.description}</div>
+                <div className="provider">
+                  {offer.provider_label}{offer.verified_seller ? ' - verificado' : ''}
+                </div>
+                <div className="region">
+                  {offer.distance_km != null ? `${offer.distance_km.toFixed(1)} km - ` : ''}{offer.region_label}
+                </div>
+                <div className="offer-meta">
+                  <span className="price">
+                    {offer.price_amount ? `R$ ${Number(offer.price_amount).toFixed(2).replace('.', ',')}` : 'Sob orcamento'}
+                  </span>
+                  <button className="offer-action">{offer.primary_action_label}</button>
+                </div>
+              </article>
             )) : (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                <h3>A Vitrine está em construção</h3>
-                <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>
-                  Aguardando a sincronização de lojistas, profissionais e motoristas (via módulos Business, Riders, etc.) para popular as ofertas na sua região.
-                </p>
+              <div className="empty-state">
+                <h2>Nenhuma oferta encontrada</h2>
+                <p>Tente outra categoria, busca ou localizacao.</p>
               </div>
             )}
           </div>

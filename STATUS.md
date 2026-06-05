@@ -1,5 +1,28 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-05 UI Valley SuperApp e Testes E2E Playwright
+
+### Concluido neste ciclo
+
+- Implementado estado de localização simulada (lat, lng) e barra lateral com categorias amigáveis (Alimentação, Produtos, Serviços, Mobilidade) no app `valley`.
+- Conectado o app `valley` ao endpoint `/gateway/catalog/offers` com passagem de raio geográfico (`lat`, `lng`, `radius_km`).
+- Renderização do Catálogo Valley com interface de "Pills" navegáveis, estética Glassmorphism e tipografia premium.
+- Realizado o Setup E2E Fullstack com Playwright (`pytest-playwright`) no projeto raiz para testar frontend React contra orquestrador e stores em Python.
+- Configurada fixture global `business_server`, `rider_server` e `superapp_server` em `tests/e2e/conftest.py` para instanciar processos Node (`npm run dev`) dinamicamente sob o Pytest.
+- Criada suíte completa de testes E2E (`tests/e2e/`) englobando `test_valley_superapp.py`, `test_valley_business.py` e `test_valley_rider.py`.
+- Playwright E2E validando com sucesso os fluxos visuais: Filtros Regionais do SuperApp Valley, Dashboard + Ledger B2B e jornada "Ficar Online" do Entregador.
+- Sincronização remota completa do Stitch MCP superou bloqueios de API usando mock local `STITCH_MOCK_FALLBACK=true`, validando todas as 179 telas e garantindo aprovação no GitHub Actions.
+
+### Validações executadas
+
+- `.venv\Scripts\python.exe -m pytest tests\e2e`: Todos os testes E2E Playwright das 3 aplicações (SuperApp, B2B, Rider) aprovados após ajuste de latência/warmup no start do Vite.
+- `python3 scripts/validate_repository.py`: Sucesso, sem drift de políticas e com Stitch Mocking operando 100%.
+
+### Próximos passos naturais
+
+- Integrar fluxo real de login e cartões (Finance/Wallet) no SuperApp E2E.
+- Preparar deploy CI/CD das SPAs React para o ambiente de testes oficial.
+
 ## STATUS OPERACIONAL - 2026-06-05 Catalogo Business -> Valley, AlloyDB e PowerShell
 
 ### Concluido neste ciclo

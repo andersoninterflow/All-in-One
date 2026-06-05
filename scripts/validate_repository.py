@@ -284,8 +284,10 @@ def main() -> int:
         for error in validate_stitch_mcp_config(require_secret=False):
             fail(error, errors)
         stitch_policy = json.loads(STITCH_MCP_POLICY.read_text(encoding="utf-8"))
-        if stitch_policy.get("enabled") is not True:
-            fail("Politica Stitch deve permanecer enabled=true no workspace.", errors)
+        if stitch_policy.get("enabled") is not False:
+            fail("Politica Stitch deve permanecer enabled=false ate segunda ordem.", errors)
+        if stitch_policy.get("disabled_until") != "segunda_ordem_explicita_do_usuario":
+            fail("Politica Stitch deve declarar disabled_until=segunda_ordem_explicita_do_usuario.", errors)
     if not GOOGLE_INTEGRATIONS_POLICY.is_file():
         fail("Politica obrigatoria de desativacao Google ausente.", errors)
     else:
@@ -301,7 +303,8 @@ def main() -> int:
             "alloydb",
             "google_code_cli",
             "gemini_cli_termux",
-            "gemini_cli_ubuntu"
+            "gemini_cli_ubuntu",
+            "google_stitch_mcp",
         }
         if set(google_policy.get("affected_integrations", [])) != expected_integrations:
             fail("Politica Google deve cobrir SDK, AI Studio, Cloud, AlloyDB, Code CLI e Gemini CLI.", errors)
@@ -323,6 +326,10 @@ def main() -> int:
                 fail(f"Politica Google deve manter {variable}=false.", errors)
         if runtime.get("GEMINI_CODE_ASSIST_ENABLED") != "true":
             fail("Politica Google deve manter GEMINI_CODE_ASSIST_ENABLED=true no Antigravity/editor.", errors)
+        if runtime.get("STITCH_REMOTE_SYNC_ENABLED") != "false":
+            fail("Politica Google deve manter STITCH_REMOTE_SYNC_ENABLED=false ate segunda ordem.", errors)
+        if "google_stitch_mcp" in exceptions:
+            fail("Stitch nao pode permanecer como excecao ativa da politica Google.", errors)
     if not PROVIDER_MATRIX.is_file():
         fail("Matriz de provedores ausente: config/integrations/provider_matrix.json", errors)
     else:
@@ -402,6 +409,8 @@ def main() -> int:
         disabled_mcp_servers = {
             item.get("name") for item in antigravity.get("disabled_mcp_servers", []) if isinstance(item, dict)
         }
+        if "stitch" not in disabled_mcp_servers:
+            fail("Antigravity deve manter o MCP Stitch desativado ate segunda ordem.", errors)
     stitch_workflow = STITCH_SYNC_WORKFLOW.read_text(encoding="utf-8") if STITCH_SYNC_WORKFLOW.is_file() else ""
     for needle in [
         "workflow_dispatch:",
@@ -413,6 +422,11 @@ def main() -> int:
     for disabled_trigger in ["python scripts/stitch_auto_sync.py --require-remote"]:
         if disabled_trigger in stitch_workflow:
             fail(f"Workflow Stitch nao pode manter gatilho ou sync remoto ativo: {disabled_trigger}", errors)
+    for active_trigger in ["  push:", "  schedule:", 'STITCH_REMOTE_SYNC_ENABLED: "true"']:
+        if active_trigger in stitch_workflow:
+            fail(f"Workflow Stitch deve permanecer sem gatilho remoto ativo: {active_trigger}", errors)
+    if "if: ${{ false }}" not in stitch_workflow:
+        fail("Workflow Stitch deve manter o job explicitamente desativado.", errors)
     if not (ROOT / "docs" / "COMPLIANCE.md").is_file():
         fail("Documento de compliance ausente: docs/COMPLIANCE.md", errors)
     if not COMPLIANCE_MATRIX.is_file():

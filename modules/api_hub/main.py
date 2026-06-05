@@ -3,8 +3,12 @@ import sys
 import httpx
 import hashlib
 import hmac
+import asyncio
 from pathlib import Path
-from fastapi import Request, HTTPException, Depends
+from typing import Any
+
+from fastapi import Request, HTTPException, Depends, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from starlette.background import BackgroundTask
 import time
@@ -23,8 +27,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from shared.runtime import create_module_app
 from shared.security import Actor
+from shared.valley_catalog import PUBLIC_RESOURCE_TYPES, offer_sort_key
 
 app = create_module_app("api_hub")
+
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "ALL_IN_ONE_CORS_ORIGINS",
+        "http://localhost:5173,http://localhost:5174,http://localhost:5175",
+    ).split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "PUT"],
+    allow_headers=["*"],
+)
 
 # Configurações
 MODULES = [
@@ -45,6 +66,47 @@ WEBHOOK_SECRET = os.getenv("ALL_IN_ONE_WEBHOOK_SECRET", "local-webhook-secret-ch
 # Clientes
 client = httpx.AsyncClient()
 redis_client = redis.from_url(REDIS_URL, decode_responses=True) if redis else None
+
+CATALOG_SOURCE_MODULES = tuple(PUBLIC_RESOURCE_TYPES)
+CATALOG_QUERY_FIELDS = (
+    "q",
+    "category",
+    "offer_type",
+    "lat",
+    "lng",
+    "company_type",
+    "company_category",
+    "business_activity",
+    "price_min",
+    "price_max",
+    "availability",
+    "verified_only",
+)
+
+
+def _catalog_offer_key(offer: dict[str, Any]) -> str:
+    return str(
+        offer.get("offer_id")
+        or offer.get("id")
+        or ":".join(
+            str(offer.get(field) or "")
+            for field in ("source_module", "source_resource_type", "source_entity_id")
+        )
+    )
+
+
+def merge_catalog_offers(results: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    merged: dict[str, dict[str, Any]] = {}
+    for offers in results:
+        for offer in offers:
+            key = _catalog_offer_key(offer)
+            current = merged.get(key)
+            if current is None or (
+                current.get("availability_status") == "coming_soon"
+                and offer.get("availability_status") != "coming_soon"
+            ):
+                merged[key] = offer
+    return sorted(merged.values(), key=offer_sort_key)
 
 def _configured_api_keys() -> dict[str, dict[str, object]]:
     """Parse API keys from ALL_IN_ONE_API_KEYS.
@@ -190,36 +252,66 @@ async def auth_proxy(path: str, request: Request):
 async def registrations_proxy(request: Request):
     return await proxy_request(SERVICES["identity"], request)
 
-import asyncio
-
 @app.get("/gateway/catalog/offers", dependencies=[Depends(rate_limiter)])
-async def aggregate_catalog_offers(limit: int = 50, offset: int = 0):
-    """Agregação Multi-Serviço das ofertas vivas do Valley Marketplace"""
-    async def fetch_module(mod_name):
+async def aggregate_catalog_offers(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    q: str | None = None,
+    category: str | None = None,
+    offer_type: str | None = None,
+    lat: float | None = None,
+    lng: float | None = None,
+    company_type: str | None = None,
+    company_category: str | None = None,
+    business_activity: str | None = None,
+    price_min: float | None = None,
+    price_max: float | None = None,
+    availability: str | None = None,
+    verified_only: bool = False,
+) -> dict[str, Any]:
+    """Agrega as vitrines publicas dos modulos no contrato unico do Valley."""
+    query_values = locals()
+    forwarded_params = {
+        field: query_values[field]
+        for field in CATALOG_QUERY_FIELDS
+        if query_values.get(field) not in (None, "", False)
+    }
+    if verified_only:
+        forwarded_params["verified_only"] = "true"
+
+    async def fetch_module(module_name: str) -> tuple[str, list[dict[str, Any]], str | None]:
         try:
-            url = f"{SERVICES[mod_name]}/catalog_offers?limit={limit}"
-            resp = await client.get(url, timeout=2.0)
+            url = f"{SERVICES[module_name]}/valley/catalog/search"
+            resp = await client.get(url, params=forwarded_params, timeout=3.0)
             if resp.status_code == 200:
                 data = resp.json()
-                if isinstance(data, dict) and "data" in data:
-                    for item in data["data"]: item["_source_module"] = mod_name
-                    return data["data"]
-                elif isinstance(data, list):
-                    for item in data: item["_source_module"] = mod_name
-                    return data
-            return []
-        except Exception:
-            return []
+                if isinstance(data, list):
+                    return module_name, [item for item in data if isinstance(item, dict)], None
+                return module_name, [], "resposta_invalida"
+            return module_name, [], f"http_{resp.status_code}"
+        except (httpx.RequestError, ValueError) as exc:
+            return module_name, [], type(exc).__name__
 
-    target_modules = ["business", "marketplace", "services", "health", "property", "jobs", "mobility", "delivery", "tms"]
-    tasks = [fetch_module(m) for m in target_modules]
-    results = await asyncio.gather(*tasks)
-    
-    aggregated = []
-    for r in results:
-        aggregated.extend(r)
-        
-    return {"data": aggregated[:limit], "total": len(aggregated)}
+    responses = await asyncio.gather(*(fetch_module(module) for module in CATALOG_SOURCE_MODULES))
+    merged = merge_catalog_offers([offers for _, offers, _ in responses])
+    failures = [
+        {"module": module, "error": error}
+        for module, _, error in responses
+        if error is not None
+    ]
+    page = merged[offset : offset + limit]
+    return {
+        "data": page,
+        "total": len(merged),
+        "limit": limit,
+        "offset": offset,
+        "partial": bool(failures),
+        "sources": [
+            {"module": module, "status": "unavailable" if error else "ok", "offer_count": len(offers)}
+            for module, offers, error in responses
+        ],
+        "failures": failures,
+    }
 
 @app.get("/gateway/telemetry/outbox")
 async def outbox_telemetry(limit: int = 100):

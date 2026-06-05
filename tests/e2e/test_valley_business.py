@@ -5,7 +5,7 @@ def test_valley_business_navigation(page: Page, business_server: str):
     Testa o carregamento B2B Dashboard e sua navegação baseada em layout.
     """
     # Acessa o app (Desktop default viewport)
-    page.goto(business_server)
+    page.goto(business_server, timeout=60000)
     
     # Valida Sidebar Title
     expect(page.locator(".sidebar-logo")).to_contain_text("Valley Business")

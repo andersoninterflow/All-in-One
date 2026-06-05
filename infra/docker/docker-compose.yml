@@ -103,7 +103,16 @@ services:
       ALL_IN_ONE_API_HUB_POSTGRES_DSN: ${ALL_IN_ONE_API_HUB_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
       ALL_IN_ONE_REDIS_URL: ${ALL_IN_ONE_REDIS_URL:-redis://redis:6379/0}
       IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL:-http://identity:8000}
+      BUSINESS_SERVICE_URL: ${BUSINESS_SERVICE_URL:-http://business:8000}
       FINANCE_SERVICE_URL: ${FINANCE_SERVICE_URL:-http://finance:8000}
+      MARKETPLACE_SERVICE_URL: ${MARKETPLACE_SERVICE_URL:-http://marketplace:8000}
+      STOCK_SERVICE_URL: ${STOCK_SERVICE_URL:-http://stock:8000}
+      SERVICES_SERVICE_URL: ${SERVICES_SERVICE_URL:-http://services:8000}
+      HEALTH_SERVICE_URL: ${HEALTH_SERVICE_URL:-http://health:8000}
+      DELIVERY_SERVICE_URL: ${DELIVERY_SERVICE_URL:-http://delivery:8000}
+      MOBILITY_SERVICE_URL: ${MOBILITY_SERVICE_URL:-http://mobility:8000}
+      JOBS_SERVICE_URL: ${JOBS_SERVICE_URL:-http://jobs:8000}
+      PROPERTY_SERVICE_URL: ${PROPERTY_SERVICE_URL:-http://property:8000}
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,6 +141,16 @@ services:
         condition: service_completed_successfully
     ports: ["8101:8000"]
 
+  business:
+    <<: *module-common
+    build:
+      context: ../..
+      dockerfile: modules/business/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_BUSINESS_POSTGRES_DSN: ${ALL_IN_ONE_BUSINESS_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+    ports: ["8113:8000"]
+
   finance:
     <<: *module-common
     build:
@@ -158,6 +177,16 @@ services:
       ALL_IN_ONE_STORAGE_DIR: /data
       ALL_IN_ONE_MARKETPLACE_POSTGRES_DSN: ${ALL_IN_ONE_MARKETPLACE_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
     ports: ["8103:8000"]
+
+  stock:
+    <<: *module-common
+    build:
+      context: ../..
+      dockerfile: modules/stock/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_STOCK_POSTGRES_DSN: ${ALL_IN_ONE_STOCK_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+    ports: ["8114:8000"]
 
   delivery:
     <<: *module-common
@@ -260,6 +289,16 @@ services:
       - domain-data:/data
       - private-document-data:/private-documents
     ports: ["8112:8000"]
+
+  property:
+    <<: *module-common
+    build:
+      context: ../..
+      dockerfile: modules/property/Dockerfile
+    environment:
+      ALL_IN_ONE_STORAGE_DIR: /data
+      ALL_IN_ONE_PROPERTY_POSTGRES_DSN: ${ALL_IN_ONE_PROPERTY_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+    ports: ["8115:8000"]
 
   outbox-dispatcher:
     build:

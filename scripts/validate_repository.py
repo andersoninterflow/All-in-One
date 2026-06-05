@@ -15,12 +15,14 @@ CATALOG = json.loads((ROOT / "config" / "module_catalog.json").read_text(encodin
 STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
 STITCH_MCP_POLICY = ROOT / "config" / "autonomy" / "stitch_mcp_policy.json"
 MULTI_AGENT_SYNC_POLICY = ROOT / "config" / "autonomy" / "multi_agent_sync_policy.json"
+GOOGLE_INTEGRATIONS_POLICY = ROOT / "config" / "autonomy" / "google_integrations_policy.json"
 STITCH_SYNC_WORKFLOW = ROOT / ".github" / "workflows" / "stitch-sync.yml"
 BRAND_IDENTITY = ROOT / "config" / "branding" / "brand_identity.json"
 COMPLIANCE_MATRIX = ROOT / "config" / "compliance" / "data_classification.json"
 DATA_SUBJECT_RIGHTS = ROOT / "config" / "compliance" / "data_subject_rights.json"
 RETENTION_JOBS = ROOT / "config" / "compliance" / "retention_jobs.json"
 RETENTION_ALERTS = ROOT / "config" / "observability" / "retention_alerts.json"
+PROVIDER_MATRIX = ROOT / "config" / "integrations" / "provider_matrix.json"
 ENV_EXAMPLE = ROOT / ".env.example"
 VSCODE_SETTINGS = ROOT / ".vscode" / "settings.json"
 VSCODE_TASKS = ROOT / ".vscode" / "tasks.json"
@@ -59,6 +61,12 @@ REQUIRED_ENV_VARS = {
     "ALL_IN_ONE_IDENTITY_POSTGRES_DSN",
     "ALL_IN_ONE_RETENTION_POSTGRES_DSN",
     "ALL_IN_ONE_RETENTION_POLL_SECONDS",
+    "GOOGLE_INTEGRATIONS_ENABLED",
+    "GOOGLE_CLOUD_ENABLED",
+    "GOOGLE_AI_STUDIO_ENABLED",
+    "GOOGLE_CODE_CLI_ENABLED",
+    "GEMINI_CODE_ASSIST_ENABLED",
+    "STITCH_REMOTE_SYNC_ENABLED",
 }
 REQUIRED_SUBJECT_RIGHTS = {
     "acesso",
@@ -84,9 +92,9 @@ REQUIRED_RETENTION_ALERTS = {
 REQUIRED_MULTI_AGENT_IDS = {
     "codex_cli",
     "antigravity",
-    # "gemini_code",
-    # "gemini_cli_termux",
-    # "gemini_cli_ubuntu",
+    "gemini_code",
+    "gemini_cli_termux",
+    "gemini_cli_ubuntu",
 }
 REQUIRED_MULTI_AGENT_RULES = [
     "Git como fonte de verdade",
@@ -195,6 +203,12 @@ def main() -> int:
             fail("python.testing.pytestArgs deve ficar vazio; pytest.ini e a fonte obrigatoria.", errors)
         if settings.get("mdb.presetConnections") not in ([], None):
             fail("mdb.presetConnections deve ficar vazio para nao tentar conectar automaticamente ao Mongo local.", errors)
+        if settings.get("geminicodeassist.outlines.automaticOutlineGeneration") is not True:
+            fail("Gemini Code Assist deve permanecer ativo no Antigravity/editor.", errors)
+        if settings.get("geminicodeassist.enable") is not True:
+            fail("geminicodeassist.enable deve permanecer true no Antigravity/editor.", errors)
+        if settings.get("geminicodeassist.agentYoloMode") is not False:
+            fail("geminicodeassist.agentYoloMode deve permanecer false para evitar execucao destrutiva automatica.", errors)
     vscode_extensions = ROOT / ".vscode" / "extensions.json"
     if not vscode_extensions.is_file():
         fail("Configuracao VS Code ausente: .vscode/extensions.json", errors)
@@ -223,6 +237,16 @@ def main() -> int:
         fail("Docker Compose deve agendar o worker de retencao LGPD.", errors)
     if "deletion_worker_daily --dry-run" not in compose:
         fail("Docker Compose deve manter descarte LGPD em dry-run ate homologacao por modulo.", errors)
+    for disabled_env in [
+        'GOOGLE_INTEGRATIONS_ENABLED: "false"',
+        'GOOGLE_CLOUD_ENABLED: "false"',
+        'GOOGLE_AI_STUDIO_ENABLED: "false"',
+        'GOOGLE_CODE_CLI_ENABLED: "false"',
+        'GEMINI_CODE_ASSIST_ENABLED: "true"',
+        'STITCH_REMOTE_SYNC_ENABLED: "false"',
+    ]:
+        if disabled_env not in compose:
+            fail(f"Docker Compose deve manter integracao Google desativada: {disabled_env}", errors)
     kubernetes = KUBERNETES_PLATFORM.read_text(encoding="utf-8") if KUBERNETES_PLATFORM.is_file() else ""
     if "kind: CronJob" not in kubernetes or "name: retention-worker" not in kubernetes:
         fail("Kubernetes deve declarar CronJob retention-worker.", errors)
@@ -257,6 +281,73 @@ def main() -> int:
     else:
         for error in validate_stitch_mcp_config(require_secret=False):
             fail(error, errors)
+        stitch_policy = json.loads(STITCH_MCP_POLICY.read_text(encoding="utf-8"))
+        if stitch_policy.get("enabled") is not False:
+            fail("Politica Stitch deve permanecer enabled=false ate segunda ordem.", errors)
+        if stitch_policy.get("disabled_until") != "segunda_ordem_explicita_do_usuario":
+            fail("Politica Stitch deve declarar disabled_until=segunda_ordem_explicita_do_usuario.", errors)
+    if not GOOGLE_INTEGRATIONS_POLICY.is_file():
+        fail("Politica obrigatoria de desativacao Google ausente.", errors)
+    else:
+        google_policy = json.loads(GOOGLE_INTEGRATIONS_POLICY.read_text(encoding="utf-8"))
+        if google_policy.get("enabled") is not False:
+            fail("Politica Google deve permanecer enabled=false ate segunda ordem.", errors)
+        if google_policy.get("disabled_until") != "segunda_ordem_explicita_do_usuario":
+            fail("Politica Google deve declarar disabled_until=segunda_ordem_explicita_do_usuario.", errors)
+        expected_integrations = {
+            "google_sdk",
+            "google_ai_studio",
+            "google_cloud",
+            "google_code_cli",
+            "gemini_cli_termux",
+            "gemini_cli_ubuntu",
+            "google_stitch_mcp",
+        }
+        if set(google_policy.get("affected_integrations", [])) != expected_integrations:
+            fail("Politica Google deve cobrir SDK, AI Studio, Cloud, Code CLI, Gemini CLI e Stitch MCP.", errors)
+        exceptions = {
+            item.get("name"): item for item in google_policy.get("explicit_exceptions", []) if isinstance(item, dict)
+        }
+        if exceptions.get("gemini_code_assist", {}).get("enabled") is not True:
+            fail("Politica Google deve manter Gemini Code Assist como excecao ativa no Antigravity/editor.", errors)
+        runtime = google_policy.get("runtime_environment", {})
+        disabled_variables = [
+            "GOOGLE_INTEGRATIONS_ENABLED",
+            "GOOGLE_CLOUD_ENABLED",
+            "GOOGLE_AI_STUDIO_ENABLED",
+            "GOOGLE_CODE_CLI_ENABLED",
+            "STITCH_REMOTE_SYNC_ENABLED",
+        ]
+        for variable in disabled_variables:
+            if runtime.get(variable) != "false":
+                fail(f"Politica Google deve manter {variable}=false.", errors)
+        if runtime.get("GEMINI_CODE_ASSIST_ENABLED") != "true":
+            fail("Politica Google deve manter GEMINI_CODE_ASSIST_ENABLED=true no Antigravity/editor.", errors)
+    if not PROVIDER_MATRIX.is_file():
+        fail("Matriz de provedores ausente: config/integrations/provider_matrix.json", errors)
+    else:
+        provider_matrix = json.loads(PROVIDER_MATRIX.read_text(encoding="utf-8"))
+        integrations = {item.get("key"): item for item in provider_matrix.get("integrations", [])}
+        maps = integrations.get("maps_routing_tracking", {})
+        active_maps = set(maps.get("primary_candidates", [])) | set(maps.get("fallback_candidates", []))
+        if "Google Maps Platform" in active_maps:
+            fail("Google Maps Platform deve permanecer fora dos candidatos ativos da matriz de provedores.", errors)
+        disabled_maps = {
+            item.get("name") for item in maps.get("disabled_candidates", []) if isinstance(item, dict)
+        }
+        if "Google Maps Platform" not in disabled_maps:
+            fail("Google Maps Platform deve permanecer preservado em disabled_candidates.", errors)
+        ai_agent = integrations.get("ai_agent_superdesign", {})
+        if str(ai_agent.get("primary_model", "")).lower().startswith("google/"):
+            fail("Modelo primario do agente AI nao pode usar Google/Gemini enquanto Google estiver desativado.", errors)
+        active_ai = set(ai_agent.get("primary_candidates", [])) | set(ai_agent.get("fallback_candidates", []))
+        if "Google Gemini API" in active_ai:
+            fail("Google Gemini API deve permanecer fora dos candidatos ativos da matriz de provedores.", errors)
+        disabled_ai = {
+            item.get("name") for item in ai_agent.get("disabled_candidates", []) if isinstance(item, dict)
+        }
+        if "Google Gemini API" not in disabled_ai:
+            fail("Google Gemini API deve permanecer preservado em disabled_candidates.", errors)
     if not MULTI_AGENT_SYNC_POLICY.is_file():
         fail("Politica obrigatoria de alinhamento multiagente ausente.", errors)
     else:
@@ -269,8 +360,22 @@ def main() -> int:
         if source_of_truth.get("repository") != "git" or source_of_truth.get("preferred_push_remote") != "fork":
             fail("Politica multiagente deve declarar Git e remoto fork como contrato de sincronizacao.", errors)
         agent_ids = {agent.get("id") for agent in multi_agent_policy.get("agents", [])}
-        if not REQUIRED_MULTI_AGENT_IDS.issubset(agent_ids):
-            fail("Politica multiagente deve cobrir Codex CLI e Antigravity (Gemini temporariamente desativado).", errors)
+        if agent_ids != REQUIRED_MULTI_AGENT_IDS:
+            fail("Politica multiagente deve cobrir Codex CLI, Antigravity, Gemini Code e Gemini CLI Termux/Ubuntu.", errors)
+        disabled_agents = {
+            agent.get("id")
+            for agent in multi_agent_policy.get("agents", [])
+            if agent.get("enabled") is False and agent.get("disabled_until") == "segunda_ordem_explicita_do_usuario"
+        }
+        if disabled_agents != {"gemini_cli_termux", "gemini_cli_ubuntu"}:
+            fail("Somente Gemini CLI Termux/Ubuntu deve permanecer desativado na politica multiagente.", errors)
+        enabled_agents = {
+            agent.get("id")
+            for agent in multi_agent_policy.get("agents", [])
+            if agent.get("enabled") is True
+        }
+        if "gemini_code" not in enabled_agents:
+            fail("Gemini Code Assist deve permanecer ativo na politica multiagente.", errors)
         mandatory_rules = "\n".join(multi_agent_policy.get("mandatory_rules", []))
         for needle in REQUIRED_MULTI_AGENT_RULES:
             if needle not in mandatory_rules:
@@ -278,6 +383,8 @@ def main() -> int:
         stitch_alignment = multi_agent_policy.get("stitch_alignment", {})
         if stitch_alignment.get("state") != "config/stitch/sync_state.json" or stitch_alignment.get("remote_secret") != "STITCH_API_KEY":
             fail("Politica multiagente deve preservar estado Stitch e segredo remoto oficial.", errors)
+        if stitch_alignment.get("enabled") is not False:
+            fail("Alinhamento Stitch remoto deve permanecer desativado na politica multiagente.", errors)
     for agent_contract in ["AGENTS.md", "GEMINI.md"]:
         contract_text = (ROOT / agent_contract).read_text(encoding="utf-8") if (ROOT / agent_contract).is_file() else ""
         if "config/autonomy/multi_agent_sync_policy.json" not in contract_text:
@@ -289,21 +396,29 @@ def main() -> int:
         antigravity = json.loads(antigravity_config.read_text(encoding="utf-8"))
         if antigravity.get("name") != "antigravity":
             fail("Contrato Antigravity deve declarar name=antigravity.", errors)
-        required_mcp_servers = {"docker", "stitch", "playwright"}
+        required_mcp_servers = {"docker", "playwright"}
         if not required_mcp_servers.issubset(set(antigravity.get("mcp_servers", []))):
-            fail("Contrato Antigravity deve manter MCPs essenciais: docker, stitch e playwright.", errors)
+            fail("Contrato Antigravity deve manter MCPs essenciais ativos: docker e playwright.", errors)
+        if "stitch" in set(antigravity.get("mcp_servers", [])):
+            fail("Contrato Antigravity deve manter Stitch fora dos MCPs ativos enquanto Google estiver desativado.", errors)
+        disabled_mcp_servers = {
+            item.get("name") for item in antigravity.get("disabled_mcp_servers", []) if isinstance(item, dict)
+        }
+        if "stitch" not in disabled_mcp_servers:
+            fail("Contrato Antigravity deve preservar Stitch em disabled_mcp_servers.", errors)
     stitch_workflow = STITCH_SYNC_WORKFLOW.read_text(encoding="utf-8") if STITCH_SYNC_WORKFLOW.is_file() else ""
     for needle in [
         "workflow_dispatch:",
-        "schedule:",
         "secrets.STITCH_API_KEY",
-        "python scripts/stitch_auto_sync.py --require-remote",
+        "if: ${{ false }}",
+        'STITCH_REMOTE_SYNC_ENABLED: "false"',
         "config/stitch/sync_state.json",
-        "config/branding/**",
-        "assets/brand/**",
     ]:
         if needle not in stitch_workflow:
-            fail(f"Workflow de sincronizacao remota Stitch incompleto: {needle}", errors)
+            fail(f"Workflow de sincronizacao remota Stitch deve permanecer desativado/preservado: {needle}", errors)
+    for disabled_trigger in ["schedule:", "branches: [main]", "python scripts/stitch_auto_sync.py --require-remote"]:
+        if disabled_trigger in stitch_workflow:
+            fail(f"Workflow Stitch nao pode manter gatilho ou sync remoto ativo: {disabled_trigger}", errors)
     if not (ROOT / "docs" / "COMPLIANCE.md").is_file():
         fail("Documento de compliance ausente: docs/COMPLIANCE.md", errors)
     if not COMPLIANCE_MATRIX.is_file():

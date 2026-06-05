@@ -10,7 +10,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.stitch_orchestrator import load_state, sync_projects, sync_summary, write_manifest
-from scripts.validate_stitch_mcp_config import validate_stitch_mcp_config
+from scripts.validate_stitch_mcp_config import is_stitch_enabled, validate_stitch_mcp_config
 
 
 def main() -> int:
@@ -32,7 +32,9 @@ def main() -> int:
             print(f"- {error}")
         return 1
 
-    if not args.dry_run:
+    if not is_stitch_enabled():
+        state = load_state()
+    elif not args.dry_run:
         state = sync_projects(manifest, max_operations=args.max_operations)
     else:
         state = load_state()

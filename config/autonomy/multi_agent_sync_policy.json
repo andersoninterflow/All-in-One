@@ -26,17 +26,22 @@
     {
       "id": "gemini_code",
       "name": "Gemini Code Assist",
-      "role": "assistencia de codigo dentro do editor"
+      "role": "assistencia de codigo dentro do editor Antigravity",
+      "enabled": true
     },
     {
       "id": "gemini_cli_termux",
       "name": "Gemini CLI Termux",
-      "role": "execucao remota em Android/Termux"
+      "role": "execucao remota em Android/Termux",
+      "enabled": false,
+      "disabled_until": "segunda_ordem_explicita_do_usuario"
     },
     {
       "id": "gemini_cli_ubuntu",
       "name": "Gemini CLI Ubuntu",
-      "role": "execucao remota em Linux/Ubuntu"
+      "role": "execucao remota em Linux/Ubuntu",
+      "enabled": false,
+      "disabled_until": "segunda_ordem_explicita_do_usuario"
     }
   ],
   "mandatory_rules": [
@@ -49,7 +54,7 @@
     "Se houver merge ou rebase em andamento, parar e reportar o bloqueio em portugues do Brasil.",
     "Usar pathspecs nos commits quando existirem arquivos locais de IDE, credenciais ou estado temporario que nao pertencam a atividade.",
     "Nunca versionar segredos; STITCH_API_KEY e chaves equivalentes devem ficar somente em ambiente local, secrets do GitHub Actions ou cofres externos.",
-    "Preservar config/stitch/screen_manifest.json e config/stitch/sync_state.json como estado autoritativo da sincronizacao Stitch.",
+    "Preservar config/stitch/screen_manifest.json e config/stitch/sync_state.json como estado autoritativo da sincronizacao Stitch, mantendo a execucao remota desativada ate segunda ordem.",
     "Atualizar STATUS.md quando a atividade alterar maturidade, sincronizacao remota, contratos operacionais ou proximos passos naturais.",
     "Manter respostas e orientacoes em portugues do Brasil neste workspace."
   ],
@@ -70,6 +75,8 @@
   },
   "stitch_alignment": {
     "required": true,
+    "enabled": false,
+    "disabled_until": "segunda_ordem_explicita_do_usuario",
     "manifest": "config/stitch/screen_manifest.json",
     "state": "config/stitch/sync_state.json",
     "policy": "config/autonomy/stitch_mcp_policy.json",

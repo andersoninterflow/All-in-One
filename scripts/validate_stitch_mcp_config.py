@@ -40,7 +40,10 @@ def validate_policy(policy: dict[str, Any]) -> list[str]:
     required_auth = policy.get("required_auth", {})
     required_headers = policy.get("required_headers", {})
     if policy.get("enabled") is not True:
-        errors.append("Politica Stitch deve estar habilitada.")
+        if policy.get("disabled_until") != "segunda_ordem_explicita_do_usuario":
+            errors.append("Politica Stitch desativada deve declarar disabled_until=segunda_ordem_explicita_do_usuario.")
+        if not policy.get("disabled_reason"):
+            errors.append("Politica Stitch desativada deve declarar disabled_reason.")
     if policy.get("server_name") != EXPECTED_SERVER:
         errors.append("Politica Stitch deve declarar server_name stitch.")
     if policy.get("endpoint") != EXPECTED_ENDPOINT:
@@ -54,6 +57,13 @@ def validate_policy(policy: dict[str, Any]) -> list[str]:
     if required_headers.get("Accept") != EXPECTED_ACCEPT:
         errors.append(f"Politica Stitch deve exigir Accept {EXPECTED_ACCEPT}.")
     return errors
+
+
+def is_stitch_enabled(root: Path = ROOT) -> bool:
+    try:
+        return load_policy(root / "config" / "autonomy" / "stitch_mcp_policy.json").get("enabled") is True
+    except ValueError:
+        return False
 
 
 def load_toml(path: Path) -> dict[str, Any]:
@@ -127,13 +137,16 @@ def validate_stitch_mcp_config(
         errors.extend(validate_policy(load_policy(root / "config" / "autonomy" / "stitch_mcp_policy.json")))
     except ValueError as exc:
         errors.append(str(exc))
-    if require_codex_config:
+    should_validate_config = require_codex_config and (
+        is_stitch_enabled(root) or config_path != DEFAULT_CODEX_CONFIG
+    )
+    if should_validate_config:
         try:
             errors.extend(validate_codex_config(load_toml(config_path), config_path))
         except ValueError as exc:
             errors.append(str(exc))
     errors.extend(validate_no_versioned_secret(root))
-    if require_secret and not os.getenv(EXPECTED_ENV_VAR):
+    if require_secret and is_stitch_enabled(root) and not os.getenv(EXPECTED_ENV_VAR):
         errors.append(f"Variavel obrigatoria ausente no ambiente: {EXPECTED_ENV_VAR}")
     return errors
 

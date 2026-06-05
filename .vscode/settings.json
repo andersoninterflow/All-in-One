@@ -18,6 +18,8 @@
         }
     },
     "geminicodeassist.outlines.automaticOutlineGeneration": true,
+    "geminicodeassist.agentYoloMode": false,
+    "geminicodeassist.enable": true,
     "mdb.presetConnections": [],
     "workbench.editor.preferHistoryBasedLanguageDetection": true
 }

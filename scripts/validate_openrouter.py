@@ -52,7 +52,7 @@ def validate_openrouter_config():
 
     # Carrega modelo alvo da matriz de provedores
     matrix_path = os.path.join("config", "integrations", "provider_matrix.json")
-    target_model = "google/gemini-pro-1.5" # Fallback
+    target_model = "openrouter/auto"  # Fallback nao Google enquanto integracoes Google estiverem desativadas.
     if os.path.exists(matrix_path):
         try:
             with open(matrix_path, "r", encoding="utf-8") as f:

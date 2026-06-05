@@ -177,7 +177,6 @@
       "stage": "sandbox_required",
       "sandbox_adapter": "local_distance_eta_calculator",
       "primary_candidates": [
-        "Google Maps Platform",
         "Mapbox",
         "HERE"
       ],
@@ -185,6 +184,13 @@
         "OpenStreetMap/Nominatim",
         "OSRM self-hosted",
         "GraphHopper"
+      ],
+      "disabled_candidates": [
+        {
+          "name": "Google Maps Platform",
+          "disabled_until": "segunda_ordem_explicita_do_usuario",
+          "reason": "Integracoes Google desativadas temporariamente."
+        }
       ],
       "required_env": [
         "MAPS_PROVIDER",
@@ -325,13 +331,19 @@
       "capability": "Agente de design e codificacao assistida via LLM",
       "stage": "partially_implemented",
       "sandbox_adapter": "local_mock_ai_response",
-      "primary_model": "google/gemini-pro-1.5",
+      "primary_model": "openrouter/auto",
       "primary_candidates": [
         "OpenRouter"
       ],
       "fallback_candidates": [
-        "Google Gemini API",
         "OpenAI compatible gateway"
+      ],
+      "disabled_candidates": [
+        {
+          "name": "Google Gemini API",
+          "disabled_until": "segunda_ordem_explicita_do_usuario",
+          "reason": "Google AI Studio/Gemini desativado temporariamente."
+        }
       ],
       "required_env": [
         "OPENROUTER_API_KEY"

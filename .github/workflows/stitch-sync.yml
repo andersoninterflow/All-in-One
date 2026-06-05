@@ -1,20 +1,7 @@
 name: Stitch Remote Sync
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "config/module_catalog.json"
-      - "config/branding/**"
-      - "config/autonomy/stitch_mcp_policy.json"
-      - "assets/brand/**"
-      - "config/stitch/**"
-      - "scripts/stitch_*.py"
-      - "docs/BRANDING.md"
-      - ".github/workflows/stitch-sync.yml"
   workflow_dispatch:
-  schedule:
-    - cron: "23 */6 * * *"
 
 permissions:
   contents: write
@@ -25,8 +12,10 @@ concurrency:
 
 jobs:
   stitch-sync:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     env:
+      STITCH_REMOTE_SYNC_ENABLED: "false"
       STITCH_API_KEY: ${{ secrets.STITCH_API_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +30,7 @@ jobs:
         run: python -m pip install httpx
 
       - name: Validate policy and synchronize Stitch projects
-        run: python scripts/stitch_auto_sync.py --require-remote
+        run: python scripts/stitch_auto_sync.py --dry-run
 
       - name: Commit synchronized Stitch state
         run: |

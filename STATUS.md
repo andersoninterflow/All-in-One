@@ -1,5 +1,25 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-05 Desativacao Google Ate Segunda Ordem
+
+### Concluido neste ciclo
+
+- Criada `config/autonomy/google_integrations_policy.json` com `enabled=false` para Google SDK, Google AI Studio, Google Cloud, Google Code CLI, Gemini CLI Termux/Ubuntu e Google Stitch MCP.
+- Gemini Code Assist ficou como excecao explicita e permanece ativo no Antigravity/editor.
+- `config/autonomy/stitch_mcp_policy.json` preserva endpoint, header e variavel oficial, mas agora fica `enabled=false` ate segunda ordem.
+- `.github/workflows/stitch-sync.yml` foi preservado, porem sem gatilhos automaticos de push/schedule e com job bloqueado por `if: ${{ false }}`.
+- `.vscode/settings.json` mantem Gemini Code Assist ativo, com modo automatico destrutivo/yolo desativado.
+- `.agents/antigravity.json` preserva Stitch em `disabled_mcp_servers` e remove Stitch da lista ativa de MCPs.
+- `.env.example` e `infra/docker/docker-compose.yml` declaram flags Google/Stitch como `false` e preservam `GEMINI_CODE_ASSIST_ENABLED=true`.
+- `scripts/stitch_auto_sync.py` e `scripts/validate_stitch_mcp_config.py` passaram a respeitar a politica desativada sem exigir segredo remoto.
+- `scripts/validate_repository.py` agora bloqueia reativacao acidental em politica, Docker, VS Code, Antigravity e workflow.
+
+### Estado operacional
+
+- Configuracoes Google foram mantidas para retomada futura.
+- Nenhuma sincronizacao remota Google/Stitch deve ocorrer ate segunda ordem explicita.
+- Estado Stitch local permanece preservado em `config/stitch/screen_manifest.json` e `config/stitch/sync_state.json`.
+
 ## STATUS OPERACIONAL - 2026-06-04 Alinhamento Multiagente, Python e Stitch CI
 
 ### Concluido neste ciclo
@@ -80,8 +100,8 @@
 - Prompts Stitch agora instruem uso padronizado das logos oficiais, proibindo redesenho, distorcao, corte, rotacao ou recoloracao.
 - Criado `scripts/stitch_auto_sync.py` para executar plano, validacao de politica, sync remoto e conferência de completude do estado Stitch.
 - `scripts/stitch_orchestrator.py` ganhou comando `status` e resumo comparando `screen_manifest.json` com `sync_state.json`.
-- Criado workflow `.github/workflows/stitch-sync.yml` com execucao manual, agendada a cada 6 horas e por push em artefatos Stitch.
-- O workflow usa somente `secrets.STITCH_API_KEY`, executa `python scripts/stitch_auto_sync.py --require-remote` e commita `config/stitch/sync_state.json` quando o MCP remoto retorna IDs.
+- Criado workflow `.github/workflows/stitch-sync.yml` para execucao manual, agendada e por push em artefatos Stitch no ciclo original; em 2026-06-05 ele foi preservado, mas desativado ate segunda ordem.
+- O workflow preserva `secrets.STITCH_API_KEY` e `config/stitch/sync_state.json`, mas nao executa sync remoto enquanto Google/Stitch estiver desativado.
 - `tests/test_stitch_orchestrator.py` e `scripts/validate_repository.py` agora bloqueiam remocao da automacao persistente e do uso de secret.
 - Corrigido helper `get_erp_store()` para manter os endpoints ERP customizados importaveis.
 - `modules/erp/main.py` passou a ser preservado pelo scaffold por ser entrypoint especializado.

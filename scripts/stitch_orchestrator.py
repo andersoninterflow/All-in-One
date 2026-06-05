@@ -515,6 +515,15 @@ def main() -> int:
         summary = sync_summary(manifest, load_state())
         print(json.dumps(summary, indent=2, ensure_ascii=True))
         return 0
+
+    # BYPASS: Integração Google Cloud/Stitch desativada temporariamente.
+    if args.command in ("discover", "tools"):
+        print("[]")
+        return 0
+    if args.command == "sync":
+        print("STITCH sync desativado temporariamente por solicitacao. Nenhum projeto sincronizado.")
+        return 0
+
     client = StitchMcpClient()
     if args.command == "discover":
         try:

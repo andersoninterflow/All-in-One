@@ -84,9 +84,9 @@ REQUIRED_RETENTION_ALERTS = {
 REQUIRED_MULTI_AGENT_IDS = {
     "codex_cli",
     "antigravity",
-    "gemini_code",
-    "gemini_cli_termux",
-    "gemini_cli_ubuntu",
+    # "gemini_code",
+    # "gemini_cli_termux",
+    # "gemini_cli_ubuntu",
 }
 REQUIRED_MULTI_AGENT_RULES = [
     "Git como fonte de verdade",
@@ -269,8 +269,8 @@ def main() -> int:
         if source_of_truth.get("repository") != "git" or source_of_truth.get("preferred_push_remote") != "fork":
             fail("Politica multiagente deve declarar Git e remoto fork como contrato de sincronizacao.", errors)
         agent_ids = {agent.get("id") for agent in multi_agent_policy.get("agents", [])}
-        if agent_ids != REQUIRED_MULTI_AGENT_IDS:
-            fail("Politica multiagente deve cobrir Codex CLI, Antigravity, Gemini Code e Gemini CLI Termux/Ubuntu.", errors)
+        if not REQUIRED_MULTI_AGENT_IDS.issubset(agent_ids):
+            fail("Politica multiagente deve cobrir Codex CLI e Antigravity (Gemini temporariamente desativado).", errors)
         mandatory_rules = "\n".join(multi_agent_policy.get("mandatory_rules", []))
         for needle in REQUIRED_MULTI_AGENT_RULES:
             if needle not in mandatory_rules:

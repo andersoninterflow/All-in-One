@@ -2,8 +2,7 @@ import React, { useState } from 'react'
 
 export interface PaymentIntent {
   amount: string
-  escrow_id: string
-  destination_user_id: string
+  order_id: string
 }
 
 interface PaymentModalProps {
@@ -31,31 +30,25 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess,
     setFailed(false)
 
     try {
-      const response = await fetch(`${API_HUB_URL}/finance/escrows/hold`, {
+      const response = await fetch(`${API_HUB_URL}/gateway/payments/sandbox/authorize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          wallet_id: 'pix-external-mock',
-          beneficiary_user_id: paymentIntent.destination_user_id,
-          amount: paymentIntent.amount,
-          release_condition: 'service_completed',
-          idempotency_key: window.crypto.randomUUID()
+          order_id: paymentIntent.order_id,
+          method: 'pix_sandbox',
+          idempotency_key: `payment-${paymentIntent.order_id}`
         })
       })
 
-      if (response.status === 204) {
-         // handle empty body
-      } else {
-        const payload = await response.json()
-        if (!response.ok) {
-          throw new Error(payload.detail || 'Falha ao processar pagamento.')
-        }
+      const payload = await response.json()
+      if (!response.ok) {
+        throw new Error(payload.detail || 'Falha ao processar pagamento.')
       }
 
-      setFeedback('Pagamento confirmado e retido com seguranca (Escrow).')
+      setFeedback(payload.message || 'Pagamento sandbox autorizado.')
       
       setTimeout(() => {
         onSuccess()

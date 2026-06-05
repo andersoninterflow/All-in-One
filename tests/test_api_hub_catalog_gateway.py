@@ -336,3 +336,33 @@ def test_gateway_returns_normalized_consumer_history(monkeypatch) -> None:
         "partial": False,
         "failures": [],
     }
+
+def test_gateway_returns_partial_history_when_module_fails(monkeypatch) -> None:
+    fake_client = FakeCatalogClient()
+    # Mock services:8000 to raise RequestError
+    original_get = fake_client.get
+    async def mock_get(url: str, **kwargs):
+        if url.endswith("services:8000/resources/service_contracts"):
+            import httpx
+            raise httpx.RequestError("Conexao recusada", request=httpx.Request("GET", url))
+        return await original_get(url, **kwargs)
+    
+    fake_client.get = mock_get
+    monkeypatch.setattr(api_hub, "client", fake_client)
+    monkeypatch.setattr(api_hub, "redis_client", None)
+    client = TestClient(api_hub.app)
+    user_id = "11111111-1111-4111-8111-111111111111"
+    token = api_hub.jwt.encode({"sub": user_id}, api_hub.JWT_SECRET, algorithm="HS256")
+
+    response = client.get(
+        "/gateway/consumer/orders",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["total"] == 1
+    assert payload["partial"] is True
+    assert len(payload["failures"]) == 1
+    assert payload["failures"][0]["module"] == "services"
+    assert payload["failures"][0]["error"] == "RequestError"

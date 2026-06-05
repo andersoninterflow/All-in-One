@@ -1,5 +1,38 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-05 Historico do Consumidor e Pagamento Sandbox
+
+### Concluido neste ciclo
+
+- Criada a area autenticada `Meus Pedidos`, que agrega pedidos, agendamentos e
+  contratacoes do consumidor sem expor payloads internos dos modulos.
+- O endpoint `GET /gateway/consumer/orders` valida o JWT e devolve um contrato
+  normalizado com titulo, tipo, status, valor e datas publicas.
+- O checkout de produtos agora encaminha uma intencao de pagamento vinculada ao
+  pedido criado, sem aceitar preco ou beneficiario enviados pelo navegador.
+- O endpoint `POST /gateway/payments/sandbox/authorize` recupera o pedido na
+  fonte canonica, confirma sua titularidade, autoriza PIX no Finance sandbox,
+  cria a retencao sandbox e somente entao marca o pedido como pago.
+- O Valley ganhou modal de pagamento explicitamente identificado como sandbox,
+  feedback de processamento e drawer responsivo para o historico do consumidor.
+- A jornada Playwright cobre cadastro, compra, pagamento sandbox e consulta do
+  pedido pago na mesma sessao.
+
+### Garantias
+
+- Nenhuma transferencia de dinheiro real e executada neste ciclo.
+- Valor, vendedor e beneficiario sao derivados do pedido persistido no backend.
+- Falhas parciais na leitura do historico sao informadas sem derrubar os dados
+  obtidos das demais fontes.
+- A transicao do pedido pago permanece auditavel pelo fluxo de recursos e outbox
+  do Marketplace.
+
+### Proximos passos naturais
+
+- Implementar estados de falha, expiracao e repeticao idempotente do pagamento.
+- Expor detalhes e cancelamento permitido de pedidos e agendamentos.
+- Integrar notificacoes de mudanca de status e conciliacao sandbox.
+
 ## STATUS OPERACIONAL - 2026-06-05 Conversao Valley: Login, Pedido e Agendamento
 
 ### Concluido neste ciclo

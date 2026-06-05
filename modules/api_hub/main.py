@@ -15,6 +15,7 @@ from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 import time
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 try:
     import redis.asyncio as redis
@@ -132,11 +133,21 @@ async def _fetch_catalog_offer(offer_id: str) -> dict[str, Any]:
     configured_module = offer_id.split(":", 1)[0].strip().casefold()
     if configured_module not in CATALOG_SOURCE_MODULES:
         raise HTTPException(status_code=422, detail="Origem da oferta invalida.")
-    try:
-        response = await client.get(
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=0.5, min=1, max=5),
+        retry=retry_if_exception_type(httpx.RequestError),
+        reraise=True
+    )
+    async def _do_request():
+        return await client.get(
             f"{SERVICES[configured_module]}/valley/catalog/offers/{quote(offer_id, safe='')}",
             timeout=3.0,
         )
+
+    try:
+        response = await _do_request()
     except httpx.RequestError as exc:
         raise HTTPException(status_code=502, detail="Nao foi possivel validar a oferta agora.") from exc
     if response.status_code == 404:
@@ -161,13 +172,23 @@ async def _create_catalog_resource(
         "X-Actor-User-Id": str(body.customer_user_id),
         "X-Idempotency-Key": body.idempotency_key,
     }
-    try:
-        response = await client.post(
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=0.5, min=1, max=5),
+        retry=retry_if_exception_type(httpx.RequestError),
+        reraise=True
+    )
+    async def _do_post():
+        return await client.post(
             f"{SERVICES[module_name]}/resources/{resource_type}",
             headers=headers,
             json={"user_id": str(body.customer_user_id), "payload": payload},
             timeout=5.0,
         )
+
+    try:
+        response = await _do_post()
     except httpx.RequestError as exc:
         raise HTTPException(status_code=502, detail="Nao foi possivel registrar sua solicitacao agora.") from exc
     if response.status_code not in {200, 201}:
@@ -188,11 +209,20 @@ async def _service_json(
     payload: dict[str, Any] | None = None,
     timeout: float = 5.0,
 ) -> Any:
-    try:
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=0.5, min=1, max=5),
+        retry=retry_if_exception_type(httpx.RequestError),
+        reraise=True
+    )
+    async def _do_call():
         if method == "GET":
-            response = await client.get(url, headers=headers, timeout=timeout)
+            return await client.get(url, headers=headers, timeout=timeout)
         else:
-            response = await client.post(url, headers=headers, json=payload or {}, timeout=timeout)
+            return await client.post(url, headers=headers, json=payload or {}, timeout=timeout)
+
+    try:
+        response = await _do_call()
     except httpx.RequestError as exc:
         raise HTTPException(status_code=502, detail="Um servico necessario esta temporariamente indisponivel.") from exc
     if response.status_code not in {200, 201}:
@@ -258,7 +288,7 @@ async def rate_limiter(request: Request):
     key = f"rate_limit:{ip}"
     limit = 100 # requisições
     window = 60 # segundos
-    
+
     current = await redis_client.get(key)
     if current and int(current) >= limit:
         raise HTTPException(status_code=429, detail="Too many requests. Tente novamente em um minuto.")
@@ -338,8 +368,17 @@ async def proxy_request(service_url: str, request: Request, actor_payload: dict 
         content=await request.body()
     )
     
+    @retry(
+        stop=stop_after_attempt(2),
+        wait=wait_exponential(multiplier=0.5, min=1, max=3),
+        retry=retry_if_exception_type(httpx.RequestError),
+        reraise=True
+    )
+    async def _do_send():
+        return await client.send(req, stream=True)
+
     try:
-        resp = await client.send(req, stream=True)
+        resp = await _do_send()
         return StreamingResponse(
             resp.aiter_raw(),
             status_code=resp.status_code,
@@ -362,7 +401,6 @@ def create_proxy_route(service_name: str):
 for service in SERVICES.keys():
     if service != "identity":
         create_proxy_route(service)
-
 # Roteamento Aberto (Apenas Rate Limit) - Identity
 @app.api_route(
     "/identity/{path:path}", 
@@ -410,9 +448,19 @@ async def aggregate_catalog_offers(
         forwarded_params["verified_only"] = "true"
 
     async def fetch_module(module_name: str) -> tuple[str, list[dict[str, Any]], str | None]:
+        url = f"{SERVICES[module_name]}/valley/catalog/search"
+
+        @retry(
+            stop=stop_after_attempt(3),
+            wait=wait_exponential(multiplier=0.5, min=1, max=3),
+            retry=retry_if_exception_type(httpx.RequestError),
+            reraise=True
+        )
+        async def _do_fetch():
+            return await client.get(url, params=forwarded_params, timeout=3.0)
+
         try:
-            url = f"{SERVICES[module_name]}/valley/catalog/search"
-            resp = await client.get(url, params=forwarded_params, timeout=3.0)
+            resp = await _do_fetch()
             if resp.status_code == 200:
                 data = resp.json()
                 if isinstance(data, list):
@@ -422,11 +470,20 @@ async def aggregate_catalog_offers(
         except (httpx.RequestError, ValueError) as exc:
             return module_name, [], type(exc).__name__
 
-    responses = await asyncio.gather(*(fetch_module(module) for module in CATALOG_SOURCE_MODULES))
-    merged = merge_catalog_offers([offers for _, offers, _ in responses])
+    responses = await asyncio.gather(*(fetch_module(module) for module in CATALOG_SOURCE_MODULES), return_exceptions=True)
+
+    # Filter out exceptions if any uncaught exceptions leaked from tasks
+    clean_responses = []
+    for module, result in zip(CATALOG_SOURCE_MODULES, responses, strict=True):
+        if isinstance(result, Exception):
+            clean_responses.append((module, [], type(result).__name__))
+        else:
+            clean_responses.append(result)
+
+    merged = merge_catalog_offers([offers for _, offers, _ in clean_responses])
     failures = [
         {"module": module, "error": error}
-        for module, _, error in responses
+        for module, _, error in clean_responses
         if error is not None
     ]
     page = merged[offset : offset + limit]
@@ -439,7 +496,7 @@ async def aggregate_catalog_offers(
         "partial": bool(failures),
         "sources": [
             {"module": module, "status": "unavailable" if error else "ok", "offer_count": len(offers)}
-            for module, offers, error in responses
+            for module, offers, error in clean_responses
         ],
         "failures": failures,
     }
@@ -457,9 +514,19 @@ async def get_consumer_orders(
     headers = {"X-Actor-User-Id": str(user_id)}
 
     async def fetch_resource(module_name: str, resource_type: str) -> tuple[list[dict[str, Any]], str | None]:
+        url = f"{SERVICES[module_name]}/resources/{resource_type}"
+
+        @retry(
+            stop=stop_after_attempt(3),
+            wait=wait_exponential(multiplier=0.5, min=1, max=3),
+            retry=retry_if_exception_type(httpx.RequestError),
+            reraise=True
+        )
+        async def _do_fetch():
+            return await client.get(url, headers=headers, timeout=3.0)
+
         try:
-            url = f"{SERVICES[module_name]}/resources/{resource_type}"
-            resp = await client.get(url, headers=headers, timeout=3.0)
+            resp = await _do_fetch()
             if resp.status_code == 200:
                 data = resp.json()
                 if isinstance(data, list):
@@ -476,19 +543,24 @@ async def get_consumer_orders(
     results = await asyncio.gather(
         fetch_resource("marketplace", "orders"),
         fetch_resource("health", "appointments"),
-        fetch_resource("services", "service_contracts")
+        fetch_resource("services", "service_contracts"),
+        return_exceptions=True
     )
 
     all_items: list[dict[str, Any]] = []
     failures = []
-    for (items, error), (module_name, _) in zip(
+    for result, module_name in zip(
         results,
-        (("marketplace", "orders"), ("health", "appointments"), ("services", "service_contracts")),
+        ("marketplace", "health", "services"),
         strict=True,
     ):
-        all_items.extend(items)
-        if error:
-            failures.append({"module": module_name, "error": error})
+        if isinstance(result, Exception):
+            failures.append({"module": module_name, "error": type(result).__name__})
+        else:
+            items, error = result
+            all_items.extend(items)
+            if error:
+                failures.append({"module": module_name, "error": error})
 
     all_items.sort(key=lambda x: str(x.get("created_at") or ""), reverse=True)
 

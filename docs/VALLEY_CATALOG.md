@@ -71,6 +71,29 @@ A requisicao exige `offer_id`, `action`, `customer_user_id` e
 a acao. Preco, vendedor, prestador e origem tecnica nunca sao aceitos como
 verdade a partir do navegador: esses campos sao derivados da oferta publicada.
 
+## Historico e pagamento sandbox
+
+O consumidor autenticado consulta sua jornada em
+`GET /gateway/consumer/orders`. O API Hub agrega pedidos do Marketplace,
+agendamentos do Health e contratos do Services, devolvendo somente um formato
+publico normalizado. Payloads internos, documentos e dados privados das fontes
+nao sao repassados ao navegador.
+
+Pedidos de compra podem ser autorizados em ambiente de desenvolvimento por
+`POST /gateway/payments/sandbox/authorize`, com `order_id`,
+`idempotency_key` e `method=pix_sandbox`. O gateway:
+
+1. valida o JWT e a titularidade do pedido;
+2. recupera valor e beneficiario diretamente do pedido persistido;
+3. solicita autorizacao PIX no Finance sandbox;
+4. cria a retencao sandbox;
+5. marca o pedido como pago somente depois das etapas anteriores.
+
+Esse fluxo nao movimenta dinheiro real. A interface deve sempre apresentar o
+termo `sandbox`, e clientes nao podem informar valor, vendedor ou beneficiario
+como fonte de verdade. A transicao do pedido permanece registrada pelo fluxo de
+recursos e outbox do Marketplace.
+
 Modulos sem oferta operacional continuam aparecendo como `coming_soon`, para que
 o usuario entenda o ecossistema sem confundir promessa futura com oferta
 contratavel.
@@ -113,6 +136,8 @@ Regras:
 - `GET /valley/catalog/search?q=&category=&offer_type=&lat=&lng=`
 - `GET /gateway/catalog/offers?q=&category=&offer_type=&lat=&lng=`
 - `POST /gateway/catalog/actions`
+- `GET /gateway/consumer/orders`
+- `POST /gateway/payments/sandbox/authorize`
 
 A busca tambem aceita `company_type`, `company_category`, `business_activity`,
 `price_min`, `price_max`, `availability` e `verified_only`.

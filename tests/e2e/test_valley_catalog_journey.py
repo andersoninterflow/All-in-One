@@ -158,7 +158,7 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
             }
         )
 
-    page.route("**/finance/escrows/hold*", process_payment)
+    page.route("**/gateway/payments/sandbox/authorize*", process_payment)
 
     def get_orders(route: Route, request: Request) -> None:
         if request.method == "OPTIONS":
@@ -252,17 +252,17 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
     # 5. Clicar em Pagar com PIX
     pay_button = payment_modal.locator("button", has_text="Pagar com PIX")
     pay_button.click()
-    
+
     # 6. Aguardar feedback de sucesso
     payment_feedback = payment_modal.locator(".action-feedback.success")
     expect(payment_feedback).to_be_visible(timeout=10000)
-    expect(payment_feedback).to_contain_text("Pagamento confirmado e retido com seguranca (Escrow).")
+    expect(payment_feedback).to_contain_text("Pagamento sandbox autorizado")
 
     # 7. Validar abertura do Orders Drawer
     orders_drawer = page.locator(".orders-drawer")
     expect(orders_drawer).to_be_visible(timeout=10000)
     expect(orders_drawer).to_contain_text("Meus Pedidos e Agendamentos")
-    
+
     # Validar listagem
     order_card = orders_drawer.locator(".order-card")
     expect(order_card).to_have_count(1)

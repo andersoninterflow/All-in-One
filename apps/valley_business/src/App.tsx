@@ -1,0 +1,171 @@
+import { useState } from 'react'
+import './index.css'
+
+function App() {
+  const [activeTab, setActiveTab] = useState('dashboard')
+
+  return (
+    <div className="dashboard-layout">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <span>Valley</span> Business
+        </div>
+        <nav className="sidebar-nav">
+          <div 
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            📊 Visão Geral
+          </div>
+          <div 
+            className={`nav-item ${activeTab === 'wallet' ? 'active' : ''}`}
+            onClick={() => setActiveTab('wallet')}
+          >
+            🪙 Carteira Gold
+          </div>
+          <div 
+            className={`nav-item ${activeTab === 'offers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('offers')}
+          >
+            📦 Catálogo de Ofertas
+          </div>
+          <div 
+            className={`nav-item ${activeTab === 'pepitas' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pepitas')}
+          >
+            ⭐ Concessão de Pepitas
+          </div>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="main-content">
+        <header className="header">
+          <h1>
+            {activeTab === 'dashboard' && 'Visão Geral do Negócio'}
+            {activeTab === 'wallet' && 'Gestão de Valley Gold'}
+            {activeTab === 'offers' && 'Seus Produtos e Serviços'}
+            {activeTab === 'pepitas' && 'Fidelização de Clientes'}
+          </h1>
+          <div className="wallet-badge">
+            🪙 12.500 V-Gold
+          </div>
+        </header>
+
+        {activeTab === 'dashboard' && (
+          <div className="grid-container">
+            <div className="glass-card">
+              <h3 className="card-title">Vendas Hoje</h3>
+              <p className="metric-value">R$ 1.250,00</p>
+              <p style={{ color: '#2ecc71', fontSize: '0.875rem' }}>↑ 15% em relação a ontem</p>
+            </div>
+            <div className="glass-card">
+              <h3 className="card-title">Ofertas Ativas</h3>
+              <p className="metric-value">24</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>2 pendentes de aprovação</p>
+            </div>
+            <div className="glass-card">
+              <h3 className="card-title">Pepitas Distribuídas</h3>
+              <p className="metric-value">3.400</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Neste mês</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'wallet' && (
+          <div className="grid-container">
+            <div className="glass-card" style={{ gridColumn: '1 / -1' }}>
+              <h3 className="card-title">Comprar Valley Gold (B2B)</h3>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+                O Valley Gold é a reserva de valor necessária para que você possa distribuir "Pepitas" aos seus clientes, fomentando a fidelidade.
+              </p>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <input 
+                  type="number" 
+                  placeholder="Quantidade de V-Gold"
+                  style={{ 
+                    padding: '0.75rem', 
+                    borderRadius: '8px', 
+                    border: '1px solid var(--panel-border)', 
+                    background: 'rgba(0,0,0,0.2)',
+                    color: 'white',
+                    flex: 1
+                  }} 
+                />
+                <button className="btn-primary" style={{ width: 'auto', marginTop: 0 }}>Gerar Pix Copia e Cola</button>
+              </div>
+            </div>
+            
+            <div className="glass-card" style={{ gridColumn: '1 / -1' }}>
+              <h3 className="card-title">Histórico Append-Only (Ledger)</h3>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Tipo</th>
+                      <th>Quantidade</th>
+                      <th>Referência</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>05/06/2026 10:30</td>
+                      <td><span className="status-badge status-active">Compra (Pix)</span></td>
+                      <td>+5.000</td>
+                      <td>TX-998273-A</td>
+                    </tr>
+                    <tr>
+                      <td>04/06/2026 15:45</td>
+                      <td><span className="status-badge" style={{ background: 'rgba(231, 76, 60, 0.15)', color: '#e74c3c' }}>Distribuição</span></td>
+                      <td>-200</td>
+                      <td>Order-4431</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'offers' && (
+          <div className="glass-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 className="card-title" style={{ margin: 0 }}>Catálogo (Valley API Hub)</h3>
+              <button className="btn-primary" style={{ width: 'auto', marginTop: 0 }}>+ Nova Oferta</button>
+            </div>
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Visibilidade</th>
+                    <th>Status Publicação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Corte de Cabelo + Barba</td>
+                    <td>Serviço</td>
+                    <td>Público (B2C)</td>
+                    <td><span className="status-badge status-active">Publicado no Valley</span></td>
+                  </tr>
+                  <tr>
+                    <td>Kit Ferramentas Pro</td>
+                    <td>Produto</td>
+                    <td>Restrito (B2B)</td>
+                    <td><span className="status-badge status-pending">Em Análise</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}
+
+export default App

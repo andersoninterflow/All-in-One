@@ -4,6 +4,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Criado o recurso `business/catalog_offers` como configuracao comercial canonica para PF, MEI e PJ publicarem produtos ou servicos no catalogo Valley.
 - `catalog_offers` exige `offer_type`, `consumer_category`, `company_type`, `company_category`, `business_activity_id`, `source_module` e `source_resource_type`.
 - Ofertas configuradas no Business agora aparecem no Valley quando `publish_to_valley=true`, `publication_status` aprovado/publicado, `visible_to_consumer` ativo e regras regionais/compliance estiverem satisfeitas.
@@ -11,7 +15,7 @@
 - Criado endpoint `GET /valley/catalog/facets` com filtros contados por tipo de oferta, categoria simples, tipo de empresa, categoria de empresa e ramo de atividade.
 - Outbox seguro passou a permitir `catalog_offers` no evento `valley.catalog.offer.synced`, sem publicar endereco sensivel, observacoes internas, custo ou margem.
 - Documentacao Business e Valley atualizada para explicar a origem Business -> modulo tecnico -> Marketplace/Valley.
-- AlloyDB foi incluido na politica de integracoes Google desativadas ate segunda ordem, com `ALLOYDB_ENABLED=false`, `ALLOYDB_DSN=` e validação em Docker/env/repositório.
+- AlloyDB foi incluido na politica de integracoes Google desativadas ate segunda ordem, com `ALLOYDB_ENABLED=false`, `ALLOYDB_DSN=` e validaÃ§Ã£o em Docker/env/repositÃ³rio.
 - PowerShell 7.6.2 foi instalado em modo portatil em `%LOCALAPPDATA%\Programs\PowerShell\7.6.2`; `.local\bin` foi priorizado no PATH do usuario e o shim `pwsh` retorna `PowerShell 7.6.2`.
 
 ### Validacoes executadas
@@ -29,6 +33,10 @@
 ## STATUS OPERACIONAL - 2026-06-05 Desativacao Google Ate Segunda Ordem
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Criada `config/autonomy/google_integrations_policy.json` com `enabled=false` para Google SDK, Google AI Studio, Google Cloud, AlloyDB, Google Code CLI, Gemini CLI Termux/Ubuntu e Google Stitch MCP.
 - Gemini Code Assist ficou como excecao explicita e permanece ativo no Antigravity/editor.
@@ -49,6 +57,10 @@
 ## STATUS OPERACIONAL - 2026-06-04 Alinhamento Multiagente, Python e Stitch CI
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Criada a politica obrigatoria `config/autonomy/multi_agent_sync_policy.json` para manter Codex CLI, Antigravity, Gemini Code Assist e Gemini CLI (Termux/Ubuntu) alinhados pelo mesmo contrato remoto.
 - `AGENTS.md` e `GEMINI.md` agora apontam para a politica multiagente e reforcam Git como fonte de verdade, proibicao de descarte destrutivo, preservacao de estado Stitch e bloqueio de segredos versionados.
@@ -89,6 +101,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Criado `scripts/check_generated_artifacts.py` como equivalente Linux/CI do gate PowerShell de artefatos gerados.
 - O novo gate executa scaffold, validacao OpenAPI e validacao completa do repositorio, falhando se qualquer comando alterar a arvore de trabalho sem commit.
 - `scripts/validate_repository.py` passou a exigir o gate Python junto aos gates operacionais existentes.
@@ -112,19 +128,23 @@
 
 ### Concluido neste ciclo
 
-- Catálogo Valley/Marketplace expandido conforme `docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md`, com regra Business -> Marketplace -> Valley para ofertas reais.
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
+- CatÃ¡logo Valley/Marketplace expandido conforme `docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md`, com regra Business -> Marketplace -> Valley para ofertas reais.
 - Ofertas reais agora exigem `publish_to_valley = true`, `publication_status` aprovado/publicado e `visible_to_consumer` ativo para aparecer no Valley.
-- Payload público do catálogo passou a incluir rastreabilidade (`source_entity_id`, `business_id`, `seller_user_id`), tipo/categoria de empresa, ramo de atividade, status de publicação, descrição curta, ação principal simples e filtros comerciais.
+- Payload pÃºblico do catÃ¡logo passou a incluir rastreabilidade (`source_entity_id`, `business_id`, `seller_user_id`), tipo/categoria de empresa, ramo de atividade, status de publicaÃ§Ã£o, descriÃ§Ã£o curta, aÃ§Ã£o principal simples e filtros comerciais.
 - Criados endpoints `GET /valley/catalog`, `GET /valley/catalog/business-activities` e `GET /valley/catalog/offers/{offer_id}`.
-- Busca Valley aceita filtros por `company_type`, `company_category`, `business_activity`, preço, disponibilidade e `verified_only`, preservando regionalização por raio.
-- Transições de publicação de ofertas comerciais passaram a emitir `valley.catalog.offer.synced` via outbox seguro.
-- `docs/VALLEY_CATALOG.md` e `docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md` documentam a regra operacional e linguagem simples do usuário final.
-- Ciclo remoto Stitch concluiu os módulos `mobility` e `jobs`, conectando deslocamento, transporte e oportunidades profissionais ao catálogo Valley por categoria de empresa e ramo de atividade.
+- Busca Valley aceita filtros por `company_type`, `company_category`, `business_activity`, preÃ§o, disponibilidade e `verified_only`, preservando regionalizaÃ§Ã£o por raio.
+- TransiÃ§Ãµes de publicaÃ§Ã£o de ofertas comerciais passaram a emitir `valley.catalog.offer.synced` via outbox seguro.
+- `docs/VALLEY_CATALOG.md` e `docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md` documentam a regra operacional e linguagem simples do usuÃ¡rio final.
+- Ciclo remoto Stitch concluiu os mÃ³dulos `mobility` e `jobs`, conectando deslocamento, transporte e oportunidades profissionais ao catÃ¡logo Valley por categoria de empresa e ramo de atividade.
 - Logomarcas oficiais incorporadas ao repo em `assets/brand/all-in-one-logo-official.png`, `assets/brand/all-in-one-logo-light-official.png` e `assets/brand/valley-logo-official.png`.
 - Criado contrato mandatorio `config/branding/brand_identity.json`, com All-in-One como marca guarda-chuva e Valley obrigatorio para `valley`, `valley-business` e `valley-rider`.
 - `README.md` passou a exibir a imagem oficial All-in-One no topo para apresentacao do projeto no GitHub.
 - Prompts Stitch agora instruem uso padronizado das logos oficiais, proibindo redesenho, distorcao, corte, rotacao ou recoloracao.
-- Criado `scripts/stitch_auto_sync.py` para executar plano, validacao de politica, sync remoto e conferência de completude do estado Stitch.
+- Criado `scripts/stitch_auto_sync.py` para executar plano, validacao de politica, sync remoto e conferÃªncia de completude do estado Stitch.
 - `scripts/stitch_orchestrator.py` ganhou comando `status` e resumo comparando `screen_manifest.json` com `sync_state.json`.
 - Criado workflow `.github/workflows/stitch-sync.yml` para execucao manual, agendada e por push em artefatos Stitch no ciclo original; em 2026-06-05 ele foi preservado, mas desativado ate segunda ordem.
 - O workflow preserva `secrets.STITCH_API_KEY` e `config/stitch/sync_state.json`, mas nao executa sync remoto enquanto Google/Stitch estiver desativado.
@@ -214,6 +234,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - `infra/kubernetes/base/retention-alerting.yaml` criado com `PrometheusRule` para os 5 alertas de retencao LGPD.
 - O mesmo manifesto inclui `AlertmanagerConfig` com rota para `compliance-oncall` e severidade critica tambem para `platform-oncall`.
 - `scripts/validate_repository.py` passou a exigir a materializacao Kubernetes de cada alerta e a equivalencia das expressoes Prometheus com `config/observability/retention_alerts.json`.
@@ -222,7 +246,7 @@
 
 ### Validacoes executadas
 
-- Conclu�do neste ciclo: suite de testes unificada cobrindo 100% dos m�dulos via cold start.
+- Concluído neste ciclo: suite de testes unificada cobrindo 100% dos módulos via cold start.
 
 ### Pendencias rastreadas
 
@@ -237,104 +261,108 @@
 
 ## STATUS OPERACIONAL - 2026-06-01 Componente CheckoutModal UI
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
 - Desenvolvido `checkout_modal_1.html` em `.superdesign/design_iterations/`.
-- Implementada lógica visual de Pepitas (1, 10, 100) e regra de descontos `BR-STO-009`.
-- Estética Neo-brutalista aplicada com variáveis de marca Valley.
-- Sinalização de imutabilidade e proteção de Ledger adicionada ao rodapé da interface.
+- Implementada lÃ³gica visual de Pepitas (1, 10, 100) e regra de descontos `BR-STO-009`.
+- EstÃ©tica Neo-brutalista aplicada com variÃ¡veis de marca Valley.
+- SinalizaÃ§Ã£o de imutabilidade e proteÃ§Ã£o de Ledger adicionada ao rodapÃ© da interface.
 
 ## STATUS OPERACIONAL - 2026-06-01 Componente LedgerTransactionList UI
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
-- Desenvolvido componente `LedgerTransactionList.tsx` para visualização de extrato imutável.
-- Aplicada estética Neo-brutalista e sinalização de imutabilidade (append-only).
-- Integrado ao sistema de cores Valley (Success para créditos, Error para débitos).
+- Desenvolvido componente `LedgerTransactionList.tsx` para visualizaÃ§Ã£o de extrato imutÃ¡vel.
+- Aplicada estÃ©tica Neo-brutalista e sinalizaÃ§Ã£o de imutabilidade (append-only).
+- Integrado ao sistema de cores Valley (Success para crÃ©ditos, Error para dÃ©bitos).
 
 ## STATUS OPERACIONAL - 2026-06-01 Componente CalculatorWidget UI
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
-- Desenvolvido componente `CalculatorWidget.tsx` com lógica de cálculo funcional.
-- Aplicada estética Neo-brutalista integrada ao `valley_design_system.css`.
+- Desenvolvido componente `CalculatorWidget.tsx` com lÃ³gica de cÃ¡lculo funcional.
+- Aplicada estÃ©tica Neo-brutalista integrada ao `valley_design_system.css`.
 - Layout otimizado para dashboard ERP do Valley Business.
 
 ## STATUS OPERACIONAL - 2026-06-01 Componente PepitaWidget UI
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
 - Desenvolvido componente `PepitaWidget.tsx` em React.
-- Aplicada estética Neo-brutalista com feedback visual de estado ativo/selecionado.
-- Integrado ao sistema de cores Valley (Cyan para seleção, Lavender para ocioso).
-- Componente pronto para visualização no Superdesign Canvas.
+- Aplicada estÃ©tica Neo-brutalista com feedback visual de estado ativo/selecionado.
+- Integrado ao sistema de cores Valley (Cyan para seleÃ§Ã£o, Lavender para ocioso).
+- Componente pronto para visualizaÃ§Ã£o no Superdesign Canvas.
 
-## STATUS OPERACIONAL - 2026-06-01 Governança Valley Integrada
+## STATUS OPERACIONAL - 2026-06-01 GovernanÃ§a Valley Integrada
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
 - Implementada regra `BR-STO-009` em `modules/shared/valley_logic.py`.
-- Adicionado suporte a Gamificação (1, 10, 100 Pepitas) no endpoint `/erp/billing`.
-- Design de UI "Billing Detail" mapeado conforme padrão Stitch/Superdesign.
-- Reforçada política `append-only` para tabelas de saldo e auditoria.
+- Adicionado suporte a GamificaÃ§Ã£o (1, 10, 100 Pepitas) no endpoint `/erp/billing`.
+- Design de UI "Billing Detail" mapeado conforme padrÃ£o Stitch/Superdesign.
+- ReforÃ§ada polÃ­tica `append-only` para tabelas de saldo e auditoria.
 
 ## STATUS OPERACIONAL - 2026-06-01 Consulta Detalhada ERP
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
-- Implementado método `get_billing_detail` no `ErpPostgresStore` com suporte a itens.
-- Adicionado endpoint `GET /erp/billing/{document_id}` no módulo ERP.
-- Validada a recuperação de faturamentos com joins lógicos de itens no PostgreSQL.
+- Implementado mÃ©todo `get_billing_detail` no `ErpPostgresStore` com suporte a itens.
+- Adicionado endpoint `GET /erp/billing/{document_id}` no mÃ³dulo ERP.
+- Validada a recuperaÃ§Ã£o de faturamentos com joins lÃ³gicos de itens no PostgreSQL.
 
 ## STATUS OPERACIONAL - 2026-06-01 Cancelamento de Faturamento ERP
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
-- Implementada lógica de cancelamento imutável no `ErpPostgresStore`.
-- Criada suíte de testes de integração `modules/erp/tests/test_cancel_billing_integration.py`.
-- Adicionado endpoint `POST /erp/billing/{document_id}/cancel` no módulo ERP com motivo obrigatório.
-- Conectado o cancelamento ao `local_fiscal_document_simulator` para simulação de cancelamento fiscal.
+- Implementada lÃ³gica de cancelamento imutÃ¡vel no `ErpPostgresStore`.
+- Criada suÃ­te de testes de integraÃ§Ã£o `modules/erp/tests/test_cancel_billing_integration.py`.
+- Adicionado endpoint `POST /erp/billing/{document_id}/cancel` no mÃ³dulo ERP com motivo obrigatÃ³rio.
+- Conectado o cancelamento ao `local_fiscal_document_simulator` para simulaÃ§Ã£o de cancelamento fiscal.
 - Configurado disparo do evento `erp.invoice.cancelled` para auditoria e outbox.
-- Atualizada integridade do store com importação do `uuid4`.
+- Atualizada integridade do store com importaÃ§Ã£o do `uuid4`.
 
-### Validações executadas
+### ValidaÃ§Ãµes executadas
 
-- `.venv/Scripts/python.exe -m pytest modules/erp/tests/test_cancel_billing_integration.py`: Sucesso (2 testes aprovados), confirmando a integração com o sandbox fiscal de cancelamento.
+- `.venv/Scripts/python.exe -m pytest modules/erp/tests/test_cancel_billing_integration.py`: Sucesso (2 testes aprovados), confirmando a integraÃ§Ã£o com o sandbox fiscal de cancelamento.
 
-## STATUS OPERACIONAL - 2026-06-01 Integração Sandbox ERP
+## STATUS OPERACIONAL - 2026-06-01 IntegraÃ§Ã£o Sandbox ERP
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
 - Conectado `POST /erp/billing` ao `local_fiscal_document_simulator` em `modules/erp/main.py`.
-- Criada suíte de testes de integração `modules/erp/tests/test_billing_integration.py`.
-- Atualizada `provider_matrix.json` com a variável `ALL_IN_ONE_ERP_FISCAL_SANDBOX`.
-- Validada a persistência atômica de Documento + Itens via store especializado.
+- Criada suÃ­te de testes de integraÃ§Ã£o `modules/erp/tests/test_billing_integration.py`.
+- Atualizada `provider_matrix.json` com a variÃ¡vel `ALL_IN_ONE_ERP_FISCAL_SANDBOX`.
+- Validada a persistÃªncia atÃ´mica de Documento + Itens via store especializado.
 
-## STATUS OPERACIONAL - 2026-06-01 Expansão ERP e Itens de Fatura
+## STATUS OPERACIONAL - 2026-06-01 ExpansÃ£o ERP e Itens de Fatura
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
-- Criada Migration 017: Tabela `erp.invoice_items` e índice de performance.
-- Atualizado `ErpPostgresStore` para suportar transação atômica de faturamento + itens.
+- Criada Migration 017: Tabela `erp.invoice_items` e Ã­ndice de performance.
+- Atualizado `ErpPostgresStore` para suportar transaÃ§Ã£o atÃ´mica de faturamento + itens.
 - Implementado `modules/erp/main.py` com o endpoint `POST /erp/billing`.
-- Validador de repositório atualizado para exigir os novos artefatos fiscais.
+- Validador de repositÃ³rio atualizado para exigir os novos artefatos fiscais.
 
-## STATUS OPERACIONAL - 2026-06-01 Lógica de Faturamento ERP
+## STATUS OPERACIONAL - 2026-06-01 LÃ³gica de Faturamento ERP
 
-### Concluído neste ciclo
+### ConcluÃ­do neste ciclo
 
 - Implementado `ErpPostgresStore` especializado em `modules/shared/erp_postgres_store.py`.
-- Integrada lógica de criação de documentos fiscais com validação mandatória de `tax_amount_brl`.
-- Otimização de consultas de faturamento utilizando os índices de correlação e auditoria da migration 016.
-- Atualizado `scripts/scaffold_postgres_stores.py` para proteger a especialização do ERP.
+- Integrada lÃ³gica de criaÃ§Ã£o de documentos fiscais com validaÃ§Ã£o mandatÃ³ria de `tax_amount_brl`.
+- OtimizaÃ§Ã£o de consultas de faturamento utilizando os Ã­ndices de correlaÃ§Ã£o e auditoria da migration 016.
+- Atualizado `scripts/scaffold_postgres_stores.py` para proteger a especializaÃ§Ã£o do ERP.
 
-### Validações executadas
+### ValidaÃ§Ãµes executadas
 
 - `.venv/Scripts/python.exe -m pytest tests/test_postgres_stores_matrix.py -k erp`: Sucesso.
 
 ## STATUS OPERACIONAL - 2026-05-31 Matriz LGPD E Compliance
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - `docs/COMPLIANCE.md` criado com principios LGPD, matriz de grupos de risco, gates de producao e pendencias.
 - `config/compliance/data_classification.json` criado cobrindo os 25 modulos com risco, dominios de dados, categorias sensiveis, base legal, retencao e gates de producao.
@@ -367,6 +395,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Dispatcher da outbox ganhou coleta de metricas operacionais via `collect_metrics()`.
 - Worker `workers.outbox_dispatcher.main` agora aceita `--metrics` e imprime Prometheus text.
 - Metricas expostas: pendentes, pendentes prontos para retry, publicados, tentativas `failed_retryable`, maior `retry_count` e idade do pendente mais antigo.
@@ -394,6 +426,10 @@
 ## STATUS OPERACIONAL - 2026-05-31 Retry Observavel Da Outbox
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Dispatcher da outbox passou a filtrar eventos `pending` por `next_retry_at`, evitando republicacao antes da janela de backoff.
 - Falhas de publicacao continuam registrando entrega append-only `failed_retryable`.
@@ -423,6 +459,10 @@
 ## STATUS OPERACIONAL - 2026-05-31 Correlacao De Eventos E Auditoria
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Runtime FastAPI passou a aceitar `X-Correlation-Id` UUID em mutacoes modernas e rotas legadas.
 - Quando o cabecalho nao e enviado, o runtime gera um UUID por requisicao antes de gravar auditoria e outbox.
@@ -454,6 +494,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - `scripts/scaffold_modules.py --check` corrigido para reconhecer artefatos customizados intencionais, evitando falha falsa no CI quando arquivos especializados substituem o scaffold generico.
 - Template de `requirements.txt` do scaffold atualizado para refletir o baseline real com PostgreSQL/`psycopg` nos modulos.
 - Dependencias especiais de Identity, Jobs e API Hub preservadas no scaffold sem apagar os extras necessarios.
@@ -482,6 +526,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Helper `modules/shared/valley_catalog.py` criado para normalizar ofertas Valley em linguagem de consumidor.
 - Endpoints `GET /valley/catalog/modules`, `/categories`, `/offers` e `/search` registrados no runtime comum.
 - Ofertas agora distinguem `offer_type` entre `food`, `product` e `service`.
@@ -503,7 +551,7 @@
 
 ### Pendencias rastreadas
 
-- API Hub integrado e roteando todos os 25 m�dulos. Rota /gateway/catalog/offers centraliza ofertas do ecossistema.
+- API Hub integrado e roteando todos os 25 módulos. Rota /gateway/catalog/offers centraliza ofertas do ecossistema.
 - Persistir snapshots de catalogo e eventos `valley.catalog.offer.synced` quando houver banco dedicado do agregador Valley.
 - Implementar interface visual do app Valley usando as categorias amigaveis e filtros regionais.
 
@@ -514,6 +562,10 @@
 ## STATUS OPERACIONAL - 2026-05-31 Ledger Gold Valley Finance
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Finance recebeu a entidade `valley_gold_ledger_entries` para lastrear compra e uso de Gold Valley em ledger separado do ledger financeiro BRL/NEX.
 - Migration PostgreSQL `015_valley_gold_ledger.sql` adicionada com tabela append-only, idempotencia unica, checks de credito/debito e trigger contra `UPDATE`/`DELETE`.
@@ -545,6 +597,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Dispatcher de outbox ampliado com allowlist segura para eventos Valley de `pepita_grants` e `discount_quotes`.
 - Evento `valley.pepitas.granted` agora publica somente dados operacionais necessarios para notificacao do consumidor, sem expor ledger privado Gold, observacoes internas ou payload nao revisado.
 - Evento `valley.stock.discount.quoted` agora publica somente campos seguros da cotacao progressiva de desconto, preservando a regra de nao comunicar custo, margem, preco original sensivel ou markup.
@@ -575,6 +631,10 @@
 ## STATUS OPERACIONAL - 2026-05-31 Endpoints Sandbox De Integracao
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Endpoints administrativos `/integrations/sandbox/*` adicionados ao runtime comum para expor adapters sandbox nos modulos prioritarios.
 - Identity, Riders e Services agora expoem KYC pessoa sandbox.
@@ -608,6 +668,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Camada `modules/shared/integration_sandbox.py` criada para transformar a matriz de integracoes em adapters sandbox executaveis.
 - Adapters implementados para KYC/KYB, PSP/Pix/escrow, fiscal, CTPS hash-only, mapas/rotas/ETA, consentimento clinico, API Hub/webhooks/API key e catalogo fornecedor.
 - Todos os adapters sao deterministicos, nao fazem chamadas externas e nao exigem segredos reais.
@@ -637,6 +701,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Matriz versionada de integracoes criada em `config/integrations/provider_matrix.json`.
 - A matriz cobre KYC/KYB, Pix/PSP/split/escrow, fiscal NFS-e/NF-e, CTPS, mapas/rotas/tracking, saude/telemedicina/prescricao, OAuth/webhooks/API Hub e catalogo de fornecedores.
 - Cada integracao define modulos consumidores, adapter sandbox local, candidatos primarios/fallback, variaveis de ambiente, eventos, dados sensiveis, entrada de menor custo e gate minimo de producao.
@@ -663,6 +731,10 @@
 ## STATUS OPERACIONAL - 2026-05-31 Jornadas Operacionais Delivery Riders Services Mobility Health
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Suite `tests/test_operational_journeys.py` criada com 5 novas jornadas contratuais locais.
 - Jornada Delivery cobre cotacao, criacao de solicitacao transacional, atribuicao de rider, coleta, conclusao e evento `delivery.completed` na outbox.
@@ -694,6 +766,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Configuracao persistente do workspace VS Code criada/expandida com extensoes recomendadas para Python, Pylance, debug, Docker, PowerShell, YAML, GitHub Actions, GitHub PRs, GitLens, WSL e Kubernetes.
 - Settings do VS Code adicionados para usar `.venv/Scripts/python.exe`, pytest com `--import-mode=importlib`, validacao YAML, EOL LF e perfis PowerShell/Git Bash.
 - Tasks do VS Code adicionadas para bootstrap de ambiente, pytest completo, validacao do repositorio, validacao OpenAPI e healthcheck Docker Compose.
@@ -722,6 +798,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Segunda jornada E2E local de produto criada em `tests/test_business_jobs_journey.py`.
 - Jornada cobre criacao de empresa Business, aprovacao KYB operacional, publicacao de vaga Jobs, listagem publica de vagas, criacao de curriculo, candidatura e controle de acesso ao curriculo por recrutador autorizado.
 - `platform_test_support.py` recebeu `fresh_client_for`, preservando `client_for` cacheado e permitindo testes de jornada com apps isolados por execucao.
@@ -747,6 +827,10 @@
 ## STATUS OPERACIONAL - 2026-05-30 Resolucao Worktree E Jornada User Marketplace
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Worktree auxiliar `all-in-one-auto-sync` corrigido: ponte `.git` normalizada para caminho WSL valido e merge pendente removido por alinhamento ao `origin/main`.
 - Backup do branch auxiliar antigo preservado em `codex/all-in-one-current-sync-backup-20260530` antes do alinhamento.
@@ -777,6 +861,10 @@
 ## STATUS OPERACIONAL - 2026-05-30 API Hub E Gate De Artefatos
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - GitHub verificado novamente: `origin/main` e `fork/main` permanecem alinhados em `6f3ddf9`; nao havia commits novos na nuvem para aplicar localmente.
 - API Hub avancado com validacao de API key em `/gateway/api-key/check`, configurada por `ALL_IN_ONE_API_KEYS`.
@@ -811,6 +899,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Campos `LoginRequest.email` e `LoginRequest.password` em `modules/identity/auth_logic.py` migrados de `Field(example=...)` para `json_schema_extra`, removendo avisos de depreciacao do Pydantic v2.
 
 ### Validacoes executadas
@@ -825,6 +917,10 @@
 ## STATUS OPERACIONAL - 2026-05-30 Sincronizacao GitHub E Gates Operacionais
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - GitHub verificado contra os remotos `origin` e `fork`; ambos apontam para `main` em `6f3ddf9`, sem commits novos na nuvem para trazer ao checkout local.
 - Checkout local preservado com os 2 commits do memorando ja criados anteriormente, ficando a frente da nuvem ate que credenciais GitHub estejam disponiveis para push HTTPS.
@@ -859,6 +955,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Status de progresso consolidado em memorando tecnico-comercial no arquivo `docs/memorando_status_mercado_abnt.md`.
 - PDF em formato ABNT simplificado gerado em `docs/memorando_status_mercado_abnt.pdf`.
 - Levantamento de modulos, servicos e microservicos atualizado com percentual de conclusao, estado tecnico, pendencias e proximos passos naturais.
@@ -885,6 +985,10 @@
 
 ### Concluido neste ciclo
 
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
+
 - Docker Compose local estabilizado para os 13 servicos FastAPI principais: `api-hub`, `identity`, `finance`, `marketplace`, `delivery`, `services`, `mobility`, `erp`, `wms`, `tms`, `crm`, `health` e `jobs`.
 - `api-hub` corrigido para carregar dependencias e variaveis de runtime sem restart.
 - `identity` e `finance` corrigidos para copiar o modulo completo no Dockerfile, preservando imports locais.
@@ -906,7 +1010,7 @@
 
 ### Pendencias rastreadas
 
-- Matriz de testes PostgreSQL completa, com adapters instanciados dinamicamente para os 25 m�dulos e sem m�todos abstratos �rf�os.
+- Matriz de testes PostgreSQL completa, com adapters instanciados dinamicamente para os 25 módulos e sem métodos abstratos órfãos.
 - Tipar stores de menor maturidade alem dos modulos prioritarios ja especializados.
 - Implementar provedores reais para KYC/KYB, Pix/PSP, fiscal, CTPS oficial, mapas/tracking e IA.
 - Criar gates CI para divergencia Git, artefatos nao commitados, migrations, testes, OpenAPI e seguranca.
@@ -918,6 +1022,10 @@
 ## STATUS OPERACIONAL - 2026-05-29 Expansao PostgreSQL e Integracao Validada
 
 ### Concluido neste ciclo
+
+- Inicializado os projetos Frontend alley_business e alley_rider em Vite/React-TS.
+- Implementado UI base (Glassmorphism, Dark Mode) do painel B2B com navegação para Carteira Gold e Gestão de Catálogo.
+- Implementado UI Mobile-first do app Entregadores/Riders com GPS tracker fake e lista de corridas.
 
 - Adapter PostgreSQL expandido para todos os 25 microservicos da plataforma.
 - Implementacao de `BasePostgresStore` em `modules/shared/` para unificar a logica de transacoes, auditoria append-only, outbox RabbitMQ e idempotencia.
@@ -931,14 +1039,14 @@
 ### Validacoes executadas
 
 - `docker compose -f infra/docker/docker-compose.yml up -d`: Ambiente de infraestrutura completo subido com sucesso.
-- `python -m pytest tests/test_outbox_rabbitmq_integration.py tests/test_jobs_postgres_integration.py -v`: 3 testes de integracao críticos aprovados em ambiente real (PostgreSQL + RabbitMQ).
-- `python scripts/scaffold_postgres_stores.py`: Geração bem-sucedida de 16 novos adapters para cobertura total da plataforma.
+- `python -m pytest tests/test_outbox_rabbitmq_integration.py tests/test_jobs_postgres_integration.py -v`: 3 testes de integracao crÃ­ticos aprovados em ambiente real (PostgreSQL + RabbitMQ).
+- `python scripts/scaffold_postgres_stores.py`: GeraÃ§Ã£o bem-sucedida de 16 novos adapters para cobertura total da plataforma.
 - `python scripts/stitch_orchestrator.py plan`: Plano de design materializado para 25 projetos e 177 telas.
 - Verificacao de logs do container de migracoes: 12 arquivos SQL aplicados sem erros.
 
 ### Validacoes Do Incremento Em Andamento
 
-- Sincronizacao remota do Stitch suspensa localmente atrav�s de politica de compliance (Google Dev Tools desativadas).
+- Sincronizacao remota do Stitch suspensa localmente através de politica de compliance (Google Dev Tools desativadas).
 - Expansao de testes de integracao especificos para os novos adapters (Marketplace, Delivery, etc.).
 
 ### Pendencias rastreadas

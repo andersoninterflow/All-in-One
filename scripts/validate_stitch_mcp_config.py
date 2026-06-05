@@ -120,16 +120,18 @@ def validate_stitch_mcp_config(
     config_path: Path = DEFAULT_CODEX_CONFIG,
     require_secret: bool = False,
     root: Path = ROOT,
+    require_codex_config: bool = True,
 ) -> list[str]:
     errors: list[str] = []
     try:
         errors.extend(validate_policy(load_policy(root / "config" / "autonomy" / "stitch_mcp_policy.json")))
     except ValueError as exc:
         errors.append(str(exc))
-    try:
-        errors.extend(validate_codex_config(load_toml(config_path), config_path))
-    except ValueError as exc:
-        errors.append(str(exc))
+    if require_codex_config:
+        try:
+            errors.extend(validate_codex_config(load_toml(config_path), config_path))
+        except ValueError as exc:
+            errors.append(str(exc))
     errors.extend(validate_no_versioned_secret(root))
     if require_secret and not os.getenv(EXPECTED_ENV_VAR):
         errors.append(f"Variavel obrigatoria ausente no ambiente: {EXPECTED_ENV_VAR}")

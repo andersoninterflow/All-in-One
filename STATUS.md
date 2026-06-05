@@ -1,5 +1,40 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-04 Alinhamento Multiagente, Python e Stitch CI
+
+### Concluido neste ciclo
+
+- Criada a politica obrigatoria `config/autonomy/multi_agent_sync_policy.json` para manter Codex CLI, Antigravity, Gemini Code Assist e Gemini CLI (Termux/Ubuntu) alinhados pelo mesmo contrato remoto.
+- `AGENTS.md` e `GEMINI.md` agora apontam para a politica multiagente e reforcam Git como fonte de verdade, proibicao de descarte destrutivo, preservacao de estado Stitch e bloqueio de segredos versionados.
+- `GEMINI.md` foi normalizado para texto ASCII consistente, evitando caracteres corrompidos entre Windows, WSL, Termux e Ubuntu.
+- `scripts/validate_repository.py` passou a exigir a politica multiagente, a cobertura dos cinco agentes obrigatorios e o contrato `.agents/antigravity.json`.
+- `python.defaultInterpreterPath` foi padronizado de forma portavel em `.vscode/settings.json` como `${workspaceFolder}\.venv\Scripts\python.exe`.
+- `scripts/setup_venv.ps1` e `scripts/validate_repository.py` foram alinhados ao mesmo caminho portavel e as extensoes Python obrigatorias do VS Code continuam validadas.
+- `scripts/stitch_auto_sync.py --dry-run` foi corrigido para nao exigir `~/.codex/config.toml` quando a execucao e somente local, mantendo `--require-remote` como gate de segredo/configuracao remota.
+- Adicionado `--require-complete` ao sync Stitch para separar falha por rollout incompleto do gate remoto incremental usado pelo GitHub Actions.
+
+### Estado atual da sincronia
+
+- Manifesto local: 25 projetos Stitch planejados.
+- Estado remoto local versionado: 20 projetos e 143 telas registrados em `config/stitch/sync_state.json`.
+- Branding remoto: `branding_pending` zerado para todas as telas existentes.
+- `health` foi concluido com registros medicos, prescricoes, leitos e auditoria/permissoes.
+- `vision` foi iniciado e ainda precisa sincronizar `overview`, dispositivos, streams, gravacoes, alertas de movimento e auditoria/permissoes.
+- Projetos ainda ausentes no estado remoto local: `legal`, `property`, `bi`, `ai_core` e `api_hub`.
+
+### Validacoes executadas
+
+- `python3 -m json.tool config/autonomy/multi_agent_sync_policy.json`: sucesso.
+- `python3 -m json.tool .agents/antigravity.json`: sucesso.
+- `python3 scripts/stitch_orchestrator.py status`: sucesso, confirmando 20 projetos e 143 telas sincronizadas.
+
+### Proximos passos naturais
+
+- Rodar testes focados de Stitch, branding e catalogo Valley apos a politica multiagente.
+- Rodar `python3 scripts/validate_repository.py`.
+- Sincronizar as mudancas com `scripts/git_auto_sync.ps1`.
+- Continuar o rollout remoto Stitch a partir de `vision` e depois seguir para `legal`, `property`, `bi`, `ai_core` e `api_hub`.
+
 ## STATUS OPERACIONAL - 2026-06-04 Gate CI Linux e Artefatos Gerados
 
 ### Concluido neste ciclo

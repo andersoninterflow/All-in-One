@@ -17,3 +17,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_auto_sync.ps1 -A
 - Neste checkout, o push automatico deve usar o remoto `fork` quando `origin` nao aceitar escrita.
 - Nao criar commit vazio quando nao houver mudancas.
 - Se houver merge ou rebase em andamento, parar e reportar o bloqueio em portugues do Brasil.
+
+# Alinhamento multiagente obrigatorio
+
+- Codex CLI, Antigravity, Gemini Code Assist e Gemini CLI (Termux/Ubuntu) devem seguir a politica versionada em `config/autonomy/multi_agent_sync_policy.json`.
+- Git e a fonte de verdade compartilhada do projeto; nenhum agente deve sobrescrever commits remotos ou mudancas locais de outro agente sem integrar primeiro.
+- Antes de alterar arquivos, verificar o estado local com `git status --short --branch` e preservar mudancas existentes.
+- Antes de sincronizar, buscar `origin/main` e `fork/main` quando os remotos estiverem acessiveis.
+- Nunca executar comandos destrutivos como `git reset --hard`, `git clean` destrutivo ou checkout que descarte trabalho alheio sem ordem explicita do usuario.
+- `config/stitch/screen_manifest.json` e `config/stitch/sync_state.json` sao o estado autoritativo para sincronia Stitch e devem ser preservados entre agentes.
+- Segredos como `STITCH_API_KEY` devem permanecer apenas em variaveis de ambiente, GitHub Actions Secrets ou cofres externos; nunca versionar segredos.

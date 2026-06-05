@@ -1,0 +1,79 @@
+{
+  "version": "2026-06-04",
+  "language": "pt-BR",
+  "enabled": true,
+  "scope": "workspace",
+  "workspace": "C:\\Users\\ereta\\.codex\\worktrees\\all-in-one",
+  "source_of_truth": {
+    "repository": "git",
+    "primary_branch": "main",
+    "preferred_push_remote": "fork",
+    "fallback_read_remote": "origin",
+    "auto_sync_policy": "config/autonomy/git_auto_sync_policy.json",
+    "auto_sync_script": "scripts/git_auto_sync.ps1"
+  },
+  "agents": [
+    {
+      "id": "codex_cli",
+      "name": "Codex CLI",
+      "role": "desenvolvimento, validacao, commits e sincronizacao Git"
+    },
+    {
+      "id": "antigravity",
+      "name": "Antigravity",
+      "role": "desenvolvimento assistido, MCPs e telas integradas"
+    },
+    {
+      "id": "gemini_code",
+      "name": "Gemini Code Assist",
+      "role": "assistencia de codigo dentro do editor"
+    },
+    {
+      "id": "gemini_cli_termux",
+      "name": "Gemini CLI Termux",
+      "role": "execucao remota em Android/Termux"
+    },
+    {
+      "id": "gemini_cli_ubuntu",
+      "name": "Gemini CLI Ubuntu",
+      "role": "execucao remota em Linux/Ubuntu"
+    }
+  ],
+  "mandatory_rules": [
+    "Antes de alterar arquivos, verificar git status e preservar mudancas existentes de outros agentes ou do usuario.",
+    "Antes de sincronizar, executar git fetch origin main e git fetch fork main quando os remotos estiverem acessiveis.",
+    "Usar Git como fonte de verdade compartilhada; nenhuma ferramenta deve sobrescrever commits remotos sem integrar as alteracoes primeiro.",
+    "Nunca executar git reset --hard, git clean destrutivo, checkout destrutivo ou rebase que descarte trabalho alheio sem ordem explicita do usuario.",
+    "Ao concluir alteracoes, executar validacoes relevantes do projeto e sincronizar com scripts/git_auto_sync.ps1.",
+    "Nao criar commit vazio quando nao houver mudancas staged.",
+    "Se houver merge ou rebase em andamento, parar e reportar o bloqueio em portugues do Brasil.",
+    "Usar pathspecs nos commits quando existirem arquivos locais de IDE, credenciais ou estado temporario que nao pertencam a atividade.",
+    "Nunca versionar segredos; STITCH_API_KEY e chaves equivalentes devem ficar somente em ambiente local, secrets do GitHub Actions ou cofres externos.",
+    "Preservar config/stitch/screen_manifest.json e config/stitch/sync_state.json como estado autoritativo da sincronizacao Stitch.",
+    "Atualizar STATUS.md quando a atividade alterar maturidade, sincronizacao remota, contratos operacionais ou proximos passos naturais.",
+    "Manter respostas e orientacoes em portugues do Brasil neste workspace."
+  ],
+  "pre_work_commands": [
+    "git status --short --branch",
+    "git fetch origin main",
+    "git fetch fork main"
+  ],
+  "closeout_commands": [
+    "python3 scripts/validate_repository.py",
+    "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_auto_sync.ps1 -Activity \"<descricao da atividade>\""
+  ],
+  "conflict_policy": {
+    "on_unmerged_files": "parar_e_reportar",
+    "on_diverged_remote": "integrar_primeiro_sem_descartar_mudancas",
+    "on_untracked_sensitive_files": "nao_commitir",
+    "on_secret_detected": "bloquear_commit"
+  },
+  "stitch_alignment": {
+    "required": true,
+    "manifest": "config/stitch/screen_manifest.json",
+    "state": "config/stitch/sync_state.json",
+    "policy": "config/autonomy/stitch_mcp_policy.json",
+    "workflow": ".github/workflows/stitch-sync.yml",
+    "remote_secret": "STITCH_API_KEY"
+  }
+}

@@ -14,6 +14,7 @@ from scripts.validate_stitch_mcp_config import validate_stitch_mcp_config
 CATALOG = json.loads((ROOT / "config" / "module_catalog.json").read_text(encoding="utf-8"))
 STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
 STITCH_MCP_POLICY = ROOT / "config" / "autonomy" / "stitch_mcp_policy.json"
+MULTI_AGENT_SYNC_POLICY = ROOT / "config" / "autonomy" / "multi_agent_sync_policy.json"
 STITCH_SYNC_WORKFLOW = ROOT / ".github" / "workflows" / "stitch-sync.yml"
 BRAND_IDENTITY = ROOT / "config" / "branding" / "brand_identity.json"
 COMPLIANCE_MATRIX = ROOT / "config" / "compliance" / "data_classification.json"
@@ -80,6 +81,20 @@ REQUIRED_RETENTION_ALERTS = {
     "RetentionOldestCandidateTooOld",
     "RetentionDecisionMissing",
 }
+REQUIRED_MULTI_AGENT_IDS = {
+    "codex_cli",
+    "antigravity",
+    "gemini_code",
+    "gemini_cli_termux",
+    "gemini_cli_ubuntu",
+}
+REQUIRED_MULTI_AGENT_RULES = [
+    "Git como fonte de verdade",
+    "git reset --hard",
+    "STITCH_API_KEY",
+    "config/stitch/sync_state.json",
+    "STATUS.md",
+]
 
 
 def fail(message: str, errors: list[str]) -> None:
@@ -173,13 +188,22 @@ def main() -> int:
         fail("Configuracao VS Code ausente: .vscode/settings.json", errors)
     else:
         settings = json.loads(VSCODE_SETTINGS.read_text(encoding="utf-8"))
-        expected_python = "C:\\Users\\ereta\\.codex\\worktrees\\all-in-one\\.venv\\Scripts\\python.exe"
+        expected_python = "${workspaceFolder}\\.venv\\Scripts\\python.exe"
         if settings.get("python.defaultInterpreterPath") != expected_python:
             fail(f"python.defaultInterpreterPath deve ser {expected_python}. Corrija no .vscode/settings.json e execute python -m venv .venv", errors)
         if settings.get("python.testing.pytestArgs") not in ([], None):
             fail("python.testing.pytestArgs deve ficar vazio; pytest.ini e a fonte obrigatoria.", errors)
         if settings.get("mdb.presetConnections") not in ([], None):
             fail("mdb.presetConnections deve ficar vazio para nao tentar conectar automaticamente ao Mongo local.", errors)
+    vscode_extensions = ROOT / ".vscode" / "extensions.json"
+    if not vscode_extensions.is_file():
+        fail("Configuracao VS Code ausente: .vscode/extensions.json", errors)
+    else:
+        extensions = json.loads(vscode_extensions.read_text(encoding="utf-8"))
+        recommendations = set(extensions.get("recommendations", []))
+        for extension in ["ms-python.python", "ms-python.vscode-pylance", "ms-python.debugpy"]:
+            if extension not in recommendations:
+                fail(f"Extensao VS Code Python obrigatoria ausente em .vscode/extensions.json: {extension}", errors)
     if not VSCODE_TASKS.is_file():
         fail("Configuracao VS Code ausente: .vscode/tasks.json", errors)
     else:
@@ -233,6 +257,41 @@ def main() -> int:
     else:
         for error in validate_stitch_mcp_config(require_secret=False):
             fail(error, errors)
+    if not MULTI_AGENT_SYNC_POLICY.is_file():
+        fail("Politica obrigatoria de alinhamento multiagente ausente.", errors)
+    else:
+        multi_agent_policy = json.loads(MULTI_AGENT_SYNC_POLICY.read_text(encoding="utf-8"))
+        if multi_agent_policy.get("enabled") is not True:
+            fail("Politica multiagente deve estar habilitada.", errors)
+        if multi_agent_policy.get("language") != "pt-BR":
+            fail("Politica multiagente deve manter idioma pt-BR.", errors)
+        source_of_truth = multi_agent_policy.get("source_of_truth", {})
+        if source_of_truth.get("repository") != "git" or source_of_truth.get("preferred_push_remote") != "fork":
+            fail("Politica multiagente deve declarar Git e remoto fork como contrato de sincronizacao.", errors)
+        agent_ids = {agent.get("id") for agent in multi_agent_policy.get("agents", [])}
+        if agent_ids != REQUIRED_MULTI_AGENT_IDS:
+            fail("Politica multiagente deve cobrir Codex CLI, Antigravity, Gemini Code e Gemini CLI Termux/Ubuntu.", errors)
+        mandatory_rules = "\n".join(multi_agent_policy.get("mandatory_rules", []))
+        for needle in REQUIRED_MULTI_AGENT_RULES:
+            if needle not in mandatory_rules:
+                fail(f"Politica multiagente incompleta: {needle}", errors)
+        stitch_alignment = multi_agent_policy.get("stitch_alignment", {})
+        if stitch_alignment.get("state") != "config/stitch/sync_state.json" or stitch_alignment.get("remote_secret") != "STITCH_API_KEY":
+            fail("Politica multiagente deve preservar estado Stitch e segredo remoto oficial.", errors)
+    for agent_contract in ["AGENTS.md", "GEMINI.md"]:
+        contract_text = (ROOT / agent_contract).read_text(encoding="utf-8") if (ROOT / agent_contract).is_file() else ""
+        if "config/autonomy/multi_agent_sync_policy.json" not in contract_text:
+            fail(f"{agent_contract} deve referenciar a politica multiagente obrigatoria.", errors)
+    antigravity_config = ROOT / ".agents" / "antigravity.json"
+    if not antigravity_config.is_file():
+        fail("Contrato Antigravity ausente: .agents/antigravity.json", errors)
+    else:
+        antigravity = json.loads(antigravity_config.read_text(encoding="utf-8"))
+        if antigravity.get("name") != "antigravity":
+            fail("Contrato Antigravity deve declarar name=antigravity.", errors)
+        required_mcp_servers = {"docker", "stitch", "playwright"}
+        if not required_mcp_servers.issubset(set(antigravity.get("mcp_servers", []))):
+            fail("Contrato Antigravity deve manter MCPs essenciais: docker, stitch e playwright.", errors)
     stitch_workflow = STITCH_SYNC_WORKFLOW.read_text(encoding="utf-8") if STITCH_SYNC_WORKFLOW.is_file() else ""
     for needle in [
         "workflow_dispatch:",

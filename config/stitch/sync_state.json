@@ -787,9 +787,33 @@
           "screen_id": "11461557121536639231",
           "name": "Health - Appointments",
           "branding_version": "2026-06-01"
+        },
+        "entity_medical_records": {
+          "screen_id": "11507863816757968928",
+          "name": "Health - Medical Records",
+          "branding_version": "2026-06-01"
+        },
+        "entity_prescriptions": {
+          "screen_id": "7642978907653217271",
+          "name": "Health - Prescriptions",
+          "branding_version": "2026-06-01"
+        },
+        "entity_beds": {
+          "screen_id": "14019384708143539871",
+          "name": "Health - Beds",
+          "branding_version": "2026-06-01"
+        },
+        "audit_permissions": {
+          "screen_id": "16756105974173419095",
+          "name": "Health - Auditoria E Permissoes",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "17608165271835657543"
+    },
+    "vision": {
+      "screens": {},
+      "project_id": "628918265184082921"
     }
   }
 }

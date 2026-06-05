@@ -106,6 +106,7 @@ def test_stitch_remote_sync_workflow_is_persistent_and_secret_based() -> None:
     assert "schedule:" in workflow
     assert "secrets.STITCH_API_KEY" in workflow
     assert "python scripts/stitch_auto_sync.py --require-remote" in workflow
+    assert "--require-complete" not in workflow
     assert "config/stitch/sync_state.json" in workflow
     assert "assets/brand/**" in workflow
     assert "config/branding/**" in workflow

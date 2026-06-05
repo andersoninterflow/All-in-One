@@ -1,19 +1,35 @@
-﻿# Regras do Agente de Desenvolvimento (Perfil Codex)
+# Regras do Agente de Desenvolvimento (Perfil Gemini)
 
-## Preferência Obrigatória de Idioma
-- Todas as respostas, alertas, erros, orientações, perguntas e opções devem ser escritos em português do Brasil.
-- Essa regra vale para este workspace (ll-in-one) e deve prevalecer sobre respostas em inglês.
-- Códigos, nomes de arquivos, comandos, identificadores, logs e mensagens externas devem permanecer no idioma/formato original para precisão técnica.
+## Preferencia obrigatoria de idioma
 
-## Sincronização Git Obrigatória
-- Ao concluir cada atividade que altere arquivos neste workspace, é mandatório executar a sincronização Git automática.
-- O script padrão para isso é:
-  ``powershell
-  powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_auto_sync.ps1 -Activity "<descricao curta da atividade>"
-  ``
-- O push automático utiliza o remoto ork (conforme política em config/autonomy/git_auto_sync_policy.json).
-- Nunca criar commits vazios.
-- Se a branch estiver bloqueada por merge/rebase, o agente deve parar a execução e notificar o usuário imediatamente (em PT-BR).
+- Todas as respostas, alertas, erros, orientacoes, perguntas e opcoes devem ser escritos em portugues do Brasil.
+- Essa regra vale para este workspace (`all-in-one`) e deve prevalecer sobre respostas em ingles quando nao houver conflito tecnico ou legal.
+- Codigos, nomes de arquivos, comandos, identificadores, logs e mensagens externas devem permanecer no idioma/formato original quando isso preservar precisao tecnica.
 
-## Sincronização Marketplace Valley
-- Para atividades que alterem produtos, serviços ou catálogos, aplicar as regras do documento docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md.
+## Sincronizacao Git obrigatoria
+
+- Ao concluir cada atividade que altere arquivos neste workspace, executar sincronizacao Git automatica com `git add`, `git commit` e `git push`.
+- O comando padrao e:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_auto_sync.ps1 -Activity "<descricao da atividade>"
+```
+
+- A politica persistente fica em `config/autonomy/git_auto_sync_policy.json`.
+- Neste checkout, o push automatico deve usar o remoto `fork` quando `origin` nao aceitar escrita.
+- Nao criar commit vazio quando nao houver mudancas.
+- Se houver merge ou rebase em andamento, parar e reportar o bloqueio em portugues do Brasil.
+
+## Alinhamento multiagente obrigatorio
+
+- Codex CLI, Antigravity, Gemini Code Assist e Gemini CLI (Termux/Ubuntu) devem seguir a politica versionada em `config/autonomy/multi_agent_sync_policy.json`.
+- Git e a fonte de verdade compartilhada do projeto; nenhum agente deve sobrescrever commits remotos ou mudancas locais de outro agente sem integrar primeiro.
+- Antes de alterar arquivos, verificar o estado local com `git status --short --branch` e preservar mudancas existentes.
+- Antes de sincronizar, buscar `origin/main` e `fork/main` quando os remotos estiverem acessiveis.
+- Nunca executar comandos destrutivos como `git reset --hard`, `git clean` destrutivo ou checkout que descarte trabalho alheio sem ordem explicita do usuario.
+- `config/stitch/screen_manifest.json` e `config/stitch/sync_state.json` sao o estado autoritativo para sincronia Stitch e devem ser preservados entre agentes.
+- Segredos como `STITCH_API_KEY` devem permanecer apenas em variaveis de ambiente, GitHub Actions Secrets ou cofres externos; nunca versionar segredos.
+
+## Sincronizacao Marketplace Valley
+
+- Para atividades que alterem produtos, servicos ou catalogos, aplicar as regras do documento `docs/ORIENTACAO_CODEX_SYNC_MARKETPLACE_VALLEY.md`.

@@ -220,8 +220,10 @@ class BasePostgresStore:
     def _insert(self, connection: Connection, resource_type: str, resource_id: str, user_id: str, 
                 entity_id: str | None, status: str, payload: dict[str, Any], actor: str, 
                 idempotency_key: str | None) -> dict[str, Any]:
-        """Must be implemented by subclasses to handle typed columns."""
-        raise NotImplementedError
+        """Defaults to generic insert; subclasses can override for specialized logic."""
+        return self._insert_generic(
+            connection, resource_type, resource_id, user_id, entity_id, status, payload, actor, idempotency_key
+        )
 
     def get(self, resource_type: str, resource_id: str) -> dict[str, Any] | None:
         deleted = sql.SQL(" AND deleted_at IS NULL") if resource_type in self.soft_deletable else sql.SQL("")
@@ -267,8 +269,10 @@ class BasePostgresStore:
 
     def _update(self, connection: Connection, resource_type: str, resource_id: str, 
                 payload: dict[str, Any], status: str, actor: str) -> dict[str, Any]:
-        """Must be implemented by subclasses to handle typed columns."""
-        raise NotImplementedError
+        """Defaults to generic update; subclasses can override for specialized logic."""
+        return self._update_generic(
+            connection, resource_type, resource_id, payload, status, actor
+        )
 
     def soft_delete(self, item: dict[str, Any], actor: str) -> None:
         with self.transaction() as connection:

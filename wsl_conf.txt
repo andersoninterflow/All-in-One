@@ -1,0 +1,6 @@
+﻿[boot]
+systemd = true
+
+[network]
+generateResolvConf = false
+hostname = all-in-one

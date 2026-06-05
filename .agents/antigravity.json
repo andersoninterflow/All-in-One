@@ -1,5 +1,5 @@
 {
   "name": "antigravity",
   "description": "Agente de desenvolvimento avançado com acesso aos servidores MCP.",
-  "mcp_servers": ["MCP_DOCKER", "stitch", "cloudflare-api", "context7", "figma", "linear", "playwright", "terraform"]
+  "mcp_servers": ["docker", "stitch", "cloudflare-api", "context7", "figma", "linear", "playwright", "terraform"]
 }

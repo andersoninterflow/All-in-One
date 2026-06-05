@@ -35,7 +35,7 @@ def rider_server():
         shell=True
     )
     
-    if not wait_for_port(port, timeout=20):
+    if not wait_for_port(port, timeout=60):
         process.terminate()
         pytest.fail("Valley Rider frontend failed to start in time.")
         
@@ -62,9 +62,36 @@ def business_server():
         shell=True
     )
     
-    if not wait_for_port(port, timeout=20):
+    if not wait_for_port(port, timeout=60):
         process.terminate()
         pytest.fail("Valley Business frontend failed to start in time.")
+        
+    yield f"http://localhost:{port}"
+    
+    process.terminate()
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill()
+
+@pytest.fixture(scope="session")
+def superapp_server():
+    port = 5175
+    if is_port_in_use(port):
+        yield f"http://localhost:{port}"
+        return
+
+    process = subprocess.Popen(
+        f"npm run dev -- --port {port} --host 127.0.0.1",
+        cwd=os.path.join(os.path.dirname(__file__), "../../apps/valley"),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        shell=True
+    )
+    
+    if not wait_for_port(port, timeout=60):
+        process.terminate()
+        pytest.fail("Valley SuperApp frontend failed to start in time.")
         
     yield f"http://localhost:{port}"
     

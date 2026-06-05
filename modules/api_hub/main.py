@@ -5,11 +5,14 @@ import hashlib
 import hmac
 import asyncio
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+from urllib.parse import quote
+from uuid import UUID
 
 from fastapi import Request, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
+from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 import time
 
@@ -84,6 +87,16 @@ CATALOG_QUERY_FIELDS = (
 )
 
 
+class CatalogActionRequest(BaseModel):
+    offer_id: str = Field(min_length=3, max_length=240)
+    action: Literal["buy", "book", "hire", "request"]
+    customer_user_id: UUID
+    idempotency_key: str = Field(min_length=8, max_length=120)
+    scheduled_at: str | None = Field(default=None, max_length=40)
+    note: str | None = Field(default=None, max_length=500)
+    quantity: int = Field(default=1, ge=1, le=99)
+
+
 def _catalog_offer_key(offer: dict[str, Any]) -> str:
     return str(
         offer.get("offer_id")
@@ -107,6 +120,57 @@ def merge_catalog_offers(results: list[list[dict[str, Any]]]) -> list[dict[str, 
             ):
                 merged[key] = offer
     return sorted(merged.values(), key=offer_sort_key)
+
+
+async def _fetch_catalog_offer(offer_id: str) -> dict[str, Any]:
+    configured_module = offer_id.split(":", 1)[0].strip().casefold()
+    if configured_module not in CATALOG_SOURCE_MODULES:
+        raise HTTPException(status_code=422, detail="Origem da oferta invalida.")
+    try:
+        response = await client.get(
+            f"{SERVICES[configured_module]}/valley/catalog/offers/{quote(offer_id, safe='')}",
+            timeout=3.0,
+        )
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail="Nao foi possivel validar a oferta agora.") from exc
+    if response.status_code == 404:
+        raise HTTPException(status_code=404, detail="Oferta nao encontrada.")
+    if response.status_code != 200:
+        raise HTTPException(status_code=502, detail="A fonte da oferta esta temporariamente indisponivel.")
+    offer = response.json()
+    if not isinstance(offer, dict):
+        raise HTTPException(status_code=502, detail="A fonte retornou uma oferta invalida.")
+    if offer.get("availability_status") not in {"available", "limited"}:
+        raise HTTPException(status_code=409, detail="Esta oferta nao esta disponivel para solicitar agora.")
+    return offer
+
+
+async def _create_catalog_resource(
+    module_name: str,
+    resource_type: str,
+    body: CatalogActionRequest,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    headers = {
+        "X-Actor-User-Id": str(body.customer_user_id),
+        "X-Idempotency-Key": body.idempotency_key,
+    }
+    try:
+        response = await client.post(
+            f"{SERVICES[module_name]}/resources/{resource_type}",
+            headers=headers,
+            json={"user_id": str(body.customer_user_id), "payload": payload},
+            timeout=5.0,
+        )
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail="Nao foi possivel registrar sua solicitacao agora.") from exc
+    if response.status_code not in {200, 201}:
+        detail = response.json().get("detail") if isinstance(response.json(), dict) else None
+        raise HTTPException(status_code=502, detail=detail or "O modulo responsavel recusou a solicitacao.")
+    result = response.json()
+    if not isinstance(result, dict):
+        raise HTTPException(status_code=502, detail="O modulo responsavel retornou uma resposta invalida.")
+    return result
 
 def _configured_api_keys() -> dict[str, dict[str, object]]:
     """Parse API keys from ALL_IN_ONE_API_KEYS.
@@ -275,6 +339,109 @@ async def aggregate_catalog_offers(
         field: query_values[field]
         for field in CATALOG_QUERY_FIELDS
         if query_values.get(field) not in (None, "", False)
+    }
+
+
+@app.post("/gateway/catalog/actions", status_code=201, dependencies=[Depends(rate_limiter)])
+async def create_catalog_action(body: CatalogActionRequest) -> dict[str, Any]:
+    """Cria o primeiro registro operacional sem concluir pagamento ou atendimento."""
+    offer = await _fetch_catalog_offer(body.offer_id)
+    expected_action = str(offer.get("consumer_action") or "")
+    if expected_action and expected_action != body.action:
+        raise HTTPException(status_code=409, detail="A acao solicitada nao corresponde a esta oferta.")
+
+    price = str(offer.get("price_amount") or offer.get("price_brl") or "0.00")
+    common = {
+        "valley_offer_id": body.offer_id,
+        "source_module": offer.get("source_module"),
+        "source_resource_type": offer.get("source_resource_type"),
+        "source_entity_id": offer.get("source_entity_id"),
+        "seller_user_id": offer.get("seller_user_id"),
+        "business_id": offer.get("business_id"),
+        "consumer_note": body.note,
+    }
+
+    if body.action == "buy":
+        store_id = offer.get("business_id") or offer.get("seller_user_id") or offer.get("source_entity_id")
+        if not store_id:
+            raise HTTPException(status_code=409, detail="A oferta ainda nao possui vendedor operacional vinculado.")
+        resource = await _create_catalog_resource(
+            "marketplace",
+            "orders",
+            body,
+            {
+                **common,
+                "store_id": str(store_id),
+                "escrow_id": f"pending:{body.idempotency_key}",
+                "total_brl": price,
+                "items": [
+                    {
+                        "offer_id": body.offer_id,
+                        "quantity": body.quantity,
+                        "unit_brl": price,
+                    }
+                ],
+            },
+        )
+        return {
+            "status": "created",
+            "action": body.action,
+            "target_module": "marketplace",
+            "resource_type": "orders",
+            "resource_id": resource.get("id"),
+            "next_step": "payment_required",
+            "message": "Pedido criado. O pagamento sera confirmado na proxima etapa.",
+        }
+
+    if body.action == "book" and offer.get("source_module") == "health":
+        if not body.scheduled_at:
+            raise HTTPException(status_code=422, detail="Informe a data e o horario desejados.")
+        professional_id = offer.get("seller_user_id") or offer.get("source_entity_id")
+        if not professional_id:
+            raise HTTPException(status_code=409, detail="A oferta ainda nao possui profissional vinculado.")
+        resource = await _create_catalog_resource(
+            "health",
+            "appointments",
+            body,
+            {
+                **common,
+                "patient_id": str(body.customer_user_id),
+                "professional_user_id": str(professional_id),
+                "scheduled_at": body.scheduled_at,
+                "care_line": offer.get("business_activity_id") or "atendimento_valley",
+            },
+        )
+        target_module = "health"
+        resource_type = "appointments"
+    else:
+        provider_id = offer.get("seller_user_id") or offer.get("source_entity_id")
+        if not provider_id:
+            raise HTTPException(status_code=409, detail="A oferta ainda nao possui prestador vinculado.")
+        resource = await _create_catalog_resource(
+            "services",
+            "service_contracts",
+            body,
+            {
+                **common,
+                "provider_user_id": str(provider_id),
+                "escrow_id": f"pending:{body.idempotency_key}",
+                "visit_price_brl": price,
+                "contracted_price_brl": price,
+                "scope": body.note or offer.get("title") or "Solicitacao pelo Valley",
+                "requested_at": body.scheduled_at,
+            },
+        )
+        target_module = "services"
+        resource_type = "service_contracts"
+
+    return {
+        "status": "created",
+        "action": body.action,
+        "target_module": target_module,
+        "resource_type": resource_type,
+        "resource_id": resource.get("id"),
+        "next_step": "provider_confirmation",
+        "message": "Solicitacao enviada. Voce recebera a confirmacao do prestador.",
     }
     if verified_only:
         forwarded_params["verified_only"] = "true"

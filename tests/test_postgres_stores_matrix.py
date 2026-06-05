@@ -1,9 +1,7 @@
-import pytest
 import uuid
 
-pytestmark = pytest.mark.asyncio
 
-async def test_postgres_store_matrix_initialization():
+def test_postgres_store_matrix_initialization():
     """
     Testa a inicialização e o estado CRUD básico esperado para
     os modulos prioritários definidos no EXECUTION_PLAN.md (Fase 2).
@@ -28,10 +26,10 @@ async def test_postgres_store_matrix_initialization():
     for module in priority_modules:
         assert module is not None
 
-async def test_store_idempotency_behavior():
+def test_store_idempotency_behavior():
     fake_idempotency_key = str(uuid.uuid4())
     assert fake_idempotency_key is not None
 
-async def test_audit_outbox_integration():
+def test_audit_outbox_integration():
     fake_correlation_id = str(uuid.uuid4())
     assert fake_correlation_id is not None

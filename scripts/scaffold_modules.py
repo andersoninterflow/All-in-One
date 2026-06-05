@@ -90,7 +90,7 @@ def render_main(slug: str) -> str:
 
 def render_readme(module: dict) -> str:
     entities = ", ".join(f"`{entity}`" for entity in module["entities"])
-    return dedent(
+    rendered = dedent(
         f"""\
         # {module["title"]}
 
@@ -117,6 +117,19 @@ def render_readme(module: dict) -> str:
         descritos em `CONTRACT.md` e `SECURITY.md`.
         """
     )
+    if module["slug"] == "business":
+        special = dedent(
+            """\
+            `catalog_offers` e o ponto canonico para PF, MEI ou PJ configurar
+            produto ou servico que sera normalizado para o Marketplace e exibido
+            no Valley quando a publicacao e os filtros publicos estiverem completos.
+            """
+        )
+        rendered = rendered.replace(
+            f"{entities}.\n\n## Execucao",
+            f"{entities}.\n\n{special}\n## Execucao",
+        )
+    return rendered
 
 
 def render_contract(module: dict) -> str:
@@ -127,7 +140,7 @@ def render_contract(module: dict) -> str:
     if module["slug"] == "identity":
         special = "\n- `POST /registrations` cria o All-in-One ID inicial sem ator preexistente e preserva controles de duplicidade.\n"
     if module["slug"] == "jobs":
-        special = dedent(
+        special += dedent(
             """
 
             ## Fluxo Jobs e procedencia
@@ -140,6 +153,18 @@ def render_contract(module: dict) -> str:
             - O importador documental nao equivale a verificacao oficial externa; esse estado permanece exibido em `official_verification_status`.
             - PDFs CTPS ficam cifrados em cofre privado AES-256-GCM; em producao a chave deve vir de vault/KMS.
             - `ALL_IN_ONE_JOBS_POSTGRES_DSN` habilita persistencia tipada em `jobs.*` com auditoria e outbox PostgreSQL.
+            """
+        )
+    if module["slug"] == "business":
+        special += dedent(
+            """
+
+            ## Publicacao Marketplace e Valley
+
+            - `catalog_offers` exige `offer_type`, `consumer_category`, `company_type`, `company_category`, `business_activity_id`, `source_module` e `source_resource_type`.
+            - O Valley so exibe ofertas com `publish_to_valley=true`, publicacao aprovada ou publicada e `visible_to_consumer` ativo.
+            - Ofertas locais exigem regiao, coordenadas publicas de base e `service_radius_km`; enderecos sensiveis nunca entram no payload publico.
+            - A transicao de publicacao emite `valley.catalog.offer.synced` com allowlist publica.
             """
         )
     return dedent(

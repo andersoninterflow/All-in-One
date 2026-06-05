@@ -1,7 +1,6 @@
 # Business
 
-Matriz, filiais, documentos empresariais, aprovacao manual, memberships e
-ofertas comerciais publicaveis no catalogo Valley.
+Matriz, filiais, documentos empresariais, aprovacao manual, memberships e ofertas comerciais publicaveis no catalogo Valley.
 
 ## Responsabilidade
 
@@ -11,13 +10,11 @@ cabecalho `X-Actor-User-Id`, salvo o autorregistro inicial em Identity.
 
 ## Entidades
 
-`companies`, `branches`, `company_documents`, `user_company_memberships`,
-`catalog_offers`.
+`companies`, `branches`, `company_documents`, `user_company_memberships`, `catalog_offers`.
 
-`catalog_offers` e o ponto canônico para PF, MEI ou PJ configurar produto ou
-servico que sera normalizado pelo Marketplace e exibido no Valley quando
-`publish_to_valley=true`, `publication_status` aprovado/publicado e filtros
-publicos estiverem completos.
+`catalog_offers` e o ponto canonico para PF, MEI ou PJ configurar
+produto ou servico que sera normalizado para o Marketplace e exibido
+no Valley quando a publicacao e os filtros publicos estiverem completos.
 
 ## Execucao
 

@@ -1,27 +1,44 @@
 # Status Operacional
 
-## STATUS OPERACIONAL - 2026-06-05 UI Valley SuperApp e Testes E2E Playwright
+## STATUS OPERACIONAL - 2026-06-05 Catalogo Agregado Business -> Marketplace -> Valley
 
 ### Concluido neste ciclo
 
-- Implementado estado de localização simulada (lat, lng) e barra lateral com categorias amigáveis (Alimentação, Produtos, Serviços, Mobilidade) no app `valley`.
-- Conectado o app `valley` ao endpoint `/gateway/catalog/offers` com passagem de raio geográfico (`lat`, `lng`, `radius_km`).
-- Renderização do Catálogo Valley com interface de "Pills" navegáveis, estética Glassmorphism e tipografia premium.
-- Realizado o Setup E2E Fullstack com Playwright (`pytest-playwright`) no projeto raiz para testar frontend React contra orquestrador e stores em Python.
-- Configurada fixture global `business_server`, `rider_server` e `superapp_server` em `tests/e2e/conftest.py` para instanciar processos Node (`npm run dev`) dinamicamente sob o Pytest.
-- Criada suíte completa de testes E2E (`tests/e2e/`) englobando `test_valley_superapp.py`, `test_valley_business.py` e `test_valley_rider.py`.
-- Playwright E2E validando com sucesso os fluxos visuais: Filtros Regionais do SuperApp Valley, Dashboard + Ledger B2B e jornada "Ficar Online" do Entregador.
-- Sincronização remota completa do Stitch MCP superou bloqueios de API usando mock local `STITCH_MOCK_FALLBACK=true`, validando todas as 179 telas e garantindo aprovação no GitHub Actions.
+- Corrigido o API Hub para consultar as rotas reais
+  `/valley/catalog/search` dos modulos catalogaveis, incluindo a fonte canonica
+  `business/catalog_offers`.
+- O gateway `GET /gateway/catalog/offers` encaminha busca, tipo de oferta,
+  categoria amigavel, localizacao, tipo/categoria de empresa, ramo de atividade,
+  preco, disponibilidade e verificacao do vendedor.
+- Agregacao global remove placeholders duplicados, prioriza ofertas reais,
+  pagina somente apos a deduplicacao e informa fontes indisponiveis sem derrubar
+  toda a vitrine.
+- Docker Compose passou a executar Business, Stock e Property junto aos demais
+  servicos necessarios para abastecer o catalogo agregado.
+- Frontend Valley foi alinhado ao payload real do backend, com busca textual,
+  filtros simples por alimento/produto/servico, categorias de consumo, regiao,
+  prestador, preco e acao principal.
+- A interface abandonou filtros tecnicos incorretos e passou a usar nomes
+  compreensiveis como `Comida e Mercado`, `Saude e Bem-estar` e
+  `Casa, Reparos e Imoveis`.
+- Guia Termux foi higienizado: nenhuma senha literal, chave privada ou transporte
+  inseguro de credencial permanece documentado.
+- Google Stitch remoto continua preservado, mas desativado ate segunda ordem;
+  Gemini Code Assist permanece ativo no Antigravity/editor.
 
-### Validações executadas
+### Validacoes executadas
 
-- `.venv\Scripts\python.exe -m pytest tests\e2e`: Todos os testes E2E Playwright das 3 aplicações (SuperApp, B2B, Rider) aprovados após ajuste de latência/warmup no start do Vite.
-- `python3 scripts/validate_repository.py`: Sucesso, sem drift de políticas e com Stitch Mocking operando 100%.
+- `.venv\Scripts\python.exe -m pytest -q tests\test_api_hub_catalog_gateway.py tests\test_valley_catalog.py tests\test_outbox_dispatcher_unit.py`: 20 testes aprovados.
+- `npm run build` em `apps/valley`: sucesso.
+- `python3 scripts/validate_openapi.py`: sucesso para os 25 modulos.
+- `python3 scripts/validate_repository.py`: sucesso.
 
-### Próximos passos naturais
+### Proximos passos naturais
 
-- Integrar fluxo real de login e cartões (Finance/Wallet) no SuperApp E2E.
-- Preparar deploy CI/CD das SPAs React para o ambiente de testes oficial.
+- Ampliar o E2E para criar uma oferta real no Business, publicar e validar o
+  card correspondente no navegador Valley usando os containers integrados.
+- Integrar login, checkout, agendamento e contratacao a partir da acao principal
+  de cada oferta.
 
 ## STATUS OPERACIONAL - 2026-06-05 Catalogo Business -> Valley, AlloyDB e PowerShell
 

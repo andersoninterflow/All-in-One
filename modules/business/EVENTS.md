@@ -6,6 +6,7 @@
 - `business.company.submitted`
 - `business.company.approved`
 - `business.company.rejected`
+- `valley.catalog.offer.synced`
 
         Eventos carregam `event_id`, `occurred_at`, `actor_user_id`, `user_id`,
         `entity_id`, `correlation_id`, `schema_version` e payload minimizado.

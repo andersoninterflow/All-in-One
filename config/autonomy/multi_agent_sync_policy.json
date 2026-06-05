@@ -59,19 +59,32 @@
     "Manter respostas e orientacoes em portugues do Brasil neste workspace."
   ],
   "pre_work_commands": [
+    "python3 scripts/multi_agent_sync_guard.py preflight --integrate",
+    "python3 scripts/multi_agent_sync_guard.py acquire --agent <agent_id> --activity \"<descricao da atividade>\"",
     "git status --short --branch",
     "git fetch origin main",
     "git fetch fork main"
   ],
   "closeout_commands": [
     "python3 scripts/validate_repository.py",
-    "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_auto_sync.ps1 -Activity \"<descricao da atividade>\""
+    "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_auto_sync.ps1 -Activity \"<descricao da atividade>\"",
+    "python3 scripts/multi_agent_sync_guard.py release --agent <agent_id>"
   ],
   "conflict_policy": {
     "on_unmerged_files": "parar_e_reportar",
     "on_diverged_remote": "integrar_primeiro_sem_descartar_mudancas",
     "on_untracked_sensitive_files": "nao_commitir",
-    "on_secret_detected": "bloquear_commit"
+    "on_secret_detected": "bloquear_commit",
+    "on_active_agent_lock": "aguardar_ou_integrar_sem_sobrescrever",
+    "on_stale_agent_lock": "substituir_apos_ttl_com_auditoria"
+  },
+  "coordination_guard": {
+    "script": "scripts/multi_agent_sync_guard.py",
+    "lock_location": "git_path:all-in-one-agent.lock",
+    "default_ttl_minutes": 120,
+    "required_before_edit": true,
+    "required_release_after_sync": true,
+    "remote_strategy": "origin_e_fork_devem_formar_uma_linha_de_ancestralidade; integrar_somente_fast_forward"
   },
   "stitch_alignment": {
     "required": true,

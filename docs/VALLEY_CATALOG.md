@@ -37,6 +37,18 @@ para o modulo tecnico de execucao por `source_module` e `source_resource_type`,
 por exemplo `marketplace/products`, `services/providers` ou
 `health/appointments`.
 
+O API Hub materializa a vitrine unificada em
+`GET /gateway/catalog/offers`. Ele consulta os endpoints
+`/valley/catalog/search` de Business, Marketplace, Stock, Services, Health,
+Delivery, Mobility, Jobs, Property e Finance, preserva filtros regionais e
+comerciais, remove placeholders duplicados e pagina somente depois da agregacao.
+Assim, uma oferta configurada uma vez em `business/catalog_offers` pode apontar
+para qualquer um dos 25 modulos tecnicos e aparecer no Valley sem duplicacao.
+
+Quando alguma fonte estiver temporariamente indisponivel, o gateway devolve
+`partial=true` e detalha `failures`, mantendo as ofertas das fontes saudaveis
+visiveis ao consumidor.
+
 Modulos sem oferta operacional continuam aparecendo como `coming_soon`, para que
 o usuario entenda o ecossistema sem confundir promessa futura com oferta
 contratavel.
@@ -77,6 +89,7 @@ Regras:
 - `GET /valley/catalog/offers`
 - `GET /valley/catalog/offers/{offer_id}`
 - `GET /valley/catalog/search?q=&category=&offer_type=&lat=&lng=`
+- `GET /gateway/catalog/offers?q=&category=&offer_type=&lat=&lng=`
 
 A busca tambem aceita `company_type`, `company_category`, `business_activity`,
 `price_min`, `price_max`, `availability` e `verified_only`.

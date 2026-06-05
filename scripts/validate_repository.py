@@ -184,6 +184,7 @@ def main() -> int:
         "validate_compose_health.ps1",
         "check_generated_artifacts.ps1",
         "check_generated_artifacts.py",
+        "multi_agent_sync_guard.py",
     ]:
         if not (ROOT / "scripts" / script).is_file():
             fail(f"Gate operacional ausente: {script}", errors)
@@ -392,6 +393,16 @@ def main() -> int:
             fail("Politica multiagente deve preservar estado Stitch e segredo remoto oficial.", errors)
         if stitch_alignment.get("enabled") is not False:
             fail("Alinhamento Stitch remoto deve permanecer desativado na politica multiagente.", errors)
+        coordination_guard = multi_agent_policy.get("coordination_guard", {})
+        if coordination_guard.get("script") != "scripts/multi_agent_sync_guard.py":
+            fail("Politica multiagente deve apontar para o guardiao de coordenacao versionado.", errors)
+        if coordination_guard.get("required_before_edit") is not True:
+            fail("Guardiao multiagente deve ser obrigatorio antes de editar.", errors)
+        pre_work_commands = "\n".join(multi_agent_policy.get("pre_work_commands", []))
+        if "multi_agent_sync_guard.py preflight --integrate" not in pre_work_commands:
+            fail("Politica multiagente deve executar preflight remoto antes da edicao.", errors)
+        if "multi_agent_sync_guard.py acquire" not in pre_work_commands:
+            fail("Politica multiagente deve adquirir lock antes da edicao.", errors)
     for agent_contract in ["AGENTS.md", "GEMINI.md"]:
         contract_text = (ROOT / agent_contract).read_text(encoding="utf-8") if (ROOT / agent_contract).is_file() else ""
         if "config/autonomy/multi_agent_sync_policy.json" not in contract_text:

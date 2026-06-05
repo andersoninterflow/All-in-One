@@ -25,9 +25,9 @@
     {
       "slug": "business",
       "title": "Business",
-      "description": "Matriz, filiais, documentos empresariais, aprovacao manual e memberships.",
-      "entities": ["companies", "branches", "company_documents", "user_company_memberships"],
-      "events": ["business.company.created", "business.company.submitted", "business.company.approved", "business.company.rejected"],
+      "description": "Matriz, filiais, documentos empresariais, aprovacao manual, memberships e ofertas comerciais publicaveis no catalogo Valley.",
+      "entities": ["companies", "branches", "company_documents", "user_company_memberships", "catalog_offers"],
+      "events": ["business.company.created", "business.company.submitted", "business.company.approved", "business.company.rejected", "valley.catalog.offer.synced"],
       "monetization": "Planos SaaS por empresa, usuario, modulo, API e SLA.",
       "branch": "module/business"
     },

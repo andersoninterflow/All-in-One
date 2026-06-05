@@ -2,7 +2,7 @@
 
         ## Descricao
 
-        Matriz, filiais, documentos empresariais, aprovacao manual e memberships.
+        Matriz, filiais, documentos empresariais, aprovacao manual, memberships e ofertas comerciais publicaveis no catalogo Valley.
 
         ## Entidades
 
@@ -10,6 +10,7 @@
 - `branches`
 - `company_documents`
 - `user_company_memberships`
+- `catalog_offers`
 
         ## APIs
 
@@ -36,12 +37,21 @@
 - `POST /audit`
 
 
+## Publicacao Marketplace e Valley
+
+- `catalog_offers` exige `offer_type`, `consumer_category`, `company_type`, `company_category`, `business_activity_id`, `source_module` e `source_resource_type`.
+- O Valley so exibe ofertas com `publish_to_valley=true`, publicacao aprovada ou publicada e `visible_to_consumer` ativo.
+- Ofertas locais exigem regiao, coordenadas publicas de base e `service_radius_km`; enderecos sensiveis nunca entram no payload publico.
+- A transicao de publicacao emite `valley.catalog.offer.synced` com allowlist publica.
+
+
         ## Eventos
 
         - `business.company.created`
 - `business.company.submitted`
 - `business.company.approved`
 - `business.company.rejected`
+- `valley.catalog.offer.synced`
 
         ## Regras
 

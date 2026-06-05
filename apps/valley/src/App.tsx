@@ -45,6 +45,8 @@ function App() {
     'Casa, Reparos e Imoveis',
     'Mobilidade, Entregas e Logistica',
     'Negocios e Profissionais',
+    'Beneficios, Wallet e Recompensas',
+    'Tecnologia, Seguranca e IA',
   ]
 
   const fetchOffers = () => {
@@ -79,7 +81,8 @@ function App() {
   }
 
   useEffect(() => {
-    fetchOffers()
+    const timer = window.setTimeout(fetchOffers, 0)
+    return () => window.clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, selectedType])
 

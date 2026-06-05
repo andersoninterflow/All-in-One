@@ -4,7 +4,7 @@
   "source": "config/module_catalog.json",
   "branding_source": "config/branding/brand_identity.json",
   "project_count": 25,
-  "screen_count": 179,
+  "screen_count": 180,
   "screen_generation": {
     "standard": [
       "overview",
@@ -30,7 +30,7 @@
     {
       "module": "business",
       "project_name": "All-in-One - Business",
-      "screen_count": 6,
+      "screen_count": 7,
       "special_screens": []
     },
     {

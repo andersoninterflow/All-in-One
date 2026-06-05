@@ -37,6 +37,14 @@
 - `POST /audit`
 
 
+## Publicacao Marketplace e Valley
+
+- `catalog_offers` exige `offer_type`, `consumer_category`, `company_type`, `company_category`, `business_activity_id`, `source_module` e `source_resource_type`.
+- O Valley so exibe ofertas com `publish_to_valley=true`, publicacao aprovada ou publicada e `visible_to_consumer` ativo.
+- Ofertas locais exigem regiao, coordenadas publicas de base e `service_radius_km`; enderecos sensiveis nunca entram no payload publico.
+- A transicao de publicacao emite `valley.catalog.offer.synced` com allowlist publica.
+
+
         ## Eventos
 
         - `business.company.created`
@@ -51,8 +59,6 @@
         - Exclusao e logica; registros financeiros, de aprovacao e auditoria nao sao apagados.
         - Aprovacao e rejeicao exigem ator autenticado, justificativa e log imutavel.
         - A empresa ou profissional deve estar aprovado antes de uma operacao publica.
-        - `catalog_offers` exige `offer_type`, `consumer_category`, `company_type`, `company_category`, `business_activity_id`, `source_module` e `source_resource_type`.
-        - O Valley so exibe `catalog_offers` com `publish_to_valley=true`, `publication_status` aprovado/publicado e `visible_to_consumer` ativo.
 
         ## Seguranca e permissoes
 

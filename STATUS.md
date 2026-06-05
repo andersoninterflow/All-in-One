@@ -1,5 +1,38 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-05 Conversao Valley: Login, Pedido e Agendamento
+
+### Concluido neste ciclo
+
+- O Valley passou a oferecer cadastro e login reais pelo Identity, preservando a
+  sessao JWT no navegador e retomando automaticamente a acao iniciada pelo
+  consumidor.
+- O endpoint autenticado `POST /gateway/catalog/actions` valida se o JWT pertence
+  ao consumidor, recupera a oferta na fonte canonica e rejeita acao divergente,
+  oferta indisponivel ou origem invalida.
+- Compras criam pedidos iniciais em `marketplace/orders`, sem marcar pagamento
+  como concluido; agendamentos de saude criam `health/appointments`; demais
+  contratacoes e solicitacoes criam `services/service_contracts`.
+- O preco, vendedor, prestador e origem tecnica usados na operacao sao obtidos
+  da oferta publicada pelo backend, sem confiar no valor enviado pelo navegador.
+- Checkout e agendamento deixaram de usar alertas simulados e agora exibem
+  progresso, erro e confirmacao em linguagem simples, com chave de idempotencia
+  preservada durante cada tentativa.
+- A jornada Playwright cobre oferta Business publicada, catalogo Valley, cadastro,
+  login, abertura automatica do checkout e envio do pedido ao gateway.
+
+### Validacoes executadas
+
+- `.venv\Scripts\python.exe -m pytest -q tests\test_api_hub_catalog_gateway.py tests\e2e\test_valley_catalog_journey.py`: 5 testes aprovados.
+- `npm run lint` e `npm run build` em `apps/valley`: sucesso.
+- `python3 scripts/validate_repository.py`: sucesso.
+
+### Proximos passos naturais
+
+- Integrar a etapa de pagamento pendente ao sandbox Finance/Pix/escrow.
+- Criar a area autenticada de pedidos, agendamentos e contratacoes do consumidor.
+- Ampliar o Playwright para servicos, saude e estados de falha/repeticao.
+
 ## STATUS OPERACIONAL - 2026-06-05 Catalogo Agregado Business -> Marketplace -> Valley
 
 ### Concluido neste ciclo

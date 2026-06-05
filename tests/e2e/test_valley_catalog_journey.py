@@ -96,22 +96,39 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
     page.route("**/gateway/catalog/offers**", serve_catalog)
 
     buyer_id = str(uuid4())
-    
+
     def serve_registrations(route: Route) -> None:
         route.fulfill(
-            status=200,
-            json={"token": "mock-jwt-token", "user_id": buyer_id}
+            status=201,
+            content_type="application/json",
+            json={"id": buyer_id},
         )
-        
+
     page.route("**/registrations", serve_registrations)
 
-    def create_order(route: Route) -> None:
+    def serve_login(route: Route) -> None:
+        route.fulfill(
+            status=200,
+            content_type="application/json",
+            json={
+                "access_token": "mock-jwt-token",
+                "token_type": "bearer",
+                "user_id": buyer_id,
+            },
+        )
+
+    page.route("**/auth/login", serve_login)
+    submitted_actions: list[dict] = []
+
+    def create_order(route: Route, request: Request) -> None:
+        submitted_actions.append(request.post_data_json)
         route.fulfill(
             status=201,
+            content_type="application/json",
             json={
                 "status": "created",
                 "resource_id": "order-e2e",
-                "message": "Pedido criado",
+                "message": "Pedido criado. O pagamento sera confirmado na proxima etapa.",
             },
         )
 
@@ -172,3 +189,7 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
     feedback = page.locator(".checkout-modal .action-feedback.success")
     expect(feedback).to_be_visible(timeout=15000)
     expect(feedback).to_contain_text("Pedido criado")
+    assert len(submitted_actions) == 1
+    published_offer = next(item for item in normalized_offers if item["title"] == unique_title)
+    assert submitted_actions[0]["offer_id"] == published_offer["offer_id"]
+    assert submitted_actions[0]["customer_user_id"] == buyer_id

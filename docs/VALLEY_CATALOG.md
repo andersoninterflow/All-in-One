@@ -54,6 +54,23 @@ O mesmo retorno inclui `facets` contadas para `company_types`,
 campos como `Quem oferece`, `Area do negocio` e `O que faz`, ocultando os
 identificadores tecnicos e priorizando rotulos simples.
 
+## Conversao da oferta
+
+O consumidor autenticado inicia a operacao por
+`POST /gateway/catalog/actions`. O gateway valida o JWT, confirma que a sessao
+pertence ao `customer_user_id`, recupera novamente a oferta na fonte canonica e
+somente entao cria o recurso operacional:
+
+- `buy`: pedido inicial em `marketplace/orders`, ainda pendente de pagamento;
+- `book` para Health: agendamento em `health/appointments`;
+- `book`, `hire` ou `request` para os demais servicos: contrato inicial em
+  `services/service_contracts`.
+
+A requisicao exige `offer_id`, `action`, `customer_user_id` e
+`idempotency_key`. Data, horario, observacao e quantidade sao opcionais conforme
+a acao. Preco, vendedor, prestador e origem tecnica nunca sao aceitos como
+verdade a partir do navegador: esses campos sao derivados da oferta publicada.
+
 Modulos sem oferta operacional continuam aparecendo como `coming_soon`, para que
 o usuario entenda o ecossistema sem confundir promessa futura com oferta
 contratavel.
@@ -95,6 +112,7 @@ Regras:
 - `GET /valley/catalog/offers/{offer_id}`
 - `GET /valley/catalog/search?q=&category=&offer_type=&lat=&lng=`
 - `GET /gateway/catalog/offers?q=&category=&offer_type=&lat=&lng=`
+- `POST /gateway/catalog/actions`
 
 A busca tambem aceita `company_type`, `company_category`, `business_activity`,
 `price_min`, `price_max`, `availability` e `verified_only`.

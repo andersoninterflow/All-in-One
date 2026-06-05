@@ -3,7 +3,7 @@ import sys
 import uuid
 from pathlib import Path
 import pytest
-from datetime import datetime
+from datetime import UTC, datetime
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -36,8 +36,8 @@ MODULES_CONFIG = {
             "password_hash": "hash123",
             "face_hash": "face123",
             "liveness_score": "0.99",
-            "terms_accepted_at": datetime.utcnow().isoformat(),
-            "lgpd_consent_at": datetime.utcnow().isoformat()
+            "terms_accepted_at": datetime.now(UTC).isoformat(),
+            "lgpd_consent_at": datetime.now(UTC).isoformat()
         }
     },
     "finance": {

@@ -16,24 +16,28 @@
 ### Estado atual da sincronia
 
 - Manifesto local: 25 projetos Stitch planejados.
-- Estado remoto local versionado: 20 projetos e 143 telas registrados em `config/stitch/sync_state.json`.
+- Estado remoto local versionado: 20 projetos e 149 telas registrados em `config/stitch/sync_state.json`.
 - Branding remoto: `branding_pending` zerado para todas as telas existentes.
 - `health` foi concluido com registros medicos, prescricoes, leitos e auditoria/permissoes.
-- `vision` foi iniciado e ainda precisa sincronizar `overview`, dispositivos, streams, gravacoes, alertas de movimento e auditoria/permissoes.
+- `vision` foi concluido com visao geral, dispositivos, streams, gravacoes, alertas de movimento e auditoria/permissoes.
 - Projetos ainda ausentes no estado remoto local: `legal`, `property`, `bi`, `ai_core` e `api_hub`.
 
 ### Validacoes executadas
 
 - `python3 -m json.tool config/autonomy/multi_agent_sync_policy.json`: sucesso.
 - `python3 -m json.tool .agents/antigravity.json`: sucesso.
-- `python3 scripts/stitch_orchestrator.py status`: sucesso, confirmando 20 projetos e 143 telas sincronizadas.
+- `python3 scripts/stitch_orchestrator.py status`: sucesso, confirmando 20 projetos e 149 telas sincronizadas.
+- `cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 6"`: progresso parcial em `vision`, registrando visao geral, dispositivos e streams antes de travamento remoto sem erro explicito.
+- `timeout 180s cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 1"`: sucesso, registrando `vision/entity_recordings`.
+- `timeout 180s cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 1"`: sucesso, registrando `vision/entity_motion_alerts`.
+- `timeout 180s cmd.exe /C "... .venv\Scripts\python.exe scripts\stitch_orchestrator.py sync --max-operations 1"`: sucesso, registrando `vision/audit_permissions` e concluindo `vision`.
 
 ### Proximos passos naturais
 
 - Rodar testes focados de Stitch, branding e catalogo Valley apos a politica multiagente.
 - Rodar `python3 scripts/validate_repository.py`.
 - Sincronizar as mudancas com `scripts/git_auto_sync.ps1`.
-- Continuar o rollout remoto Stitch a partir de `vision` e depois seguir para `legal`, `property`, `bi`, `ai_core` e `api_hub`.
+- Continuar o rollout remoto Stitch a partir de `legal` e depois seguir para `property`, `bi`, `ai_core` e `api_hub`.
 
 ## STATUS OPERACIONAL - 2026-06-04 Gate CI Linux e Artefatos Gerados
 

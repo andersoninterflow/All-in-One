@@ -13,7 +13,8 @@
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -95,7 +96,8 @@ nav {
   font-weight: 700;
 }
 
-input {
+input,
+select {
   width: 100%;
   min-height: 44px;
   padding: 0 12px;
@@ -105,7 +107,8 @@ input {
   border-radius: 6px;
 }
 
-input:focus {
+input:focus,
+select:focus {
   outline: 3px solid rgba(18, 107, 69, 0.18);
   border-color: #126b45;
 }
@@ -167,6 +170,20 @@ input:focus {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.business-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.business-filters label {
+  display: grid;
+  gap: 7px;
+  color: #536159;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .filter-group label {
@@ -332,4 +349,119 @@ input:focus {
   .btn-secondary {
     width: 100%;
   }
+
+  .business-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(23, 33, 28, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: #ffffff;
+  width: min(90%, 500px);
+  border: 2px solid #17211c;
+  border-radius: 8px;
+  box-shadow: 4px 4px 0px #126b45;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 2px solid #17211c;
+  background: #f5f7f6;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #126b45;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: #536159;
+}
+
+.close-btn:hover {
+  color: #17211c;
+}
+
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-body h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.price-tag {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0d5135;
+  background: #e2f2ea;
+  padding: 12px;
+  border: 2px solid #17211c;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.mock-info {
+  font-size: 14px;
+  color: #714b00;
+  background: #fff5d9;
+  padding: 12px;
+  border: 1px solid #c48700;
+  border-radius: 4px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.neo-input {
+  border: 2px solid #17211c;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 16px;
 }

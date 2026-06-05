@@ -18,6 +18,9 @@
 - Frontend Valley foi alinhado ao payload real do backend, com busca textual,
   filtros simples por alimento/produto/servico, categorias de consumo, regiao,
   prestador, preco e acao principal.
+- Facetas agregadas por tipo de empresa, categoria empresarial e ramo de
+  atividade aparecem na interface como `Quem oferece`, `Area do negocio` e
+  `O que faz`, com contagem e rotulos amigaveis.
 - A interface abandonou filtros tecnicos incorretos e passou a usar nomes
   compreensiveis como `Comida e Mercado`, `Saude e Bem-estar` e
   `Casa, Reparos e Imoveis`.

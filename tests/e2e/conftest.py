@@ -3,100 +3,73 @@ import subprocess
 import time
 import socket
 import os
+from urllib.request import urlopen
 
-def wait_for_port(port: int, timeout: int = 15):
-    """Wait until a port is open to accept connections."""
+
+def free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+        server.bind(("127.0.0.1", 0))
+        return int(server.getsockname()[1])
+
+
+def wait_for_http(port: int, timeout: int = 15) -> bool:
+    """Wait until the expected Vite server returns a valid HTTP response."""
     start_time = time.time()
-    while True:
+    while time.time() - start_time <= timeout:
         try:
-            with socket.create_connection(('127.0.0.1', port), timeout=1):
-                return True
-        except OSError:
+            with urlopen(f"http://127.0.0.1:{port}", timeout=2) as response:
+                if response.status == 200 and b'<div id="root">' in response.read():
+                    return True
+        except Exception:
             time.sleep(0.5)
-            if time.time() - start_time > timeout:
-                return False
+    return False
 
-def is_port_in_use(port: int) -> bool:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('127.0.0.1', port)) == 0
+
+def start_vite_server(app_directory: str) -> tuple[subprocess.Popen, str]:
+    port = free_port()
+    process = subprocess.Popen(
+        f"npm run dev -- --port {port} --strictPort --host 127.0.0.1",
+        cwd=app_directory,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        shell=True,
+    )
+    if not wait_for_http(port, timeout=60):
+        process.terminate()
+        raise RuntimeError(f"Vite nao respondeu corretamente na porta {port}.")
+    return process, f"http://127.0.0.1:{port}"
+
+
+def stop_process(process: subprocess.Popen) -> None:
+    process.terminate()
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill()
 
 @pytest.fixture(scope="session")
 def rider_server():
-    port = 5173
-    if is_port_in_use(port):
-        yield f"http://localhost:{port}"
-        return
-
-    process = subprocess.Popen(
-        f"npm run dev -- --port {port} --host 127.0.0.1",
-        cwd=os.path.join(os.path.dirname(__file__), "../../apps/valley_rider"),
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        shell=True
-    )
-    
-    if not wait_for_port(port, timeout=60):
-        process.terminate()
-        pytest.fail("Valley Rider frontend failed to start in time.")
-        
-    yield f"http://localhost:{port}"
-    
-    process.terminate()
     try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        process.kill()
+        process, url = start_vite_server(os.path.join(os.path.dirname(__file__), "../../apps/valley_rider"))
+    except RuntimeError as exc:
+        pytest.fail(str(exc))
+    yield url
+    stop_process(process)
 
 @pytest.fixture(scope="session")
 def business_server():
-    port = 5174
-    if is_port_in_use(port):
-        yield f"http://localhost:{port}"
-        return
-
-    process = subprocess.Popen(
-        f"npm run dev -- --port {port} --host 127.0.0.1",
-        cwd=os.path.join(os.path.dirname(__file__), "../../apps/valley_business"),
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        shell=True
-    )
-    
-    if not wait_for_port(port, timeout=60):
-        process.terminate()
-        pytest.fail("Valley Business frontend failed to start in time.")
-        
-    yield f"http://localhost:{port}"
-    
-    process.terminate()
     try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        process.kill()
+        process, url = start_vite_server(os.path.join(os.path.dirname(__file__), "../../apps/valley_business"))
+    except RuntimeError as exc:
+        pytest.fail(str(exc))
+    yield url
+    stop_process(process)
 
 @pytest.fixture(scope="session")
 def superapp_server():
-    port = 5175
-    if is_port_in_use(port):
-        yield f"http://localhost:{port}"
-        return
-
-    process = subprocess.Popen(
-        f"npm run dev -- --port {port} --host 127.0.0.1",
-        cwd=os.path.join(os.path.dirname(__file__), "../../apps/valley"),
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        shell=True
-    )
-    
-    if not wait_for_port(port, timeout=60):
-        process.terminate()
-        pytest.fail("Valley SuperApp frontend failed to start in time.")
-        
-    yield f"http://localhost:{port}"
-    
-    process.terminate()
     try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        process.kill()
+        process, url = start_vite_server(os.path.join(os.path.dirname(__file__), "../../apps/valley"))
+    except RuntimeError as exc:
+        pytest.fail(str(exc))
+    yield url
+    stop_process(process)

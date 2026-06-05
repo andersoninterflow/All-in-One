@@ -49,6 +49,11 @@ Quando alguma fonte estiver temporariamente indisponivel, o gateway devolve
 `partial=true` e detalha `failures`, mantendo as ofertas das fontes saudaveis
 visiveis ao consumidor.
 
+O mesmo retorno inclui `facets` contadas para `company_types`,
+`company_categories` e `business_activities`. A interface apresenta esses
+campos como `Quem oferece`, `Area do negocio` e `O que faz`, ocultando os
+identificadores tecnicos e priorizando rotulos simples.
+
 Modulos sem oferta operacional continuam aparecendo como `coming_soon`, para que
 o usuario entenda o ecossistema sem confundir promessa futura com oferta
 contratavel.

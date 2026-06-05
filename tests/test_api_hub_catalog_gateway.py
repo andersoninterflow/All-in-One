@@ -41,8 +41,10 @@ class FakeCatalogClient:
                         "service_radius_km": 15,
                         "distance_km": 2.4,
                         "company_type": "pf_profissional",
+                        "company_type_label": "Profissional autonomo",
                         "company_category": "Servicos",
                         "business_activity_id": "servicos_domesticos",
+                        "business_activity_label": "Casa e manutencao",
                         "provider_label": "Profissional verificado",
                         "primary_action_label": "Contratar",
                     },
@@ -94,6 +96,15 @@ def test_gateway_aggregates_business_offer_with_consumer_filters(monkeypatch) ->
     assert payload["partial"] is True
     assert payload["total"] == 2
     assert sum(item["offer_id"] == "module:services" for item in payload["data"]) == 1
+    assert payload["facets"]["company_types"] == [
+        {"id": "pf_profissional", "label": "Profissional autonomo", "count": 1}
+    ]
+    assert payload["facets"]["company_categories"] == [
+        {"id": "Servicos", "label": "Servicos", "count": 1}
+    ]
+    assert payload["facets"]["business_activities"] == [
+        {"id": "servicos_domesticos", "label": "Casa e manutencao", "count": 1}
+    ]
 
     offer = next(item for item in payload["data"] if item["offer_id"] == "business:catalog_offers:offer-1")
     assert offer["title"] == "Eletricista residencial"

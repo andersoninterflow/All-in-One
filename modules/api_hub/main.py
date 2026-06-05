@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from shared.runtime import create_module_app
 from shared.security import Actor
-from shared.valley_catalog import PUBLIC_RESOURCE_TYPES, offer_sort_key
+from shared.valley_catalog import PUBLIC_RESOURCE_TYPES, offer_sort_key, valley_facets
 
 app = create_module_app("api_hub")
 
@@ -305,6 +305,7 @@ async def aggregate_catalog_offers(
         "total": len(merged),
         "limit": limit,
         "offset": offset,
+        "facets": valley_facets(merged),
         "partial": bool(failures),
         "sources": [
             {"module": module, "status": "unavailable" if error else "ok", "offer_count": len(offers)}

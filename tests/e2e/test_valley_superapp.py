@@ -5,7 +5,7 @@ def test_valley_superapp_filters(page: Page, superapp_server: str):
     Testa a vitrine regional e os filtros de categorias amigáveis do Valley SuperApp.
     """
     # Acessa o app Valley (SuperApp)
-    page.goto(superapp_server)
+    page.goto(superapp_server, timeout=60000, wait_until="domcontentloaded")
     
     # Valida Header e Hero Section
     expect(page.locator("header .logo")).to_contain_text("Valley")
@@ -21,6 +21,9 @@ def test_valley_superapp_filters(page: Page, superapp_server: str):
     expect(page.locator(".pill", has_text="Comida e Mercado")).to_be_visible()
     expect(page.locator(".pill", has_text="Casa, Reparos e Imoveis")).to_be_visible()
     expect(page.locator(".type-filter button", has_text="Servicos")).to_be_visible()
+    expect(page.get_by_label("Quem oferece")).to_be_visible()
+    expect(page.get_by_label("Area do negocio")).to_be_visible()
+    expect(page.get_by_label("O que faz")).to_be_visible()
 
     # Como o mock backend (API Hub ou pytest fixture) pode estar vazio ou ter dados fake,
     # verificamos a estrutura do grid e os Fallbacks.

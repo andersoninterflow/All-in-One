@@ -6,6 +6,18 @@
     {
       "name": "stitch",
       "reason": "Integracoes Google/Stitch desativadas ate segunda ordem, preservando configuracao para retomada futura."
+    },
+    {
+      "name": "StitchMCP",
+      "reason": "Alias para o diretório MCP oficial do Stitch."
+    },
+    {
+      "name": "arize-tracing-assistant",
+      "reason": "Desativado para estabilidade do ambiente local, evitando timeouts."
+    },
+    {
+      "name": "chrome-devtools-mcp",
+      "reason": "Desativado para estabilidade do ambiente local, evitando timeouts."
     }
   ]
 }

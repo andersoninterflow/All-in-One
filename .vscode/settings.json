@@ -1,25 +1,31 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestArgs": [],
-    "python.analysis.typeCheckingMode": "basic",
-    "files.eol": "\n",
-    "files.trimTrailingWhitespace": true,
-    "editor.formatOnSave": true,
-    "yaml.validate": true,
-    "terminal.integrated.defaultProfile.windows": "PowerShell",
-    "terminal.integrated.profiles.windows": {
-        "PowerShell": {
-            "source": "PowerShell"
-        },
-        "Git Bash": {
-            "path": "C:\\Program Files\\Git\\bin\\bash.exe"
-        }
-    },
-    "geminicodeassist.outlines.automaticOutlineGeneration": true,
-    "geminicodeassist.agentYoloMode": false,
-    "geminicodeassist.enable": true,
-    "mdb.presetConnections": [],
-    "workbench.editor.preferHistoryBasedLanguageDetection": true
+    "python.defaultInterpreterPath":  "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+    "python.testing.pytestEnabled":  true,
+    "python.testing.unittestEnabled":  false,
+    "python.testing.pytestArgs":  [
+
+                                  ],
+    "python.analysis.typeCheckingMode":  "basic",
+    "files.eol":  "\n",
+    "files.trimTrailingWhitespace":  true,
+    "editor.formatOnSave":  true,
+    "yaml.validate":  true,
+    "terminal.integrated.defaultProfile.windows":  "PowerShell",
+    "terminal.integrated.profiles.windows":  {
+                                                 "PowerShell":  {
+                                                                    "source":  "PowerShell"
+                                                                },
+                                                 "Git Bash":  {
+                                                                  "path":  "C:\\Program Files\\Git\\bin\\bash.exe"
+                                                              }
+                                             },
+    "geminicodeassist.outlines.automaticOutlineGeneration":  false,
+    "geminicodeassist.agentYoloMode":  false,
+    "geminicodeassist.enable":  true,
+    "mdb.presetConnections":  [
+
+                              ],
+    "workbench.editor.preferHistoryBasedLanguageDetection":  true,
+    "geminicodeassist.codeLens.enable":  false,
+    "geminicodeassist.telemetry.enable":  false
 }

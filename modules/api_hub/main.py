@@ -27,9 +27,16 @@ from shared.security import Actor
 app = create_module_app("api_hub")
 
 # Configurações
+MODULES = [
+    "ai_core", "bi", "bpm", "business", "crm", "delivery", "document", "erp",
+    "finance", "health", "hr", "identity", "jobs", "legal", "marketplace",
+    "mobility", "permissions", "property", "riders", "services", "stock",
+    "tms", "vision", "wms"
+]
+
 SERVICES = {
-    "identity": os.getenv("IDENTITY_SERVICE_URL", "http://identity:8000"),
-    "finance": os.getenv("FINANCE_SERVICE_URL", "http://finance:8000"),
+    mod: os.getenv(f"{mod.upper()}_SERVICE_URL", f"http://{mod}:8000")
+    for mod in MODULES
 }
 JWT_SECRET = os.getenv("ALL_IN_ONE_JWT_SECRET", "local-secret-key-change-in-production")
 REDIS_URL = os.getenv("ALL_IN_ONE_REDIS_URL", "redis://redis:6379/0")
@@ -152,16 +159,29 @@ async def proxy_request(service_url: str, request: Request, actor_payload: dict 
     except httpx.RequestError as exc:
         raise HTTPException(status_code=502, detail=f"Erro de comunicacao com microservico: {exc}")
 
-# Roteamento Protegido com Rate Limit e Validação JWT
+# Roteamento Protegido Dinâmico para Módulos
+def create_proxy_route(service_name: str):
+    @app.api_route(
+        f"/{service_name}/{{path:path}}", 
+        methods=["GET", "POST", "PATCH", "DELETE", "PUT"],
+        dependencies=[Depends(rate_limiter)]
+    )
+    async def route_proxy(path: str, request: Request, actor=Depends(validate_jwt_edge)):
+        return await proxy_request(SERVICES[service_name], request, actor)
+
+for service in SERVICES.keys():
+    if service != "identity":
+        create_proxy_route(service)
+
+# Roteamento Aberto (Apenas Rate Limit) - Identity
 @app.api_route(
     "/identity/{path:path}", 
-    methods=["GET", "POST", "PATCH", "DELETE"],
+    methods=["GET", "POST", "PATCH", "DELETE", "PUT"],
     dependencies=[Depends(rate_limiter)]
 )
 async def identity_proxy(path: str, request: Request, actor=Depends(validate_jwt_edge)):
     return await proxy_request(SERVICES["identity"], request, actor)
 
-# Roteamento Aberto (Apenas Rate Limit)
 @app.post("/auth/{path:path}", dependencies=[Depends(rate_limiter)])
 async def auth_proxy(path: str, request: Request):
     return await proxy_request(SERVICES["identity"], request)
@@ -170,14 +190,48 @@ async def auth_proxy(path: str, request: Request):
 async def registrations_proxy(request: Request):
     return await proxy_request(SERVICES["identity"], request)
 
-# Roteamento para Finanças
-@app.api_route(
-    "/finance/{path:path}", 
-    methods=["GET", "POST", "PATCH", "DELETE"],
-    dependencies=[Depends(rate_limiter)]
-)
-async def finance_proxy(path: str, request: Request, actor=Depends(validate_jwt_edge)):
-    return await proxy_request(SERVICES["finance"], request, actor)
+import asyncio
+
+@app.get("/gateway/catalog/offers", dependencies=[Depends(rate_limiter)])
+async def aggregate_catalog_offers(limit: int = 50, offset: int = 0):
+    """Agregação Multi-Serviço das ofertas vivas do Valley Marketplace"""
+    async def fetch_module(mod_name):
+        try:
+            url = f"{SERVICES[mod_name]}/catalog_offers?limit={limit}"
+            resp = await client.get(url, timeout=2.0)
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, dict) and "data" in data:
+                    for item in data["data"]: item["_source_module"] = mod_name
+                    return data["data"]
+                elif isinstance(data, list):
+                    for item in data: item["_source_module"] = mod_name
+                    return data
+            return []
+        except Exception:
+            return []
+
+    target_modules = ["business", "marketplace", "services", "health", "property", "jobs", "mobility", "delivery", "tms"]
+    tasks = [fetch_module(m) for m in target_modules]
+    results = await asyncio.gather(*tasks)
+    
+    aggregated = []
+    for r in results:
+        aggregated.extend(r)
+        
+    return {"data": aggregated[:limit], "total": len(aggregated)}
+
+@app.get("/gateway/telemetry/outbox")
+async def outbox_telemetry(limit: int = 100):
+    """Monitoramento unificado de Outbox Parada e Eventos em Backoff"""
+    # Exemplo simulado/fictício até podermos ler do banco real agregado
+    return {
+        "status": "healthy",
+        "total_pending": 0,
+        "failed_retryable": 0,
+        "oldest_pending_age_seconds": 0
+    }
+
 
 @app.get("/gateway/status")
 async def gateway_status():

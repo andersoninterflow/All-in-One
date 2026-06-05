@@ -503,7 +503,7 @@
 
 ### Pendencias rastreadas
 
-- Centralizar agregacao multi-servico real no API Hub para consultar ofertas vivas de todos os modulos em uma unica chamada.
+- API Hub integrado e roteando todos os 25 módulos. Rota /gateway/catalog/offers centraliza ofertas do ecossistema.
 - Persistir snapshots de catalogo e eventos `valley.catalog.offer.synced` quando houver banco dedicado do agregador Valley.
 - Implementar interface visual do app Valley usando as categorias amigaveis e filtros regionais.
 

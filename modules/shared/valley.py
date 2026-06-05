@@ -14,6 +14,7 @@ from .valley_catalog import (
     search_valley_offers,
     valley_business_activities,
     valley_categories,
+    valley_facets,
     valley_modules,
 )
 
@@ -116,6 +117,10 @@ def register_valley_routes(
     @app.get("/valley/catalog/business-activities")
     def valley_catalog_business_activities() -> list[dict[str, Any]]:
         return valley_business_activities()
+
+    @app.get("/valley/catalog/facets")
+    def valley_catalog_facets() -> dict[str, list[dict[str, Any]]]:
+        return valley_facets(build_valley_offers(module_name, store))
 
     @app.get("/valley/catalog")
     def valley_catalog_home(

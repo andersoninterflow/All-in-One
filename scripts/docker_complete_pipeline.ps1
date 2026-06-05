@@ -39,7 +39,8 @@ $tagCount = 0
 $images | ForEach-Object {
     $local = $_
     $module = ($local -split "/")[-1] -replace ":latest", ""
-    $remote = "andersoninterflow/$module"
+    $cleanName = $module -replace "all-in-one-", ""
+    $remote = "andersoninterflow/all-in-one-${cleanName}"
     
     docker tag "$local" "$remote:latest" 2>$null
     if ($?) {
@@ -54,7 +55,8 @@ Write-Host "📤 Etapa 4: Enviando para Docker Hub..." -ForegroundColor Yellow
 $pushCount = 0
 $images | ForEach-Object {
     $module = ($_ -split "/")[-1] -replace ":latest", ""
-    $remote = "andersoninterflow/all-in-one-${module}:latest"
+    $cleanName = $module -replace "all-in-one-", ""
+    $remote = "andersoninterflow/all-in-one-${cleanName}:latest"
     
     Write-Host "   📤 all-in-one-$module..." -ForegroundColor Cyan -NoNewline
     

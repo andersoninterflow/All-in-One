@@ -4,11 +4,12 @@
   "enabled": false,
   "disabled_until": "segunda_ordem_explicita_do_usuario",
   "scope": "workspace",
-  "reason": "Google SDK, Google AI Studio, Google Cloud, Google Code CLI, Gemini CLI e Stitch devem permanecer configurados, mas desativados em todos os locais do projeto. A extensao Gemini Code Assist permanece ativa no Antigravity/editor por ordem explicita do usuario.",
+  "reason": "Google SDK, Google AI Studio, Google Cloud, AlloyDB, Google Code CLI, Gemini CLI e Stitch devem permanecer configurados, mas desativados em todos os locais do projeto. A extensao Gemini Code Assist permanece ativa no Antigravity/editor por ordem explicita do usuario.",
   "affected_integrations": [
     "google_sdk",
     "google_ai_studio",
     "google_cloud",
+    "alloydb",
     "google_code_cli",
     "gemini_cli_termux",
     "gemini_cli_ubuntu",
@@ -24,7 +25,7 @@
   ],
   "rules": [
     "Manter arquivos, contratos, documentacao e estado versionado para retomada futura.",
-    "Nao executar sincronizacao remota Stitch, Google Cloud SDK, Google AI Studio, Gemini CLI ou Google Code CLI ate nova ordem explicita.",
+    "Nao executar sincronizacao remota Stitch, Google Cloud SDK, Google AI Studio, AlloyDB, Gemini CLI ou Google Code CLI ate nova ordem explicita.",
     "Nao instalar, atualizar, autenticar ou inicializar ferramentas Google automaticamente.",
     "Nao expor STITCH_API_KEY, GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_API_KEY, GEMINI_API_KEY ou credenciais equivalentes em arquivos versionados.",
     "Workflows, Docker Compose, Antigravity, VS Code e validadores devem refletir o estado desativado.",
@@ -35,6 +36,7 @@
     "GOOGLE_CLOUD_ENABLED": "false",
     "GOOGLE_AI_STUDIO_ENABLED": "false",
     "GOOGLE_CODE_CLI_ENABLED": "false",
+    "ALLOYDB_ENABLED": "false",
     "GEMINI_CODE_ASSIST_ENABLED": "true",
     "STITCH_REMOTE_SYNC_ENABLED": "false"
   },

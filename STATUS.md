@@ -4,13 +4,13 @@
 
 ### Concluido neste ciclo
 
-- Criada `config/autonomy/google_integrations_policy.json` com `enabled=false` para Google SDK, Google AI Studio, Google Cloud, Google Code CLI, Gemini CLI Termux/Ubuntu e Google Stitch MCP.
+- Criada `config/autonomy/google_integrations_policy.json` com `enabled=false` para Google SDK, Google AI Studio, Google Cloud, AlloyDB, Google Code CLI, Gemini CLI Termux/Ubuntu e Google Stitch MCP.
 - Gemini Code Assist ficou como excecao explicita e permanece ativo no Antigravity/editor.
 - `config/autonomy/stitch_mcp_policy.json` preserva endpoint, header e variavel oficial, mas agora fica `enabled=false` ate segunda ordem.
 - `.github/workflows/stitch-sync.yml` foi preservado, porem sem gatilhos automaticos de push/schedule e com job bloqueado por `if: ${{ false }}`.
 - `.vscode/settings.json` mantem Gemini Code Assist ativo, com modo automatico destrutivo/yolo desativado.
 - `.agents/antigravity.json` preserva Stitch em `disabled_mcp_servers` e remove Stitch da lista ativa de MCPs.
-- `.env.example` e `infra/docker/docker-compose.yml` declaram flags Google/Stitch como `false` e preservam `GEMINI_CODE_ASSIST_ENABLED=true`.
+- `.env.example` e `infra/docker/docker-compose.yml` declaram flags Google/AlloyDB/Stitch como `false` e preservam `GEMINI_CODE_ASSIST_ENABLED=true`.
 - `scripts/stitch_auto_sync.py` e `scripts/validate_stitch_mcp_config.py` passaram a respeitar a politica desativada sem exigir segredo remoto.
 - `scripts/validate_repository.py` agora bloqueia reativacao acidental em politica, Docker, VS Code, Antigravity e workflow.
 

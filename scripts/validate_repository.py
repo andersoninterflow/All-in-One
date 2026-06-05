@@ -65,6 +65,7 @@ REQUIRED_ENV_VARS = {
     "GOOGLE_CLOUD_ENABLED",
     "GOOGLE_AI_STUDIO_ENABLED",
     "GOOGLE_CODE_CLI_ENABLED",
+    "ALLOYDB_ENABLED",
     "GEMINI_CODE_ASSIST_ENABLED",
     "STITCH_REMOTE_SYNC_ENABLED",
 }
@@ -242,6 +243,8 @@ def main() -> int:
         'GOOGLE_CLOUD_ENABLED: "false"',
         'GOOGLE_AI_STUDIO_ENABLED: "false"',
         'GOOGLE_CODE_CLI_ENABLED: "false"',
+        'ALLOYDB_ENABLED: "false"',
+        'ALLOYDB_DSN: ""',
         'GEMINI_CODE_ASSIST_ENABLED: "true"',
         'STITCH_REMOTE_SYNC_ENABLED: "false"',
     ]:
@@ -298,13 +301,14 @@ def main() -> int:
             "google_sdk",
             "google_ai_studio",
             "google_cloud",
+            "alloydb",
             "google_code_cli",
             "gemini_cli_termux",
             "gemini_cli_ubuntu",
             "google_stitch_mcp",
         }
         if set(google_policy.get("affected_integrations", [])) != expected_integrations:
-            fail("Politica Google deve cobrir SDK, AI Studio, Cloud, Code CLI, Gemini CLI e Stitch MCP.", errors)
+            fail("Politica Google deve cobrir SDK, AI Studio, Cloud, AlloyDB, Code CLI, Gemini CLI e Stitch MCP.", errors)
         exceptions = {
             item.get("name"): item for item in google_policy.get("explicit_exceptions", []) if isinstance(item, dict)
         }
@@ -316,6 +320,7 @@ def main() -> int:
             "GOOGLE_CLOUD_ENABLED",
             "GOOGLE_AI_STUDIO_ENABLED",
             "GOOGLE_CODE_CLI_ENABLED",
+            "ALLOYDB_ENABLED",
             "STITCH_REMOTE_SYNC_ENABLED",
         ]
         for variable in disabled_variables:

@@ -18,6 +18,8 @@ x-module-common: &module-common
     GOOGLE_CLOUD_ENABLED: "false"
     GOOGLE_AI_STUDIO_ENABLED: "false"
     GOOGLE_CODE_CLI_ENABLED: "false"
+    ALLOYDB_ENABLED: "false"
+    ALLOYDB_DSN: ""
     GEMINI_CODE_ASSIST_ENABLED: "true"
     STITCH_REMOTE_SYNC_ENABLED: "false"
   volumes:

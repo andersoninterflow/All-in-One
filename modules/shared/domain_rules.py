@@ -50,7 +50,7 @@ class ResourceRule:
 
 MODULE_ENTITIES: dict[str, tuple[str, ...]] = {
     "identity": ("users", "kyc_records", "business_profiles", "consents", "audit_logs"),
-    "business": ("companies", "branches", "company_documents", "user_company_memberships"),
+    "business": ("companies", "branches", "company_documents", "user_company_memberships", "catalog_offers"),
     "permissions": ("roles", "permissions", "user_roles", "access_policies", "approval_limits"),
     "finance": ("wallets", "ledger_entries", "escrows", "splits", "invoices", "valley_gold_ledger_entries"),
     "marketplace": ("stores", "products", "carts", "orders", "reviews", "disputes", "pepita_grants"),
@@ -173,6 +173,22 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         "pending_validation",
         sensitive=True,
         transitions=review_flow("business.company"),
+    ),
+    ("business", "catalog_offers"): ResourceRule(
+        (
+            "title",
+            "offer_type",
+            "consumer_category",
+            "company_type",
+            "company_category",
+            "business_activity_id",
+            "source_module",
+            "source_resource_type",
+        ),
+        initial_status="draft",
+        protected_content=True,
+        monetary_fields=("price_brl", "price_amount"),
+        transitions=catalog_offer_flow("business.catalog_offer"),
     ),
     ("permissions", "roles"): ResourceRule(("name",), ("name",), "active"),
     ("permissions", "approval_limits"): ResourceRule(
@@ -404,6 +420,7 @@ def event_for_create(module: str, resource_type: str) -> str:
     explicit = {
         ("identity", "users"): "identity.user.created",
         ("business", "companies"): "business.company.created",
+        ("business", "catalog_offers"): "valley.catalog.offer.synced",
         ("finance", "valley_gold_ledger_entries"): "valley.gold.ledger.posted",
         ("marketplace", "orders"): "marketplace.order.created",
         ("marketplace", "pepita_grants"): "valley.pepitas.granted",

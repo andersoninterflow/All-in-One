@@ -638,6 +638,7 @@ def render_requirements(slug: str) -> str:
             "redis==5.2.1\n"
             "PyJWT==2.10.1\n"
             "psycopg[binary]==3.3.4\n"
+            "tenacity==9.0.0\n"
         )
     if slug == "finance":
         return "fastapi==0.136.1\npsycopg[binary]==3.3.4\nstarlette==1.0.1\nuvicorn[standard]==0.34.2\n"

@@ -346,7 +346,7 @@ def test_gateway_returns_partial_history_when_module_fails(monkeypatch) -> None:
             import httpx
             raise httpx.RequestError("Conexao recusada", request=httpx.Request("GET", url))
         return await original_get(url, **kwargs)
-    
+
     fake_client.get = mock_get
     monkeypatch.setattr(api_hub, "client", fake_client)
     monkeypatch.setattr(api_hub, "redis_client", None)

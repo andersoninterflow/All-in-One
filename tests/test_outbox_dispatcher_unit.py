@@ -199,6 +199,62 @@ def test_valley_catalog_publication_uses_safe_payload() -> None:
     assert "street_address" not in message["payload"]
 
 
+def test_business_catalog_offer_publication_uses_safe_payload() -> None:
+    message = publication_message(
+        {
+            "id": uuid4(),
+            "routing_key": "valley.catalog.offer.synced",
+            "schema_version": 1,
+            "aggregate_type": "catalog_offers",
+            "aggregate_id": uuid4(),
+            "correlation_id": uuid4(),
+            "entity_id": uuid4(),
+            "created_at": datetime.now(timezone.utc),
+            "payload": {
+                "offer_id": "business:catalog_offers:123",
+                "offer_type": "service",
+                "offer_type_label": "Servico",
+                "consumer_category": "Casa, Reparos e Imoveis",
+                "title": "Montagem de moveis",
+                "short_description": "Servico residencial regional.",
+                "consumer_friendly_label": "Montagem de moveis",
+                "source_module": "services",
+                "source_resource_type": "providers",
+                "source_entity_id": "123",
+                "business_id": "business-1",
+                "availability_status": "available",
+                "publication_status": "published",
+                "price_type": "sob_orcamento",
+                "currency": "BRL",
+                "region_label": "Centro",
+                "service_radius_km": 8,
+                "consumer_action": "hire",
+                "primary_action_label": "Contratar",
+                "company_type": "pf_profissional",
+                "company_type_label": "Profissional autonomo",
+                "company_category": "Servicos",
+                "business_activity_id": "servicos_domesticos",
+                "business_activity_label": "Casa e manutencao",
+                "business_activity_consumer_label": "Casa e manutencao",
+                "seller_context_label": "Profissional autonomo em Casa e manutencao",
+                "consumer_filter_text": "Servico em Casa, Reparos e Imoveis - Casa e manutencao",
+                "category_id": "casa_reparos_e_imoveis",
+                "availability_type": "region",
+                "compliance_status": "not_required",
+                "verified_seller": True,
+                "internal_notes": "private",
+                "street_address": "must-not-publish",
+            },
+        }
+    )
+    assert message["routing_key"] == "valley.catalog.offer.synced"
+    assert message["payload"]["source_module"] == "services"
+    assert message["payload"]["primary_action_label"] == "Contratar"
+    assert message["payload"]["seller_context_label"] == "Profissional autonomo em Casa e manutencao"
+    assert "internal_notes" not in message["payload"]
+    assert "street_address" not in message["payload"]
+
+
 def test_retention_decision_publication_uses_safe_payload() -> None:
     message = publication_message(
         {

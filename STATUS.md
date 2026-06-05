@@ -1,5 +1,31 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-05 Catalogo Business -> Valley, AlloyDB e PowerShell
+
+### Concluido neste ciclo
+
+- Criado o recurso `business/catalog_offers` como configuracao comercial canonica para PF, MEI e PJ publicarem produtos ou servicos no catalogo Valley.
+- `catalog_offers` exige `offer_type`, `consumer_category`, `company_type`, `company_category`, `business_activity_id`, `source_module` e `source_resource_type`.
+- Ofertas configuradas no Business agora aparecem no Valley quando `publish_to_valley=true`, `publication_status` aprovado/publicado, `visible_to_consumer` ativo e regras regionais/compliance estiverem satisfeitas.
+- Payload Valley passou a expor campos de leitura simples para o usuario final: `offer_type_label`, `business_activity_consumer_label`, `seller_context_label` e `consumer_filter_text`.
+- Criado endpoint `GET /valley/catalog/facets` com filtros contados por tipo de oferta, categoria simples, tipo de empresa, categoria de empresa e ramo de atividade.
+- Outbox seguro passou a permitir `catalog_offers` no evento `valley.catalog.offer.synced`, sem publicar endereco sensivel, observacoes internas, custo ou margem.
+- Documentacao Business e Valley atualizada para explicar a origem Business -> modulo tecnico -> Marketplace/Valley.
+- AlloyDB foi incluido na politica de integracoes Google desativadas ate segunda ordem, com `ALLOYDB_ENABLED=false`, `ALLOYDB_DSN=` e validação em Docker/env/repositório.
+- PowerShell 7.6.2 foi instalado em modo portatil em `%LOCALAPPDATA%\Programs\PowerShell\7.6.2`; `.local\bin` foi priorizado no PATH do usuario e o shim `pwsh` retorna `PowerShell 7.6.2`.
+
+### Validacoes executadas
+
+- `.venv\Scripts\python.exe -m pytest -q tests\test_valley_catalog.py tests\test_outbox_dispatcher_unit.py modules\business\tests\test_contract.py modules\business\tests\test_create_flow.py`: sucesso, 20 testes aprovados.
+- `python3 scripts/validate_repository.py`: sucesso.
+- `python3 scripts/validate_openapi.py`: sucesso.
+- `pwsh --version` via shim do usuario: `PowerShell 7.6.2`.
+
+### Observacoes
+
+- O upgrade MSI global do PowerShell falhou com erro Windows Installer `1603`; a alternativa persistente aplicada foi instalacao portatil oficial e priorizacao no PATH do usuario.
+- O recurso `tests/test_all_modules_integration.py` apareceu como arquivo nao rastreado existente e foi preservado fora desta atividade.
+
 ## STATUS OPERACIONAL - 2026-06-05 Desativacao Google Ate Segunda Ordem
 
 ### Concluido neste ciclo

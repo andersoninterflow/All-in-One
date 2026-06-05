@@ -21,8 +21,8 @@ Toda oferta agregada deve declarar:
 
 ## Regra de publicacao
 
-Recursos reais vindos de Marketplace, Stock, Services, Health, Delivery, Mobility,
-Jobs, Property e Finance so entram no catalogo se:
+Recursos reais vindos do Business e dos modulos Marketplace, Stock, Services,
+Health, Delivery, Mobility, Jobs, Property e Finance so entram no catalogo se:
 
 - `publish_to_valley = true`;
 - `publication_status` estiver em `approved` ou `published`;
@@ -30,6 +30,12 @@ Jobs, Property e Finance so entram no catalogo se:
 - a oferta nao estiver cancelada, rejeitada, bloqueada, suspensa ou arquivada;
 - modulos regulados, como Health, Legal, Finance e Document, tiverem
   `compliance_status` aprovado ou verificado quando a oferta real for publicada.
+
+O recurso `business/catalog_offers` e a configuracao comercial canonica para PF,
+MEI e PJ. Ele guarda a decisao do usuario Business de publicar no Valley e aponta
+para o modulo tecnico de execucao por `source_module` e `source_resource_type`,
+por exemplo `marketplace/products`, `services/providers` ou
+`health/appointments`.
 
 Modulos sem oferta operacional continuam aparecendo como `coming_soon`, para que
 o usuario entenda o ecossistema sem confundir promessa futura com oferta
@@ -67,6 +73,7 @@ Regras:
 - `GET /valley/catalog/modules`
 - `GET /valley/catalog/categories`
 - `GET /valley/catalog/business-activities`
+- `GET /valley/catalog/facets`
 - `GET /valley/catalog/offers`
 - `GET /valley/catalog/offers/{offer_id}`
 - `GET /valley/catalog/search?q=&category=&offer_type=&lat=&lng=`

@@ -15,6 +15,11 @@ documentos, categorias, ramos, precos, disponibilidade e permissao de publicacao
 O Marketplace normaliza ofertas. O Valley apresenta a vitrine em linguagem
 simples para o usuario final comprar, contratar, agendar, pagar e acompanhar.
 
+O recurso `business/catalog_offers` e a fonte preferencial para ofertas criadas
+por PF, MEI e PJ dentro da plataforma Business. Ele preserva a origem de
+configuracao no Business e informa o modulo tecnico que executara a jornada no
+campo `source_module`.
+
 ## Regras obrigatorias
 
 - Ofertas reais devem declarar `publish_to_valley = true`.
@@ -37,6 +42,8 @@ simples para o usuario final comprar, contratar, agendar, pagar e acompanhar.
   `jobs`, `document`.
 - Logistica e execucao: `delivery`, `riders`, `mobility`, `tms`, `vision`.
 - Financeiro e comercial: `finance`, `crm`, `bi`, `ai_core`, `api_hub`.
+- Configuracao comercial canonica: `business/catalog_offers`, apontando para o
+  modulo tecnico via `source_module` e `source_resource_type`.
 
 ## Experiencia do usuario
 
@@ -62,4 +69,3 @@ Cards e listagens devem priorizar:
 O evento seguro de publicacao para a vitrine e `valley.catalog.offer.synced`.
 Ele deve circular apenas com payload publico em allowlist, preservando
 `correlation_id` e rejeitando dados internos ou sensiveis.
-

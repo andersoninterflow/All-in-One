@@ -2,7 +2,7 @@
 
         ## Descricao
 
-        Matriz, filiais, documentos empresariais, aprovacao manual e memberships.
+        Matriz, filiais, documentos empresariais, aprovacao manual, memberships e ofertas comerciais publicaveis no catalogo Valley.
 
         ## Entidades
 
@@ -10,6 +10,7 @@
 - `branches`
 - `company_documents`
 - `user_company_memberships`
+- `catalog_offers`
 
         ## APIs
 
@@ -42,6 +43,7 @@
 - `business.company.submitted`
 - `business.company.approved`
 - `business.company.rejected`
+- `valley.catalog.offer.synced`
 
         ## Regras
 
@@ -49,6 +51,8 @@
         - Exclusao e logica; registros financeiros, de aprovacao e auditoria nao sao apagados.
         - Aprovacao e rejeicao exigem ator autenticado, justificativa e log imutavel.
         - A empresa ou profissional deve estar aprovado antes de uma operacao publica.
+        - `catalog_offers` exige `offer_type`, `consumer_category`, `company_type`, `company_category`, `business_activity_id`, `source_module` e `source_resource_type`.
+        - O Valley so exibe `catalog_offers` com `publish_to_valley=true`, `publication_status` aprovado/publicado e `visible_to_consumer` ativo.
 
         ## Seguranca e permissoes
 

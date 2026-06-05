@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './index.css'
 import CheckoutModal from './components/CheckoutModal'
 import BookingModal from './components/BookingModal'
+import LoginModal from './components/LoginModal'
 
 interface Offer {
   offer_id: string
@@ -43,11 +44,32 @@ interface CatalogResponse {
 
 const API_HUB_URL = import.meta.env.VITE_API_HUB_URL ?? ''
 
+// Auth utility
+function getStoredAuth() {
+  const token = window.localStorage.getItem('valley.session.token')
+  const userId = window.localStorage.getItem('valley.session.user-id')
+  return { token, userId }
+}
+
+function setStoredAuth(token: string, userId: string) {
+  window.localStorage.setItem('valley.session.token', token)
+  window.localStorage.setItem('valley.session.user-id', userId)
+}
+
+function clearStoredAuth() {
+  window.localStorage.removeItem('valley.session.token')
+  window.localStorage.removeItem('valley.session.user-id')
+}
+
 function App() {
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
+
+  // Auth State
+  const [auth, setAuth] = useState(getStoredAuth())
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
 
   const [lat, setLat] = useState<string>('-23.5505')
   const [lng, setLng] = useState<string>('-46.6333')
@@ -64,16 +86,51 @@ function App() {
 
   // Modal states
   const [activeOffer, setActiveOffer] = useState<Offer | null>(null)
+  const [activeIntentKey, setActiveIntentKey] = useState('')
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [isBookingOpen, setIsBookingOpen] = useState(false)
 
   const handleActionClick = (offer: Offer) => {
     setActiveOffer(offer)
+    setActiveIntentKey(window.crypto.randomUUID())
+    
+    if (!auth.token || !auth.userId) {
+      setIsLoginOpen(true)
+      return
+    }
+
     if (['book', 'hire', 'request'].includes(offer.consumer_action)) {
       setIsBookingOpen(true)
     } else {
       setIsCheckoutOpen(true)
     }
+  }
+
+  const createCatalogAction = async (scheduledAt?: string, note?: string) => {
+    if (!activeOffer) throw new Error('Selecione uma oferta para continuar.')
+    if (!auth.token || !auth.userId) throw new Error('Usuario nao autenticado.')
+
+    const response = await fetch(`${API_HUB_URL}/gateway/catalog/actions`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${auth.token}`
+      },
+      body: JSON.stringify({
+        offer_id: activeOffer.offer_id,
+        action: activeOffer.consumer_action,
+        customer_user_id: auth.userId,
+        idempotency_key: activeIntentKey,
+        scheduled_at: scheduledAt || null,
+        note: note || null,
+        quantity: 1,
+      }),
+    })
+    const payload = await response.json()
+    if (!response.ok) {
+      throw new Error(payload.detail || 'Nao foi possivel concluir a solicitacao.')
+    }
+    return payload.message as string
   }
 
   const categories = [
@@ -138,6 +195,11 @@ function App() {
         <div className="logo">Valley</div>
         <nav>
           <span>Ofertas perto de voce</span>
+          {auth.token ? (
+            <button className="btn-link" onClick={() => { clearStoredAuth(); setAuth({token: null, userId: null}) }}>Sair</button>
+          ) : (
+            <button className="btn-primary" onClick={() => setIsLoginOpen(true)}>Entrar / Cadastrar</button>
+          )}
         </nav>
       </header>
       
@@ -258,7 +320,13 @@ function App() {
                   <span className="price">
                     {offer.price_amount ? `R$ ${Number(offer.price_amount).toFixed(2).replace('.', ',')}` : 'Sob orcamento'}
                   </span>
-                  <button className="offer-action" onClick={() => handleActionClick(offer)}>{offer.primary_action_label}</button>
+                  <button
+                    className="offer-action"
+                    disabled={!['buy', 'book', 'hire', 'request'].includes(offer.consumer_action)}
+                    onClick={() => handleActionClick(offer)}
+                  >
+                    {offer.primary_action_label}
+                  </button>
                 </div>
               </article>
             )) : (
@@ -272,16 +340,37 @@ function App() {
       </main>
 
       <CheckoutModal
+        key={`checkout-${activeIntentKey}`}
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
+        onConfirm={() => createCatalogAction()}
         offerTitle={activeOffer?.title ?? ''}
         priceAmount={activeOffer?.price_amount ?? null}
       />
 
       <BookingModal
+        key={`booking-${activeIntentKey}`}
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}
+        onConfirm={createCatalogAction}
         offerTitle={activeOffer?.title ?? ''}
+      />
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onSuccess={(token, userId) => {
+          setStoredAuth(token, userId)
+          setAuth({ token, userId })
+          setIsLoginOpen(false)
+          // Continua o fluxo automaticamente caso o usuario tenha tentado agir antes de logar
+          if (activeOffer) {
+            if (['book', 'hire', 'request'].includes(activeOffer.consumer_action)) {
+              setIsBookingOpen(true)
+            } else {
+              setIsCheckoutOpen(true)
+            }
+          }
+        }}
       />
     </>
   )

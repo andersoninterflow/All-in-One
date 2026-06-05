@@ -3,12 +3,31 @@ import React from 'react'
 interface CheckoutModalProps {
   isOpen: boolean
   onClose: () => void
+  onConfirm: () => Promise<string>
   offerTitle: string
   priceAmount: string | null
 }
 
-const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, offerTitle, priceAmount }) => {
+const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, onConfirm, offerTitle, priceAmount }) => {
+  const [submitting, setSubmitting] = React.useState(false)
+  const [feedback, setFeedback] = React.useState('')
+  const [failed, setFailed] = React.useState(false)
+
   if (!isOpen) return null
+
+  const submit = async () => {
+    setSubmitting(true)
+    setFeedback('')
+    setFailed(false)
+    try {
+      setFeedback(await onConfirm())
+    } catch (error) {
+      setFailed(true)
+      setFeedback(error instanceof Error ? error.message : 'Nao foi possivel criar o pedido.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className="modal-overlay" role="presentation">
@@ -25,12 +44,14 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, offerTit
           <p className="mock-info">
             Revise os dados antes de confirmar.
           </p>
+          {feedback && <p className={failed ? 'action-feedback error' : 'action-feedback success'} role="status">{feedback}</p>}
           <div className="actions">
-            <button className="btn-secondary" onClick={onClose}>Cancelar</button>
-            <button className="btn-primary" onClick={() => {
-              alert('Pagamento simulado com sucesso!')
-              onClose()
-            }}>Confirmar Pagamento</button>
+            <button className="btn-secondary" onClick={onClose}>{feedback && !failed ? 'Fechar' : 'Cancelar'}</button>
+            {!feedback || failed ? (
+              <button className="btn-primary" disabled={submitting} onClick={submit}>
+                {submitting ? 'Criando pedido...' : 'Confirmar pedido'}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

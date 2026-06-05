@@ -3,11 +3,38 @@ import React from 'react'
 interface BookingModalProps {
   isOpen: boolean
   onClose: () => void
+  onConfirm: (scheduledAt: string, note?: string) => Promise<string>
   offerTitle: string
 }
 
-const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, offerTitle }) => {
+const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onConfirm, offerTitle }) => {
+  const [date, setDate] = React.useState('')
+  const [time, setTime] = React.useState('')
+  const [note, setNote] = React.useState('')
+  const [submitting, setSubmitting] = React.useState(false)
+  const [feedback, setFeedback] = React.useState('')
+  const [failed, setFailed] = React.useState(false)
+
   if (!isOpen) return null
+
+  const submit = async () => {
+    if (!date || !time) {
+      setFailed(true)
+      setFeedback('Informe a data e o horario desejados.')
+      return
+    }
+    setSubmitting(true)
+    setFeedback('')
+    setFailed(false)
+    try {
+      setFeedback(await onConfirm(new Date(`${date}T${time}`).toISOString(), note))
+    } catch (error) {
+      setFailed(true)
+      setFeedback(error instanceof Error ? error.message : 'Nao foi possivel enviar a solicitacao.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className="modal-overlay" role="presentation">
@@ -23,18 +50,24 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, offerTitle
           </p>
           <div className="form-group">
             <label htmlFor="booking-date">Data desejada</label>
-            <input id="booking-date" type="date" className="neo-input" />
+            <input id="booking-date" type="date" className="neo-input" value={date} onChange={(event) => setDate(event.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="booking-time">Horario aproximado</label>
-            <input id="booking-time" type="time" className="neo-input" />
+            <input id="booking-time" type="time" className="neo-input" value={time} onChange={(event) => setTime(event.target.value)} />
           </div>
+          <div className="form-group">
+            <label htmlFor="booking-note">Detalhes do pedido</label>
+            <textarea id="booking-note" className="neo-input" value={note} onChange={(event) => setNote(event.target.value)} maxLength={500} />
+          </div>
+          {feedback && <p className={failed ? 'action-feedback error' : 'action-feedback success'} role="status">{feedback}</p>}
           <div className="actions">
-            <button className="btn-secondary" onClick={onClose}>Voltar</button>
-            <button className="btn-primary" onClick={() => {
-              alert('Solicitacao enviada ao prestador!')
-              onClose()
-            }}>Solicitar Agendamento</button>
+            <button className="btn-secondary" onClick={onClose}>{feedback && !failed ? 'Fechar' : 'Voltar'}</button>
+            {!feedback || failed ? (
+              <button className="btn-primary" disabled={submitting} onClick={submit}>
+                {submitting ? 'Enviando...' : 'Enviar solicitacao'}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

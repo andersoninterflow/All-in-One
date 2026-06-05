@@ -165,7 +165,8 @@ async def _create_catalog_resource(
     except httpx.RequestError as exc:
         raise HTTPException(status_code=502, detail="Nao foi possivel registrar sua solicitacao agora.") from exc
     if response.status_code not in {200, 201}:
-        detail = response.json().get("detail") if isinstance(response.json(), dict) else None
+        error_payload = response.json()
+        detail = error_payload.get("detail") if isinstance(error_payload, dict) else None
         raise HTTPException(status_code=502, detail=detail or "O modulo responsavel recusou a solicitacao.")
     result = response.json()
     if not isinstance(result, dict):
@@ -252,6 +253,21 @@ async def validate_jwt_edge(request: Request):
         raise HTTPException(status_code=401, detail="Token expirado.")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token invalido.")
+
+
+async def validate_catalog_action_token(request: Request) -> dict[str, Any]:
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Entre no Valley para continuar.")
+    if jwt is None:
+        raise HTTPException(status_code=503, detail="Validador JWT indisponivel.")
+    try:
+        return jwt.decode(auth_header.split(" ", 1)[1], JWT_SECRET, algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Sua sessao expirou. Entre novamente.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Sessao invalida.")
+
 
 async def proxy_request(service_url: str, request: Request, actor_payload: dict | None = None):
     """Proxy com injeção de contexto de ator."""
@@ -342,9 +358,53 @@ async def aggregate_catalog_offers(
     }
 
 
+    if verified_only:
+        forwarded_params["verified_only"] = "true"
+
+    async def fetch_module(module_name: str) -> tuple[str, list[dict[str, Any]], str | None]:
+        try:
+            url = f"{SERVICES[module_name]}/valley/catalog/search"
+            resp = await client.get(url, params=forwarded_params, timeout=3.0)
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, list):
+                    return module_name, [item for item in data if isinstance(item, dict)], None
+                return module_name, [], "resposta_invalida"
+            return module_name, [], f"http_{resp.status_code}"
+        except (httpx.RequestError, ValueError) as exc:
+            return module_name, [], type(exc).__name__
+
+    responses = await asyncio.gather(*(fetch_module(module) for module in CATALOG_SOURCE_MODULES))
+    merged = merge_catalog_offers([offers for _, offers, _ in responses])
+    failures = [
+        {"module": module, "error": error}
+        for module, _, error in responses
+        if error is not None
+    ]
+    page = merged[offset : offset + limit]
+    return {
+        "data": page,
+        "total": len(merged),
+        "limit": limit,
+        "offset": offset,
+        "facets": valley_facets(merged),
+        "partial": bool(failures),
+        "sources": [
+            {"module": module, "status": "unavailable" if error else "ok", "offer_count": len(offers)}
+            for module, offers, error in responses
+        ],
+        "failures": failures,
+    }
+
+
 @app.post("/gateway/catalog/actions", status_code=201, dependencies=[Depends(rate_limiter)])
-async def create_catalog_action(body: CatalogActionRequest) -> dict[str, Any]:
+async def create_catalog_action(
+    body: CatalogActionRequest,
+    token_payload: dict[str, Any] = Depends(validate_catalog_action_token),
+) -> dict[str, Any]:
     """Cria o primeiro registro operacional sem concluir pagamento ou atendimento."""
+    if str(token_payload.get("sub") or "") != str(body.customer_user_id):
+        raise HTTPException(status_code=403, detail="A sessao nao pertence ao usuario da solicitacao.")
     offer = await _fetch_catalog_offer(body.offer_id)
     expected_action = str(offer.get("consumer_action") or "")
     if expected_action and expected_action != body.action:
@@ -442,43 +502,6 @@ async def create_catalog_action(body: CatalogActionRequest) -> dict[str, Any]:
         "resource_id": resource.get("id"),
         "next_step": "provider_confirmation",
         "message": "Solicitacao enviada. Voce recebera a confirmacao do prestador.",
-    }
-    if verified_only:
-        forwarded_params["verified_only"] = "true"
-
-    async def fetch_module(module_name: str) -> tuple[str, list[dict[str, Any]], str | None]:
-        try:
-            url = f"{SERVICES[module_name]}/valley/catalog/search"
-            resp = await client.get(url, params=forwarded_params, timeout=3.0)
-            if resp.status_code == 200:
-                data = resp.json()
-                if isinstance(data, list):
-                    return module_name, [item for item in data if isinstance(item, dict)], None
-                return module_name, [], "resposta_invalida"
-            return module_name, [], f"http_{resp.status_code}"
-        except (httpx.RequestError, ValueError) as exc:
-            return module_name, [], type(exc).__name__
-
-    responses = await asyncio.gather(*(fetch_module(module) for module in CATALOG_SOURCE_MODULES))
-    merged = merge_catalog_offers([offers for _, offers, _ in responses])
-    failures = [
-        {"module": module, "error": error}
-        for module, _, error in responses
-        if error is not None
-    ]
-    page = merged[offset : offset + limit]
-    return {
-        "data": page,
-        "total": len(merged),
-        "limit": limit,
-        "offset": offset,
-        "facets": valley_facets(merged),
-        "partial": bool(failures),
-        "sources": [
-            {"module": module, "status": "unavailable" if error else "ok", "offer_count": len(offers)}
-            for module, offers, error in responses
-        ],
-        "failures": failures,
     }
 
 @app.get("/gateway/telemetry/outbox")

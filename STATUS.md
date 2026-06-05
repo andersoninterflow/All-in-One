@@ -621,7 +621,7 @@
 
 - Integrar ledger Gold append-only real ao Finance para lastrear compra/uso de Gold sem automatizar concessao de Pepitas.
 - Persistir notificacoes ao consumidor em canal operacional real quando RabbitMQ/outbox estiver conectado ao frontend Valley.
-- Conectar Valley, Valley Business e Valley Rider a telas funcionais e Playwright desktop/mobile.
+- [x] Conectar Valley, Valley Business e Valley Rider a telas funcionais e Playwright desktop/mobile.
 - Homologar providers reais sem romper restricoes do Plano Essencial e sem expor dados internos de margem/custo.
 
 ### Git
@@ -754,7 +754,7 @@
 
 ### Pendencias rastreadas
 
-- Levar as 7 jornadas contratuais locais para Playwright desktop/mobile quando houver shell frontend funcional.
+- [x] Levar as 7 jornadas contratuais locais para Playwright desktop/mobile quando houver shell frontend funcional.
 - Avancar para integracoes externas homologadas e adapters sandbox dos provedores prioritarios.
 - Resolver aviso ambiental do pytest Windows no cleanup de `pytest-current`, que ocorre apos a suite verde e nao altera o codigo de saida.
 

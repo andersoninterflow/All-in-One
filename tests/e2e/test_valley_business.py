@@ -27,3 +27,9 @@ def test_valley_business_navigation(page: Page, business_server: str):
     page.locator("text=Catálogo de Ofertas").click()
     expect(page.locator("h3:has-text('Catálogo')")).to_be_visible()
     expect(page.locator("text=Corte de Cabelo + Barba")).to_be_visible()
+
+    # Valida a visualização de Telemetria
+    page.locator("text=Telemetria Outbox").click()
+    expect(page.locator("h1")).to_contain_text("Monitoramento de Telemetria")
+    expect(page.locator("h3:has-text('Monitoramento de Eventos (Outbox)')")).to_be_visible()
+

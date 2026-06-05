@@ -224,13 +224,38 @@ async def aggregate_catalog_offers(limit: int = 50, offset: int = 0):
 @app.get("/gateway/telemetry/outbox")
 async def outbox_telemetry(limit: int = 100):
     """Monitoramento unificado de Outbox Parada e Eventos em Backoff"""
-    # Exemplo simulado/fictício até podermos ler do banco real agregado
-    return {
-        "status": "healthy",
-        "total_pending": 0,
-        "failed_retryable": 0,
-        "oldest_pending_age_seconds": 0
-    }
+    from modules.shared.outbox_dispatcher import OutboxDispatcher, OutboxSettings
+    
+    def fetch_metrics():
+        settings = OutboxSettings.from_environment()
+        dispatcher = OutboxDispatcher(settings)
+        try:
+            return dispatcher.collect_metrics()
+        finally:
+            dispatcher.close()
+
+    try:
+        metrics = await asyncio.to_thread(fetch_metrics)
+        return {
+            "status": "healthy",
+            "pending": metrics.pending,
+            "due": metrics.due,
+            "published": metrics.published,
+            "failed_retryable": metrics.failed_retryable,
+            "max_retry_count": metrics.max_retry_count,
+            "oldest_pending_age_seconds": metrics.oldest_pending_age_seconds,
+        }
+    except Exception as exc:
+        return {
+            "status": "unhealthy",
+            "error": str(exc),
+            "pending": 0,
+            "due": 0,
+            "published": 0,
+            "failed_retryable": 0,
+            "max_retry_count": 0,
+            "oldest_pending_age_seconds": 0,
+        }
 
 
 @app.get("/gateway/status")

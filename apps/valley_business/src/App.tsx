@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TelemetryDashboard } from './TelemetryDashboard'
 import './index.css'
 
 function App() {
@@ -36,6 +37,12 @@ function App() {
           >
             ⭐ Concessão de Pepitas
           </div>
+          <div 
+            className={`nav-item ${activeTab === 'telemetry' ? 'active' : ''}`}
+            onClick={() => setActiveTab('telemetry')}
+          >
+            📡 Telemetria Outbox
+          </div>
         </nav>
       </aside>
 
@@ -47,6 +54,7 @@ function App() {
             {activeTab === 'wallet' && 'Gestão de Valley Gold'}
             {activeTab === 'offers' && 'Seus Produtos e Serviços'}
             {activeTab === 'pepitas' && 'Fidelização de Clientes'}
+            {activeTab === 'telemetry' && 'Monitoramento de Telemetria'}
           </h1>
           <div className="wallet-badge">
             🪙 12.500 V-Gold
@@ -162,6 +170,10 @@ function App() {
               </table>
             </div>
           </div>
+        )}
+
+        {activeTab === 'telemetry' && (
+          <TelemetryDashboard />
         )}
       </main>
     </div>

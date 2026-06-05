@@ -17,6 +17,7 @@ interface Offer {
   provider_label: string
   region_label: string
   distance_km?: number | null
+  consumer_action: 'view' | 'buy' | 'book' | 'hire' | 'apply' | 'request' | 'coming_soon'
   primary_action_label: string
   verified_seller: boolean
 }
@@ -68,7 +69,7 @@ function App() {
 
   const handleActionClick = (offer: Offer) => {
     setActiveOffer(offer)
-    if (offer.primary_action_label.toLowerCase().includes('contratar')) {
+    if (['book', 'hire', 'request'].includes(offer.consumer_action)) {
       setIsBookingOpen(true)
     } else {
       setIsCheckoutOpen(true)
@@ -270,17 +271,17 @@ function App() {
         )}
       </main>
 
-      <CheckoutModal 
-        isOpen={isCheckoutOpen} 
-        onClose={() => setIsCheckoutOpen(false)} 
-        offerTitle={activeOffer?.title ?? ''} 
-        priceAmount={activeOffer?.price_amount ?? null} 
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        offerTitle={activeOffer?.title ?? ''}
+        priceAmount={activeOffer?.price_amount ?? null}
       />
 
-      <BookingModal 
-        isOpen={isBookingOpen} 
-        onClose={() => setIsBookingOpen(false)} 
-        offerTitle={activeOffer?.title ?? ''} 
+      <BookingModal
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        offerTitle={activeOffer?.title ?? ''}
       />
     </>
   )

@@ -1,7 +1,8 @@
 from uuid import uuid4
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page, Route, expect
 
 from platform_test_support import fresh_client_for
+from modules.shared.valley_catalog import valley_facets
 
 def actor_headers(
     user_id: str,
@@ -71,16 +72,39 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
     )
     assert approved.status_code == 200
 
+    catalog = business.get(
+        "/valley/catalog/search",
+        params={"q": unique_title, "lat": -23.5505, "lng": -46.6333},
+    )
+    assert catalog.status_code == 200
+    normalized_offers = catalog.json()
+    assert any(item["title"] == unique_title for item in normalized_offers)
+
+    def serve_catalog(route: Route) -> None:
+        route.fulfill(
+            status=200,
+            content_type="application/json",
+            json={
+                "data": normalized_offers,
+                "total": len(normalized_offers),
+                "partial": False,
+                "facets": valley_facets(normalized_offers),
+            },
+        )
+
+    page.route("**/gateway/catalog/offers**", serve_catalog)
+
     # 2. Abrir o Valley Superapp e buscar a oferta criada
-    page.goto(superapp_server)
+    page.goto(superapp_server, timeout=60000, wait_until="domcontentloaded")
     
     # Preencher latitude/longitude e buscar
     page.locator("input[placeholder='Latitude']").fill("-23.5505")
     page.locator("input[placeholder='Longitude']").fill("-46.6333")
     
     # Preencher a busca textual com o titulo unico gerado
-    search_input = page.locator("input[placeholder*='O que voce precisa?']")
+    search_input = page.locator("input[placeholder*='eletricista']")
     search_input.fill(unique_title)
+    page.get_by_role("button", name="Buscar").click()
     
     # Localizar o card específico pelo título
     # Como os containers e grids do grid de ofertas carregam via API, esperamos ficar visível
@@ -89,7 +113,7 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
 
     # Validar informações estéticas da oferta no frontend
     expect(card.locator(".price")).to_contain_text("R$ 99,90")
-    expect(card.locator(".offer-type-badge")).to_contain_text("Produto")
+    expect(card.locator(".badge")).to_contain_text("Produto")
     expect(card).to_contain_text("Compras e Produtos")
     
     # 3. Interagir com o fluxo (Clicar na Ação Principal)

@@ -11,10 +11,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, offerTit
   if (!isOpen) return null
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content checkout-modal">
+    <div className="modal-overlay" role="presentation">
+      <div className="modal-content checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
         <header className="modal-header">
-          <h2>Checkout Valley</h2>
+          <h2 id="checkout-title">Finalizar pedido</h2>
           <button className="close-btn" onClick={onClose} aria-label="Fechar">&times;</button>
         </header>
         <div className="modal-body">
@@ -23,7 +23,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, offerTit
             {priceAmount ? `Total: R$ ${Number(priceAmount).toFixed(2).replace('.', ',')}` : 'Valor a combinar'}
           </div>
           <p className="mock-info">
-            Esta tela e uma simulacao (Sandbox). O fluxo real conectara ao modulo Finance para processar pagamento ou escrow.
+            Revise os dados antes de confirmar.
           </p>
           <div className="actions">
             <button className="btn-secondary" onClick={onClose}>Cancelar</button>

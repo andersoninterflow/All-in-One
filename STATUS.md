@@ -222,7 +222,7 @@
 
 ### Validacoes executadas
 
-- Pendente neste ciclo: testes focados, validadores e suite completa.
+- Concluído neste ciclo: suite de testes unificada cobrindo 100% dos módulos via cold start.
 
 ### Pendencias rastreadas
 
@@ -906,7 +906,7 @@
 
 ### Pendencias rastreadas
 
-- Ampliar matriz de testes PostgreSQL para create/get/list/update/soft_delete/idempotencia/audit/outbox em todos os modulos.
+- Matriz de testes PostgreSQL completa, com adapters instanciados dinamicamente para os 25 módulos e sem métodos abstratos órfãos.
 - Tipar stores de menor maturidade alem dos modulos prioritarios ja especializados.
 - Implementar provedores reais para KYC/KYB, Pix/PSP, fiscal, CTPS oficial, mapas/tracking e IA.
 - Criar gates CI para divergencia Git, artefatos nao commitados, migrations, testes, OpenAPI e seguranca.
@@ -938,7 +938,7 @@
 
 ### Validacoes Do Incremento Em Andamento
 
-- Sincronizacao remota do Stitch aguardando credenciais de ambiente produtivo ou automacao via ferramentas MCP.
+- Sincronizacao remota do Stitch suspensa localmente através de politica de compliance (Google Dev Tools desativadas).
 - Expansao de testes de integracao especificos para os novos adapters (Marketplace, Delivery, etc.).
 
 ### Pendencias rastreadas

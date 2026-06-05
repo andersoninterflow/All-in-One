@@ -3,7 +3,7 @@ import React from 'react'
 interface BookingModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (scheduledAt: string, note?: string) => Promise<string>
+  onConfirm: (scheduledAt: string, note?: string) => Promise<{ message: string }>
   offerTitle: string
 }
 
@@ -27,7 +27,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onConfirm,
     setFeedback('')
     setFailed(false)
     try {
-      setFeedback(await onConfirm(new Date(`${date}T${time}`).toISOString(), note))
+      const scheduledAt = new Date(`${date}T${time}`).toISOString()
+      const result = await onConfirm(scheduledAt, note)
+      setFeedback(result?.message || 'Solicitacao confirmada.')
     } catch (error) {
       setFailed(true)
       setFeedback(error instanceof Error ? error.message : 'Nao foi possivel enviar a solicitacao.')

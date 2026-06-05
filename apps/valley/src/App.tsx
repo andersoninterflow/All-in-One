@@ -3,6 +3,8 @@ import './index.css'
 import CheckoutModal from './components/CheckoutModal'
 import BookingModal from './components/BookingModal'
 import LoginModal from './components/LoginModal'
+import PaymentModal, { type PaymentIntent } from './components/PaymentModal'
+import OrdersDrawer from './components/OrdersDrawer'
 
 interface Offer {
   offer_id: string
@@ -40,6 +42,12 @@ interface CatalogResponse {
   total: number
   partial: boolean
   facets: CatalogFacets
+}
+
+interface CatalogActionResponse {
+  message: string
+  next_step: string
+  payment_intent?: PaymentIntent
 }
 
 const API_HUB_URL = import.meta.env.VITE_API_HUB_URL ?? ''
@@ -89,11 +97,14 @@ function App() {
   const [activeIntentKey, setActiveIntentKey] = useState('')
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [isBookingOpen, setIsBookingOpen] = useState(false)
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false)
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false)
+  const [paymentIntent, setPaymentIntent] = useState<PaymentIntent | null>(null)
 
   const handleActionClick = (offer: Offer) => {
     setActiveOffer(offer)
     setActiveIntentKey(window.crypto.randomUUID())
-    
+
     if (!auth.token || !auth.userId) {
       setIsLoginOpen(true)
       return
@@ -106,7 +117,7 @@ function App() {
     }
   }
 
-  const createCatalogAction = async (scheduledAt?: string, note?: string) => {
+  const createCatalogAction = async (scheduledAt?: string, note?: string): Promise<CatalogActionResponse> => {
     if (!activeOffer) throw new Error('Selecione uma oferta para continuar.')
     if (!auth.token || !auth.userId) throw new Error('Usuario nao autenticado.')
 
@@ -130,7 +141,17 @@ function App() {
     if (!response.ok) {
       throw new Error(payload.detail || 'Nao foi possivel concluir a solicitacao.')
     }
-    return payload.message as string
+
+    if (payload.next_step === 'payment_required' && payload.payment_intent) {
+      setPaymentIntent(payload.payment_intent)
+      setTimeout(() => {
+        setIsCheckoutOpen(false)
+        setIsBookingOpen(false)
+        setIsPaymentOpen(true)
+      }, 1500)
+    }
+
+    return payload
   }
 
   const categories = [
@@ -196,7 +217,10 @@ function App() {
         <nav>
           <span>Ofertas perto de voce</span>
           {auth.token ? (
-            <button className="btn-link" onClick={() => { clearStoredAuth(); setAuth({token: null, userId: null}) }}>Sair</button>
+            <>
+              <button className="btn-link" onClick={() => setIsOrdersOpen(true)}>Meus Pedidos</button>
+              <button className="btn-link" onClick={() => { clearStoredAuth(); setAuth({token: null, userId: null}) }}>Sair</button>
+            </>
           ) : (
             <button className="btn-primary" onClick={() => setIsLoginOpen(true)}>Entrar / Cadastrar</button>
           )}
@@ -371,6 +395,22 @@ function App() {
             }
           }
         }}
+      />
+      <PaymentModal
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        onSuccess={() => {
+          setIsPaymentOpen(false)
+          setIsOrdersOpen(true)
+        }}
+        paymentIntent={paymentIntent}
+        token={auth.token}
+      />
+      <OrdersDrawer
+        key={`orders-${isOrdersOpen}`}
+        isOpen={isOrdersOpen}
+        onClose={() => setIsOrdersOpen(false)}
+        token={auth.token}
       />
     </>
   )

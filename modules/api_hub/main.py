@@ -97,6 +97,12 @@ class CatalogActionRequest(BaseModel):
     quantity: int = Field(default=1, ge=1, le=99)
 
 
+class CatalogPaymentRequest(BaseModel):
+    order_id: UUID
+    idempotency_key: str = Field(min_length=8, max_length=120)
+    method: Literal["pix_sandbox"] = "pix_sandbox"
+
+
 def _catalog_offer_key(offer: dict[str, Any]) -> str:
     return str(
         offer.get("offer_id")
@@ -172,6 +178,48 @@ async def _create_catalog_resource(
     if not isinstance(result, dict):
         raise HTTPException(status_code=502, detail="O modulo responsavel retornou uma resposta invalida.")
     return result
+
+
+async def _service_json(
+    method: Literal["GET", "POST"],
+    url: str,
+    *,
+    headers: dict[str, str],
+    payload: dict[str, Any] | None = None,
+    timeout: float = 5.0,
+) -> Any:
+    try:
+        if method == "GET":
+            response = await client.get(url, headers=headers, timeout=timeout)
+        else:
+            response = await client.post(url, headers=headers, json=payload or {}, timeout=timeout)
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail="Um servico necessario esta temporariamente indisponivel.") from exc
+    if response.status_code not in {200, 201}:
+        error_payload = response.json()
+        detail = error_payload.get("detail") if isinstance(error_payload, dict) else None
+        raise HTTPException(status_code=502, detail=detail or "Um servico necessario recusou a operacao.")
+    return response.json()
+
+
+def _consumer_item(module_name: str, resource_type: str, item: dict[str, Any]) -> dict[str, Any]:
+    payload = item.get("payload") if isinstance(item.get("payload"), dict) else {}
+    kind = {
+        ("marketplace", "orders"): "order",
+        ("health", "appointments"): "appointment",
+        ("services", "service_contracts"): "service",
+    }[(module_name, resource_type)]
+    amount = payload.get("total_brl") or payload.get("contracted_price_brl") or payload.get("visit_price_brl")
+    return {
+        "id": str(item.get("id") or ""),
+        "kind": kind,
+        "title": str(payload.get("offer_title") or payload.get("scope") or payload.get("care_line") or "Solicitacao Valley"),
+        "status": str(item.get("status") or "created"),
+        "amount_brl": str(amount) if amount not in (None, "") else None,
+        "scheduled_at": payload.get("scheduled_at") or payload.get("requested_at"),
+        "created_at": item.get("created_at"),
+        "updated_at": item.get("updated_at"),
+    }
 
 def _configured_api_keys() -> dict[str, dict[str, object]]:
     """Parse API keys from ALL_IN_ONE_API_KEYS.
@@ -397,6 +445,60 @@ async def aggregate_catalog_offers(
     }
 
 
+@app.get("/gateway/consumer/orders", dependencies=[Depends(rate_limiter)])
+async def get_consumer_orders(
+    token_payload: dict[str, Any] = Depends(validate_catalog_action_token)
+) -> dict[str, Any]:
+    """Retorna historico publico normalizado sem expor payloads internos."""
+    user_id = token_payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Sessao invalida.")
+
+    headers = {"X-Actor-User-Id": str(user_id)}
+
+    async def fetch_resource(module_name: str, resource_type: str) -> tuple[list[dict[str, Any]], str | None]:
+        try:
+            url = f"{SERVICES[module_name]}/resources/{resource_type}"
+            resp = await client.get(url, headers=headers, timeout=3.0)
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, list):
+                    return [
+                        _consumer_item(module_name, resource_type, item)
+                        for item in data
+                        if isinstance(item, dict)
+                    ], None
+                return [], "resposta_invalida"
+            return [], f"http_{resp.status_code}"
+        except (httpx.RequestError, ValueError) as exc:
+            return [], type(exc).__name__
+
+    results = await asyncio.gather(
+        fetch_resource("marketplace", "orders"),
+        fetch_resource("health", "appointments"),
+        fetch_resource("services", "service_contracts")
+    )
+
+    all_items: list[dict[str, Any]] = []
+    failures = []
+    for (items, error), (module_name, _) in zip(
+        results,
+        (("marketplace", "orders"), ("health", "appointments"), ("services", "service_contracts")),
+        strict=True,
+    ):
+        all_items.extend(items)
+        if error:
+            failures.append({"module": module_name, "error": error})
+
+    all_items.sort(key=lambda x: str(x.get("created_at") or ""), reverse=True)
+
+    return {
+        "data": all_items,
+        "total": len(all_items),
+        "partial": bool(failures),
+        "failures": failures,
+    }
+
 @app.post("/gateway/catalog/actions", status_code=201, dependencies=[Depends(rate_limiter)])
 async def create_catalog_action(
     body: CatalogActionRequest,
@@ -431,6 +533,7 @@ async def create_catalog_action(
             body,
             {
                 **common,
+                "offer_title": offer.get("title"),
                 "store_id": str(store_id),
                 "escrow_id": f"pending:{body.idempotency_key}",
                 "total_brl": price,
@@ -451,6 +554,10 @@ async def create_catalog_action(
             "resource_id": resource.get("id"),
             "next_step": "payment_required",
             "message": "Pedido criado. O pagamento sera confirmado na proxima etapa.",
+            "payment_intent": {
+                "amount": price,
+                "order_id": resource.get("id"),
+            }
         }
 
     if body.action == "book" and offer.get("source_module") == "health":
@@ -465,6 +572,7 @@ async def create_catalog_action(
             body,
             {
                 **common,
+                "offer_title": offer.get("title"),
                 "patient_id": str(body.customer_user_id),
                 "professional_user_id": str(professional_id),
                 "scheduled_at": body.scheduled_at,
@@ -483,6 +591,7 @@ async def create_catalog_action(
             body,
             {
                 **common,
+                "offer_title": offer.get("title"),
                 "provider_user_id": str(provider_id),
                 "escrow_id": f"pending:{body.idempotency_key}",
                 "visit_price_brl": price,
@@ -502,6 +611,93 @@ async def create_catalog_action(
         "resource_id": resource.get("id"),
         "next_step": "provider_confirmation",
         "message": "Solicitacao enviada. Voce recebera a confirmacao do prestador.",
+    }
+
+
+@app.post("/gateway/payments/sandbox/authorize", dependencies=[Depends(rate_limiter)])
+async def authorize_catalog_payment(
+    body: CatalogPaymentRequest,
+    token_payload: dict[str, Any] = Depends(validate_catalog_action_token),
+) -> dict[str, Any]:
+    """Autoriza Pix sandbox e marca o pedido pago somente apos escrow aceito."""
+    user_id = str(token_payload.get("sub") or "")
+    actor_headers = {"X-Actor-User-Id": user_id}
+    order = await _service_json(
+        "GET",
+        f"{SERVICES['marketplace']}/resources/orders/{body.order_id}",
+        headers=actor_headers,
+    )
+    if not isinstance(order, dict) or str(order.get("user_id") or "") != user_id:
+        raise HTTPException(status_code=403, detail="Pedido nao pertence ao consumidor autenticado.")
+    if order.get("status") == "paid":
+        return {
+            "status": "paid",
+            "order_id": str(body.order_id),
+            "message": "Pagamento ja confirmado anteriormente.",
+        }
+    if order.get("status") != "created":
+        raise HTTPException(status_code=409, detail="Este pedido nao aceita pagamento no estado atual.")
+
+    payload = order.get("payload") if isinstance(order.get("payload"), dict) else {}
+    amount = str(payload.get("total_brl") or "")
+    beneficiary = str(payload.get("seller_user_id") or payload.get("store_id") or "")
+    if not amount or not beneficiary:
+        raise HTTPException(status_code=409, detail="Pedido sem dados financeiros completos.")
+
+    internal_headers = {
+        "X-Actor-User-Id": user_id,
+        "X-Actor-Roles": "compliance_officer",
+        "X-MFA-Verified": "true",
+    }
+    payment_id = f"order:{body.order_id}"
+    pix = await _service_json(
+        "POST",
+        f"{SERVICES['finance']}/integrations/sandbox/psp/pix/authorize",
+        headers=internal_headers,
+        payload={
+            "payment_id": payment_id,
+            "payer_id": user_id,
+            "amount_brl": amount,
+            "idempotency_key": body.idempotency_key,
+        },
+    )
+    if not isinstance(pix, dict) or pix.get("status") != "authorized":
+        raise HTTPException(status_code=409, detail="Pagamento Pix nao foi autorizado.")
+
+    escrow_reference = f"order-{body.order_id}"
+    escrow = await _service_json(
+        "POST",
+        f"{SERVICES['finance']}/integrations/sandbox/psp/escrows",
+        headers=internal_headers,
+        payload={
+            "escrow_id": escrow_reference,
+            "payer_id": user_id,
+            "beneficiary_id": beneficiary,
+            "amount_brl": amount,
+        },
+    )
+    if not isinstance(escrow, dict) or escrow.get("status") != "held":
+        raise HTTPException(status_code=409, detail="Nao foi possivel proteger o pagamento em escrow.")
+
+    paid = await _service_json(
+        "POST",
+        f"{SERVICES['marketplace']}/resources/orders/{body.order_id}/actions/pay",
+        headers=actor_headers,
+        payload={
+            "reason": "Pix sandbox autorizado e valor protegido em escrow.",
+            "payload": {
+                "payment_provider": "finance_pix_psp",
+                "provider_environment": "sandbox",
+                "payment_reference": pix.get("reference_id"),
+                "escrow_reference": escrow.get("reference_id"),
+            },
+        },
+    )
+    return {
+        "status": str(paid.get("status") if isinstance(paid, dict) else "paid"),
+        "order_id": str(body.order_id),
+        "provider_environment": "sandbox",
+        "message": "Pagamento sandbox autorizado e protegido ate a conclusao do pedido.",
     }
 
 @app.get("/gateway/telemetry/outbox")

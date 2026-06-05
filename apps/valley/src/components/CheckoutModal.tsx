@@ -3,7 +3,7 @@ import React from 'react'
 interface CheckoutModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: () => Promise<string>
+  onConfirm: () => Promise<{ message: string }>
   offerTitle: string
   priceAmount: string | null
 }
@@ -20,7 +20,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, onConfir
     setFeedback('')
     setFailed(false)
     try {
-      setFeedback(await onConfirm())
+      const result = await onConfirm()
+      setFeedback(result.message || 'Pedido criado.')
     } catch (error) {
       setFailed(true)
       setFeedback(error instanceof Error ? error.message : 'Nao foi possivel criar o pedido.')

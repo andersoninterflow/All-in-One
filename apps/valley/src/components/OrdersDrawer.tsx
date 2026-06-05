@@ -1,0 +1,91 @@
+import React, { useEffect, useState } from 'react'
+
+interface OrderItem {
+  id: string
+  kind: 'order' | 'appointment' | 'service'
+  title: string
+  status: string
+  amount_brl?: string | null
+  scheduled_at?: string | null
+  created_at?: string
+}
+
+interface OrdersDrawerProps {
+  isOpen: boolean
+  onClose: () => void
+  token: string | null
+}
+
+const API_HUB_URL = import.meta.env.VITE_API_HUB_URL ?? ''
+
+const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({ onClose, token }) => {
+  const [items, setItems] = useState<OrderItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetch(`${API_HUB_URL}/gateway/consumer/orders`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Falha ao carregar historico')
+        return res.json()
+      })
+      .then(data => {
+        setItems(data.data || [])
+      })
+      .catch(err => {
+        setError(err.message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [token])
+
+  return (
+    <div className="drawer-overlay" onClick={onClose} role="presentation">
+      <div className="drawer-content orders-drawer" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+        <header className="drawer-header">
+          <h2 id="drawer-title">Meus Pedidos e Agendamentos</h2>
+          <button className="close-btn" onClick={onClose} aria-label="Fechar">&times;</button>
+        </header>
+        <div className="drawer-body">
+          {loading && <div className="loader"></div>}
+          {error && <p className="notice error">{error}</p>}
+          {!loading && !error && items.length === 0 && (
+            <div className="empty-state">
+              <p>Voce ainda nao tem pedidos ou agendamentos.</p>
+            </div>
+          )}
+          {!loading && !error && items.length > 0 && (
+            <div className="orders-list">
+              {items.map(item => (
+                <article key={`${item.kind}-${item.id}`} className="order-card">
+                  <div className="order-header">
+                    <span className="badge">{item.kind === 'appointment' ? 'Agendamento' : item.kind === 'service' ? 'Servico' : 'Pedido'}</span>
+                    <span className="date">
+                      {item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}
+                    </span>
+                  </div>
+                  <div className="order-details">
+                    <strong>{item.title}</strong>
+                    <p>Status: {item.status}</p>
+                    {item.amount_brl && <p className="price">Valor: R$ {Number(item.amount_brl).toFixed(2).replace('.', ',')}</p>}
+                    {item.scheduled_at && <p className="schedule">Agendado para: {new Date(item.scheduled_at).toLocaleString()}</p>}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const OrdersDrawer: React.FC<OrdersDrawerProps> = ({ isOpen, onClose, token }) => {
+  if (!isOpen || !token) return null
+  return <OrdersDrawerContent onClose={onClose} token={token} />
+}
+
+export default OrdersDrawer

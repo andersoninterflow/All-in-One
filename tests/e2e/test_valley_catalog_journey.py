@@ -121,26 +121,75 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
     submitted_actions: list[dict] = []
 
     def create_order(route: Route, request: Request) -> None:
+        if request.method == "OPTIONS":
+            route.fulfill(status=204, headers={"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"})
+            return
         submitted_actions.append(request.post_data_json)
         route.fulfill(
             status=201,
             content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"},
             json={
                 "status": "created",
                 "resource_id": "order-e2e",
                 "message": "Pedido criado. O pagamento sera confirmado na proxima etapa.",
+                "next_step": "payment_required",
+                "payment_intent": {
+                    "amount": "99.90",
+                    "order_id": "00000000-0000-4000-8000-000000000001",
+                }
             },
         )
 
-    page.route("**/gateway/catalog/actions", create_order)
+    page.route("**/gateway/catalog/actions*", create_order)
+
+    def process_payment(route: Route, request: Request) -> None:
+        if request.method == "OPTIONS":
+            route.fulfill(status=204, headers={"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"})
+            return
+        route.fulfill(
+            status=201,
+            content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"},
+            json={
+                "status": "paid",
+                "order_id": "00000000-0000-4000-8000-000000000001",
+                "message": "Pagamento sandbox autorizado e protegido ate a conclusao do pedido.",
+            }
+        )
+
+    page.route("**/finance/escrows/hold*", process_payment)
+
+    def get_orders(route: Route, request: Request) -> None:
+        if request.method == "OPTIONS":
+            route.fulfill(status=204, headers={"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"})
+            return
+        route.fulfill(
+            status=200,
+            content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"},
+            json={
+                "data": [
+                    {
+                        "id": "order-e2e",
+                        "kind": "order",
+                        "title": unique_title,
+                        "status": "paid",
+                        "amount_brl": "99.90",
+                        "created_at": "2026-06-05T00:00:00Z",
+                    }
+                ]
+            }
+        )
+    page.route("**/gateway/consumer/orders*", get_orders)
 
     # 2. Abrir o Valley Superapp e buscar a oferta criada
     page.goto(superapp_server, timeout=60000, wait_until="domcontentloaded")
-    
+
     # Preencher latitude/longitude e buscar
     page.locator("input[placeholder='Latitude']").fill("-23.5505")
     page.locator("input[placeholder='Longitude']").fill("-46.6333")
-    
+
     # Preencher a busca textual com o titulo unico gerado
     search_input = page.locator("input[placeholder*='eletricista']")
     search_input.fill(unique_title)
@@ -193,3 +242,29 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
     published_offer = next(item for item in normalized_offers if item["title"] == unique_title)
     assert submitted_actions[0]["offer_id"] == published_offer["offer_id"]
     assert submitted_actions[0]["customer_user_id"] == buyer_id
+
+    # 4. Validar abertura do Payment Modal
+    payment_modal = page.locator(".payment-modal")
+    expect(payment_modal).to_be_visible(timeout=10000)
+    expect(payment_modal).to_contain_text("Pagamento Seguro")
+    expect(payment_modal).to_contain_text("R$ 99,90")
+
+    # 5. Clicar em Pagar com PIX
+    pay_button = payment_modal.locator("button", has_text="Pagar com PIX")
+    pay_button.click()
+    
+    # 6. Aguardar feedback de sucesso
+    payment_feedback = payment_modal.locator(".action-feedback.success")
+    expect(payment_feedback).to_be_visible(timeout=10000)
+    expect(payment_feedback).to_contain_text("Pagamento confirmado e retido com seguranca (Escrow).")
+
+    # 7. Validar abertura do Orders Drawer
+    orders_drawer = page.locator(".orders-drawer")
+    expect(orders_drawer).to_be_visible(timeout=10000)
+    expect(orders_drawer).to_contain_text("Meus Pedidos e Agendamentos")
+    
+    # Validar listagem
+    order_card = orders_drawer.locator(".order-card")
+    expect(order_card).to_have_count(1)
+    expect(order_card).to_contain_text(unique_title)
+    expect(order_card).to_contain_text("R$ 99,90")

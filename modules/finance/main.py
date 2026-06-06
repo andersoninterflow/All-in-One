@@ -96,3 +96,41 @@ async def valley_gold_balance(actor: Actor = Depends(actor_from_headers)):
         "source": "finance.valley_gold_ledger_entries",
         "derived": True,
     }
+
+@app.post("/webhooks/cash-in", status_code=200)
+async def mock_cash_in(request: Request, body: dict):
+    """
+    Mock de Webhook de Cash-in (ex: Stripe, MercadoPago, PIX).
+    Recebe um payload do provedor e deposita na carteira do usuário.
+    """
+    user_id = body.get("user_id")
+    amount = body.get("amount", 0)
+    
+    if not user_id or amount <= 0:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+        
+    return {
+        "status": "success",
+        "deposited_amount": amount,
+        "user_id": user_id,
+        "message": "Depósito mockado processado via Webhook"
+    }
+
+@app.post("/gateways/cash-out", status_code=200)
+async def mock_cash_out(actor: Actor = Depends(actor_from_headers), body: dict = Body(...)):
+    """
+    Mock de Gateway de Cash-out (ex: TED/PIX via Banco parceiro).
+    Subtrai o saldo da carteira local e chama API do banco para repassar valor real.
+    """
+    amount = body.get("amount", 0)
+    bank_account = body.get("bank_account")
+    
+    if amount <= 0 or not bank_account:
+        raise HTTPException(status_code=400, detail="Invalid withdrawal request")
+        
+    return {
+        "status": "processing",
+        "withdrawal_amount": amount,
+        "destination": bank_account,
+        "message": "Saque solicitado, aguardando liquidação bancária simulada."
+    }

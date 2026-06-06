@@ -5,6 +5,8 @@ import BookingModal from './components/BookingModal'
 import LoginModal from './components/LoginModal'
 import PaymentModal, { type PaymentIntent } from './components/PaymentModal'
 import OrdersDrawer from './components/OrdersDrawer'
+import B2BDashboard from './components/B2BDashboard'
+import LiveTracking from './components/LiveTracking'
 
 interface Offer {
   offer_id: string
@@ -74,6 +76,9 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
+
+  // View State
+  const [currentView, setCurrentView] = useState<'consumer' | 'b2b' | 'tracking'>('consumer')
 
   // Auth State
   const [auth, setAuth] = useState(getStoredAuth())
@@ -215,7 +220,9 @@ function App() {
       <header>
         <div className="logo">Valley</div>
         <nav>
-          <span>Ofertas perto de voce</span>
+          <button className="btn-link" style={{ fontWeight: currentView === 'consumer' ? 'bold' : 'normal' }} onClick={() => setCurrentView('consumer')}>Ofertas</button>
+          <button className="btn-link" style={{ fontWeight: currentView === 'b2b' ? 'bold' : 'normal' }} onClick={() => setCurrentView('b2b')}>Lojista (B2B)</button>
+          <button className="btn-link" style={{ fontWeight: currentView === 'tracking' ? 'bold' : 'normal' }} onClick={() => setCurrentView('tracking')}>GPS (WebSockets)</button>
           {auth.token ? (
             <>
               <button className="btn-link" onClick={() => setIsOrdersOpen(true)}>Meus Pedidos</button>
@@ -227,6 +234,10 @@ function App() {
         </nav>
       </header>
       
+      {currentView === 'b2b' && <B2BDashboard />}
+      {currentView === 'tracking' && <LiveTracking />}
+      
+      {currentView === 'consumer' && (
       <main className="container">
         <section className="hero">
           <h1>Encontre o que precisa</h1>
@@ -362,6 +373,7 @@ function App() {
           </div>
         )}
       </main>
+      )}
 
       <CheckoutModal
         key={`checkout-${activeIntentKey}`}

@@ -90,8 +90,16 @@ async def get_kyc_status(user_id: UUID) -> Any:
 
 @app.post("/mfa/setup")
 async def setup_mfa(body: MFASetup, request: Request):
-    # Stub para configuração de MFA
+    # Stub para configuração de MFA via SMS (Simulação Twilio)
     await telemetry.log_access(str(body.user_id), "mfa_setup_init", body.method, request.client.host)
+    
+    if body.method == "sms":
+        return {
+            "method": "sms",
+            "message": "Um código de 6 dígitos foi enviado via SMS (simulado).",
+            "status": "pending_verification"
+        }
+    
     return {
         "method": body.method,
         "secret": "JBSWY3DPEHPK3PXP", # Exemplo de segredo TOTP
@@ -101,13 +109,35 @@ async def setup_mfa(body: MFASetup, request: Request):
 
 @app.post("/mfa/verify")
 async def verify_mfa(body: MFAVerification, request: Request):
-    # Stub para verificação de MFA
-    if body.code == "123456": # Mock de validação
+    # Stub para verificação de MFA (SMS ou TOTP)
+    if body.code == "123456": # Mock de validação universal
         await telemetry.log_access(str(body.user_id), "mfa_verify", "success", request.client.host)
         return {"status": "verified"}
     
     await telemetry.log_access(str(body.user_id), "mfa_verify", "failed", request.client.host)
     raise HTTPException(status_code=401, detail="Codigo MFA invalido.")
+
+@app.post("/kyc/ocr-validate", status_code=200)
+async def kyc_ocr_validate(request: Request, body: dict = Body(...)):
+    """
+    Mock de Webhook do Google Vision (OCR) para validar documentos CNH/RG.
+    Recebe um documento e retorna o texto extraído / pontuação de autenticidade.
+    """
+    record_id = body.get("record_id")
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id obrigatorio")
+    
+    return {
+        "record_id": record_id,
+        "ocr_status": "APPROVED",
+        "extracted_data": {
+            "name": "João Silva",
+            "document_number": "12345678900",
+            "birth_date": "1990-01-01"
+        },
+        "authenticity_score": 0.98,
+        "source": "mock_google_vision"
+    }
 
 
 @app.post("/auth/login", response_model=TokenResponse)

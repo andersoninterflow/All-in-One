@@ -9,7 +9,7 @@ from typing import Any, Literal
 from urllib.parse import quote
 from uuid import UUID
 
-from fastapi import Request, HTTPException, Depends, Query
+from fastapi import Request, HTTPException, Depends, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
@@ -836,3 +836,52 @@ async def gateway_webhook_verify(request: Request):
     if not _verify_webhook_signature(body, signature):
         raise HTTPException(status_code=401, detail="Assinatura de webhook invalida.")
     return {"status": "valid", "algorithm": "hmac-sha256"}
+
+
+# --- WebSockets ---
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message)
+            except Exception:
+                pass
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/tracking/{delivery_id}")
+async def tracking_websocket(websocket: WebSocket, delivery_id: str):
+    await manager.connect(websocket)
+    try:
+        # Mocking initial tracking status
+        await websocket.send_json({"delivery_id": delivery_id, "status": "connected", "lat": -23.5505, "lng": -46.6333})
+        while True:
+            data = await websocket.receive_text()
+            # Echo back as mock update
+            await websocket.send_json({"delivery_id": delivery_id, "update": data, "type": "ping_ack"})
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        
+@app.websocket("/ws/webrtc/{session_id}")
+async def webrtc_signaling(websocket: WebSocket, session_id: str):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_json()
+            # Broadcast to others (simple mock echo for signaling)
+            for connection in manager.active_connections:
+                if connection != websocket:
+                    await connection.send_json({"session_id": session_id, "signal": data})
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)

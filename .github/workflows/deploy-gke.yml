@@ -1,0 +1,71 @@
+name: Deploy to GKE
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'modules/**'
+      - 'workers/**'
+      - 'infra/k8s/**'
+      - '.github/workflows/deploy-gke.yml'
+
+env:
+  PROJECT_ID: all-in-one-498012
+  GAR_LOCATION: southamerica-east1
+  GKE_CLUSTER: all-in-one-cluster
+  GKE_ZONE: southamerica-east1-a
+  REPOSITORY: all-in-one-repo
+
+jobs:
+  build-and-deploy:
+    name: Build, Push, and Deploy to GKE
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Configure Docker for GCP
+      run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+    - name: Build and Push Docker Images
+      run: |
+        # Usando docker-compose para buildar todos os serviços
+        # Substituiremos as tags locais para tags do Artifact Registry
+        # As imagens serão exportadas e subidas via bash
+        export REGISTRY="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}"
+        
+        SERVICES="api-hub identity business finance marketplace stock delivery services mobility erp wms tms crm health jobs property outbox-dispatcher retention-worker"
+        
+        for SERVICE in $SERVICES; do
+          echo "Building $SERVICE..."
+          docker build -t $REGISTRY/$SERVICE:latest -f modules/$SERVICE/Dockerfile . || docker build -t $REGISTRY/$SERVICE:latest -f workers/$SERVICE/Dockerfile .
+          echo "Pushing $SERVICE..."
+          docker push $REGISTRY/$SERVICE:latest
+        done
+
+    - name: Get GKE credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ env.GKE_CLUSTER }}
+        location: ${{ env.GKE_ZONE }}
+
+    - name: Apply Kubernetes Manifests
+      run: |
+        # Aplica todos os deployments na pasta infra/k8s/services
+        kubectl apply -f infra/k8s/services/
+        
+        # Opcional: Restart dos deployments para pegar a nova tag "latest"
+        SERVICES="api-hub identity business finance marketplace stock delivery services mobility erp wms tms crm health jobs property outbox-dispatcher retention-worker"
+        for SERVICE in $SERVICES; do
+          kubectl rollout restart deployment/$SERVICE || true
+        done

@@ -1,0 +1,19 @@
+databases:
+  primary_postgres:
+    dialect: postgresql
+    database: all_in_one
+    host: 127.0.0.1
+    port: 5432
+    user: all_in_one
+    password: local-development-only
+
+tools:
+  - name: execute_sql
+    database: primary_postgres
+    description: "Executes a SQL query on the primary PostgreSQL database."
+  - name: list_tables
+    database: primary_postgres
+    description: "Lists all tables in the database."
+  - name: describe_table
+    database: primary_postgres
+    description: "Describes the schema of a specific table."

@@ -52,7 +52,7 @@
   Cloud, Google AI Studio, Google Code CLI, Gemini CLI, AlloyDB e Stitch.
 - Politicas versionadas, Docker Compose, terminal VS Code, Antigravity,
   alinhamento multiagente e workflow Stitch agora exigem estado ativo.
-- MCPs Google `stitch`, `cloudrun` e `gke-oss` foram ativados no Antigravity;
+- MCPs Google `stitch` e `cloudrun` foram ativados no Antigravity;
   apenas MCPs nao Google isolados por estabilidade permanecem desativados.
 - Configuracoes locais Stitch passaram a referenciar `STITCH_API_KEY` por
   ambiente, removendo credencial literal do arquivo de configuracao Gemini.

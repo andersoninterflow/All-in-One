@@ -30,6 +30,20 @@ class FakeCatalogClient:
         timeout: float,
     ) -> FakeResponse:
         self.calls.append((url, params or {}))
+        if url.endswith("marketplace:8000/resources/orders/00000000-0000-4000-8000-000000000002"):
+            return FakeResponse(
+                200,
+                {
+                    "id": "order-completed",
+                    "user_id": "11111111-1111-4111-8111-111111111111",
+                    "status": "completed",
+                    "payload": {
+                        "store_id": "00000000-0000-4000-8000-000000000099",
+                        "business_id": "00000000-0000-4000-8000-000000000099",
+                        "offer_id": "business:catalog_offers:offer-1",
+                    },
+                },
+            )
         if url.endswith("marketplace:8000/resources/orders/00000000-0000-4000-8000-000000000001"):
             return FakeResponse(
                 200,
@@ -142,6 +156,8 @@ class FakeCatalogClient:
             "marketplace:8000/resources/orders/00000000-0000-4000-8000-000000000001/actions/pay"
         ):
             return FakeResponse(200, {"id": "resource-created", "status": "paid"})
+        if url.endswith("marketplace:8000/resources/reviews"):
+            return FakeResponse(201, {"id": "review-created", "status": "published"})
         return FakeResponse(201, {"id": "resource-created", "status": "created"})
 
 
@@ -366,3 +382,51 @@ def test_gateway_returns_partial_history_when_module_fails(monkeypatch) -> None:
     assert len(payload["failures"]) == 1
     assert payload["failures"][0]["module"] == "services"
     assert payload["failures"][0]["error"] == "RequestError"
+
+
+def test_gateway_creates_review_only_for_completed_owned_order(monkeypatch) -> None:
+    fake_client = FakeCatalogClient()
+    monkeypatch.setattr(api_hub, "client", fake_client)
+    monkeypatch.setattr(api_hub, "redis_client", None)
+    client = TestClient(api_hub.app)
+    user_id = "11111111-1111-4111-8111-111111111111"
+    token = api_hub.jwt.encode({"sub": user_id}, api_hub.JWT_SECRET, algorithm="HS256")
+
+    response = client.post(
+        "/gateway/consumer/orders/00000000-0000-4000-8000-000000000002/reviews",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "rating": 5,
+            "comment": "Entrega concluida com cuidado.",
+            "idempotency_key": "review-order-completed",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["status"] == "published"
+    review_call = fake_client.posts[-1]
+    assert review_call[0].endswith("marketplace:8000/resources/reviews")
+    assert review_call[2]["X-Idempotency-Key"] == "review-order-completed"
+    assert review_call[1]["payload"]["rating"] == 5
+    assert review_call[1]["payload"]["order_id"] == "00000000-0000-4000-8000-000000000002"
+
+
+def test_gateway_rejects_review_before_order_completion(monkeypatch) -> None:
+    fake_client = FakeCatalogClient()
+    monkeypatch.setattr(api_hub, "client", fake_client)
+    monkeypatch.setattr(api_hub, "redis_client", None)
+    client = TestClient(api_hub.app)
+    user_id = "11111111-1111-4111-8111-111111111111"
+    token = api_hub.jwt.encode({"sub": user_id}, api_hub.JWT_SECRET, algorithm="HS256")
+
+    response = client.post(
+        "/gateway/consumer/orders/00000000-0000-4000-8000-000000000001/reviews",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "rating": 4,
+            "idempotency_key": "review-order-created",
+        },
+    )
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "A avaliacao fica disponivel apos a conclusao do pedido."

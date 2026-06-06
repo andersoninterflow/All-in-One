@@ -347,6 +347,16 @@ Viabilizar contratação de serviços com agenda, aceite, execução e avaliaç�
 - Permitir evidência de execução.
 - Permitir avaliação.
 
+### Incremento implementado em 6 de junho de 2026
+
+- O histórico do consumidor oferece avaliação para pedidos entregues ou
+  concluídos.
+- O API Hub valida titularidade e estado do pedido antes da publicação.
+- A avaliação registra nota de 1 a 5, comentário opcional, moderação básica
+  anti-burla, idempotência, auditoria e evento outbox
+  `valley.review.created`.
+- A persistência PostgreSQL garante uma avaliação por consumidor e pedido.
+
 ### Critério de aceite
 
 Usuário deve contratar um serviço com horário definido, pagar, acompanhar e avaliar.

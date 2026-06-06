@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import ReviewModal from './ReviewModal'
 
 interface OrderItem {
   id: string
@@ -35,6 +36,8 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
   const [items, setItems] = useState<OrderItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [reviewOrder, setReviewOrder] = useState<OrderItem | null>(null)
+  const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch(`${API_HUB_URL}/gateway/consumer/orders`, {
@@ -55,9 +58,32 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
       })
   }, [token])
 
+  const submitReview = async (rating: number, comment: string) => {
+    if (!reviewOrder) throw new Error('Selecione um pedido concluido.')
+    const response = await fetch(`${API_HUB_URL}/gateway/consumer/orders/${reviewOrder.id}/reviews`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        rating,
+        comment: comment || null,
+        idempotency_key: `review-${reviewOrder.id}-${window.crypto.randomUUID()}`,
+      }),
+    })
+    const payload = await response.json()
+    if (!response.ok) {
+      throw new Error(payload.detail || 'Nao foi possivel publicar a avaliacao.')
+    }
+    setReviewedOrders(current => new Set(current).add(reviewOrder.id))
+    return payload
+  }
+
   return (
-    <div className="drawer-overlay" onClick={onClose} role="presentation">
-      <div className="drawer-content orders-drawer" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+    <>
+      <div className="drawer-overlay" onClick={onClose} role="presentation">
+        <div className="drawer-content orders-drawer" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="drawer-title">
         <header className="drawer-header">
           <h2 id="drawer-title">Meus Pedidos e Agendamentos</h2>
           <button className="close-btn" onClick={onClose} aria-label="Fechar">&times;</button>
@@ -85,6 +111,15 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
                     <p>Status: {statusMap[item.status] || item.status}</p>
                     {item.amount_brl && <p className="price">Valor: R$ {Number(item.amount_brl).toFixed(2).replace('.', ',')}</p>}
                     {item.scheduled_at && <p className="schedule">Agendado para: {new Date(item.scheduled_at).toLocaleString()}</p>}
+                    {['delivered', 'completed'].includes(item.status) && (
+                      <button
+                        className="btn-secondary review-action"
+                        disabled={reviewedOrders.has(item.id)}
+                        onClick={() => setReviewOrder(item)}
+                      >
+                        {reviewedOrders.has(item.id) ? 'Avaliacao enviada' : 'Avaliar'}
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}
@@ -92,7 +127,15 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
           )}
         </div>
       </div>
-    </div>
+      </div>
+      {reviewOrder && (
+        <ReviewModal
+          orderTitle={reviewOrder.title}
+          onClose={() => setReviewOrder(null)}
+          onSubmit={submitReview}
+        />
+      )}
+    </>
   )
 }
 

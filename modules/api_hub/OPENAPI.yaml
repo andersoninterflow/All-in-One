@@ -155,6 +155,39 @@ paths:
       responses:
         '200':
           description: Gateway operational status
+  /gateway/catalog/offers:
+    get:
+      security: []
+      responses:
+        '200':
+          description: Catalogo Valley agregado e filtrado
+  /gateway/consumer/orders:
+    get:
+      responses:
+        '200':
+          description: Historico normalizado do consumidor autenticado
+  /gateway/consumer/orders/{order_id}/reviews:
+    post:
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumerReviewRequest'
+      responses:
+        '201':
+          description: Avaliacao publicada para pedido concluido
+        '403':
+          description: Pedido pertence a outro consumidor
+        '409':
+          description: Pedido ainda nao foi concluido
   /gateway/api-key/check:
     get:
       security: []
@@ -253,3 +286,20 @@ components:
         payload:
           type: object
           additionalProperties: true
+    ConsumerReviewRequest:
+      type: object
+      required: [rating, idempotency_key]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type:
+            - string
+            - 'null'
+          maxLength: 1000
+        idempotency_key:
+          type: string
+          minLength: 8
+          maxLength: 120

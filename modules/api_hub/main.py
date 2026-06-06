@@ -104,6 +104,12 @@ class CatalogPaymentRequest(BaseModel):
     method: Literal["pix_sandbox"] = "pix_sandbox"
 
 
+class ConsumerReviewRequest(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    comment: str | None = Field(default=None, max_length=1000)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
 def _catalog_offer_key(offer: dict[str, Any]) -> str:
     return str(
         offer.get("offer_id")
@@ -570,6 +576,64 @@ async def get_consumer_orders(
         "partial": bool(failures),
         "failures": failures,
     }
+
+
+@app.post(
+    "/gateway/consumer/orders/{order_id}/reviews",
+    status_code=201,
+    dependencies=[Depends(rate_limiter)],
+)
+async def create_consumer_review(
+    order_id: UUID,
+    body: ConsumerReviewRequest,
+    token_payload: dict[str, Any] = Depends(validate_catalog_action_token),
+) -> dict[str, Any]:
+    """Registra uma avaliacao imutavel somente apos entrega ou conclusao."""
+    user_id = str(token_payload.get("sub") or "")
+    headers = {"X-Actor-User-Id": user_id}
+    order = await _service_json(
+        "GET",
+        f"{SERVICES['marketplace']}/resources/orders/{order_id}",
+        headers=headers,
+    )
+    if not isinstance(order, dict) or str(order.get("user_id") or "") != user_id:
+        raise HTTPException(status_code=403, detail="Pedido nao pertence ao consumidor autenticado.")
+    if order.get("status") not in {"delivered", "completed"}:
+        raise HTTPException(status_code=409, detail="A avaliacao fica disponivel apos a conclusao do pedido.")
+
+    payload = order.get("payload") if isinstance(order.get("payload"), dict) else {}
+    review = await _service_json(
+        "POST",
+        f"{SERVICES['marketplace']}/resources/reviews",
+        headers={
+            **headers,
+            "X-Idempotency-Key": body.idempotency_key,
+        },
+        payload={
+            "user_id": user_id,
+            "entity_id": payload.get("store_id") or payload.get("business_id"),
+            "payload": {
+                "order_id": str(order_id),
+                "store_id": payload.get("store_id"),
+                "business_id": payload.get("business_id"),
+                "offer_id": payload.get("offer_id") or payload.get("valley_offer_id"),
+                "rating": body.rating,
+                "comment": body.comment,
+                "moderation_status": "published",
+            },
+        },
+    )
+    if not isinstance(review, dict):
+        raise HTTPException(status_code=502, detail="O Marketplace retornou uma avaliacao invalida.")
+    return {
+        "id": str(review.get("id") or ""),
+        "order_id": str(order_id),
+        "rating": body.rating,
+        "comment": body.comment,
+        "status": str(review.get("status") or "published"),
+        "message": "Avaliacao publicada. Obrigado por compartilhar sua experiencia.",
+    }
+
 
 @app.post("/gateway/catalog/actions", status_code=201, dependencies=[Depends(rate_limiter)])
 async def create_catalog_action(

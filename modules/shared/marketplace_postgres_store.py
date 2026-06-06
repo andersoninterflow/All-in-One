@@ -18,6 +18,7 @@ TABLES = {
     "stores": "marketplace.stores",
     "products": "marketplace.products",
     "orders": "marketplace.orders",
+    "reviews": "marketplace.reviews",
     "pepita_grants": "marketplace.pepita_grants",
 }
 SOFT_DELETABLE = frozenset({"stores", "products", "orders"})
@@ -153,6 +154,28 @@ class MarketplacePostgresStore:
                     resource_id, user_id, payload.get("store_id"), payload.get("escrow_id"), payload.get("total_brl", 0),
                     payload.get("commission_brl", 0), status, metadata, actor, actor, idempotency_key,
                     payload.get("offer_id"), payload.get("company_id")
+                ),
+            ).fetchone()
+        if resource_type == "reviews":
+            return connection.execute(
+                """INSERT INTO marketplace.reviews
+                   (id, user_id, order_id, store_id, offer_id, rating, comment, moderation_status,
+                    status, metadata, created_by, updated_by, idempotency_key)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+                (
+                    resource_id,
+                    user_id,
+                    payload["order_id"],
+                    payload.get("store_id"),
+                    payload.get("offer_id"),
+                    payload["rating"],
+                    payload.get("comment"),
+                    payload.get("moderation_status", "published"),
+                    status,
+                    metadata,
+                    actor,
+                    actor,
+                    idempotency_key,
                 ),
             ).fetchone()
         if resource_type == "pepita_grants":

@@ -247,6 +247,12 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
             "cancel": Transition(frozenset({"created", "paid"}), "cancelled", event="marketplace.order.cancelled"),
         },
     ),
+    ("marketplace", "reviews"): ResourceRule(
+        ("order_id", "rating"),
+        initial_status="published",
+        protected_content=True,
+        immutable=True,
+    ),
     ("stock", "suppliers"): ResourceRule(
         ("company_id", "company_status"), initial_status="pending_validation", transitions=review_flow("stock.supplier")
     ),
@@ -394,7 +400,15 @@ def check_payload(rule: ResourceRule, payload: dict[str, Any]) -> None:
     if missing:
         raise HTTPException(status_code=422, detail=f"Campos obrigatorios ausentes: {', '.join(missing)}.")
     if rule.protected_content:
-        material = str({key: value for key, value in payload.items() if key not in PUBLIC_LOCATION_FIELDS})
+        material = str(
+            {
+                key: value
+                for key, value in payload.items()
+                if key not in PUBLIC_LOCATION_FIELDS
+                and key != "id"
+                and not key.endswith("_id")
+            }
+        )
         if any(pattern.search(material) for pattern in OFF_PLATFORM_PATTERNS):
             raise HTTPException(status_code=422, detail="Conteudo bloqueado pela politica anti-burla.")
     for field in rule.monetary_fields:
@@ -422,6 +436,7 @@ def event_for_create(module: str, resource_type: str) -> str:
         ("business", "companies"): "business.company.created",
         ("finance", "valley_gold_ledger_entries"): "valley.gold.ledger.posted",
         ("marketplace", "orders"): "marketplace.order.created",
+        ("marketplace", "reviews"): "valley.review.created",
         ("marketplace", "pepita_grants"): "valley.pepitas.granted",
         ("stock", "discount_quotes"): "valley.stock.discount.quoted",
         ("delivery", "delivery_requests"): "delivery.request.created",

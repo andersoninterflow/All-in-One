@@ -174,7 +174,7 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
                         "id": "order-e2e",
                         "kind": "order",
                         "title": unique_title,
-                        "status": "paid",
+                        "status": "completed",
                         "amount_brl": "99.90",
                         "created_at": "2026-06-05T00:00:00Z",
                     }
@@ -182,6 +182,27 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
             }
         )
     page.route("**/gateway/consumer/orders*", get_orders)
+    submitted_reviews: list[dict] = []
+
+    def create_review(route: Route, request: Request) -> None:
+        if request.method == "OPTIONS":
+            route.fulfill(status=204, headers={"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"})
+            return
+        submitted_reviews.append(request.post_data_json)
+        route.fulfill(
+            status=201,
+            content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"},
+            json={
+                "id": "review-e2e",
+                "order_id": "order-e2e",
+                "rating": 5,
+                "status": "published",
+                "message": "Avaliacao publicada. Obrigado por compartilhar sua experiencia.",
+            },
+        )
+
+    page.route("**/gateway/consumer/orders/order-e2e/reviews*", create_review)
 
     # 2. Abrir o Valley Superapp e buscar a oferta criada
     page.goto(superapp_server, timeout=60000, wait_until="domcontentloaded")
@@ -268,3 +289,16 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
     expect(order_card).to_have_count(1)
     expect(order_card).to_contain_text(unique_title)
     expect(order_card).to_contain_text("R$ 99,90")
+
+    # 8. Avaliar o pedido concluido e confirmar o envio ao API Hub
+    order_card.get_by_role("button", name="Avaliar").click()
+    review_modal = page.locator(".review-modal")
+    expect(review_modal).to_be_visible()
+    review_modal.get_by_role("button", name="5 de 5").click()
+    review_modal.locator("textarea").fill("Experiencia concluida com sucesso.")
+    review_modal.get_by_role("button", name="Publicar avaliacao").click()
+    expect(review_modal.get_by_role("status")).to_contain_text("Avaliacao publicada")
+    assert len(submitted_reviews) == 1
+    assert submitted_reviews[0]["rating"] == 5
+    assert submitted_reviews[0]["comment"] == "Experiencia concluida com sucesso."
+    assert submitted_reviews[0]["idempotency_key"].startswith("review-order-e2e-")

@@ -7,6 +7,7 @@
 - `marketplace.order.created`
 - `marketplace.order.paid`
 - `marketplace.order.delivered`
+- `valley.review.created`
 - `valley.pepitas.granted`
 
         Eventos carregam `event_id`, `occurred_at`, `actor_user_id`, `user_id`,

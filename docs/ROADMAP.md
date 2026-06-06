@@ -17,6 +17,8 @@ Plano operacional vivo: consulte `docs/EXECUTION_PLAN.md` para a ordem mandatari
 - Orquestracao Google Stitch declarativa com um projeto visual por
   microservico e telas Jobs/Business/User especializadas.
 - Docker, Kubernetes inicial, CI/CD e documentacao operacional.
+- Jornada comercial Valley com oferta, compra, pagamento sandbox, historico e
+  avaliacao pós-conclusao auditavel no Marketplace.
 
 ## Proximos incrementos bloqueadores para beta
 
@@ -29,7 +31,8 @@ Plano operacional vivo: consulte `docs/EXECUTION_PLAN.md` para a ordem mandatari
 4. Integrar payment provider, fiscal brasileiro e conciliacao em sandbox.
 5. Sincronizar os projetos Stitch com credencial rotacionada, implementar as
    jornadas web/mobile dos seis apps e testes E2E.
-6. Entregar moderacao OCR/IA, notificacoes e observabilidade.
+6. Expandir a moderacao basica das avaliacoes para OCR/IA e entregar
+   notificacoes e observabilidade comercial.
 
 ## Bloqueadores para producao
 

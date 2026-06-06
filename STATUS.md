@@ -1,5 +1,28 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-06 Avaliacao Pos-Conclusao Valley
+
+### Concluido neste ciclo
+
+- Criado o contrato imutavel `marketplace.reviews`, com nota de 1 a 5,
+  comentario opcional e unicidade por consumidor/pedido.
+- O endpoint autenticado
+  `POST /gateway/consumer/orders/{order_id}/reviews` valida titularidade e
+  permite avaliacao somente para pedido entregue ou concluido.
+- O Marketplace registra auditoria e evento outbox `valley.review.created`.
+- O historico Valley ganhou acao `Avaliar`, modal acessivel, feedback de envio e
+  bloqueio visual apos publicacao.
+- A moderacao basica reutiliza a politica anti-burla para bloquear contatos,
+  links e tentativa de desvio da plataforma.
+- Migration PostgreSQL 021, OpenAPI, contrato, eventos, roadmap, diretriz e
+  matriz de rastreabilidade foram atualizados.
+
+### Proximos passos naturais
+
+- Unificar avaliacoes de pedidos, servicos e consultas em uma visao publica.
+- Criar suporte/disputa por pedido e notificacoes de mudanca de status.
+- Alimentar CRM/BI com conversao, ticket, conclusao e nota media.
+
 ## STATUS OPERACIONAL - 2026-06-06 Reativacao Google, Stitch e AlloyDB
 
 ### Concluido neste ciclo

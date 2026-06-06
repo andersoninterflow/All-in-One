@@ -11,6 +11,7 @@ necessarios para producao.
 | RBAC, ABAC e alcadas | `permissions.*` na migration 002, `modules/permissions/` |
 | Wallet, ledger, escrow e NFC | `finance.*` e `identity.led_cards` na migration 002 |
 | Riders, Marketplace, Stock, Delivery, Services e Mobility | Migration 003 e respectivos modulos |
+| Avaliacao pos-conclusao no Valley | Migration 021, `POST /gateway/consumer/orders/{order_id}/reviews`, `ReviewModal.tsx`, evento `valley.review.created` e E2E comercial |
 | ERP, WMS, TMS, CRM, BPM, GED, HR, Health, Vision, Legal e Property | Migration 004 e modulos |
 | Auditoria, eventos, anti-burla e API Hub | Migration 005, runtime comum e documentacao |
 | Curriculo, CTPS Digital PDF, vagas e acesso Business | Migrations 006/007, `modules/jobs/`, `modules/shared/private_documents.py`, `modules/shared/jobs_postgres_store.py`, `docs/JOBS_CTSP_DIGITAL.md` |

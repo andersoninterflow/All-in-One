@@ -104,6 +104,14 @@ class CatalogPaymentRequest(BaseModel):
     method: Literal["pix_sandbox"] = "pix_sandbox"
 
 
+class SupportCaseRequest(BaseModel):
+    kind: Literal["support", "dispute"]
+    subject: str | None = Field(default=None, max_length=200)
+    message: str = Field(min_length=5, max_length=1000)
+    desired_resolution: str | None = Field(default=None, max_length=500)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
 class ConsumerReviewRequest(BaseModel):
     rating: int = Field(ge=1, le=5)
     comment: str | None = Field(default=None, max_length=1000)
@@ -579,6 +587,60 @@ async def get_consumer_orders(
 
 
 @app.post(
+    "/gateway/consumer/orders/{order_id}/support",
+    status_code=201,
+    dependencies=[Depends(rate_limiter)],
+)
+async def create_order_support_case(
+    order_id: UUID,
+    body: SupportCaseRequest,
+    token_payload: dict[str, Any] = Depends(validate_catalog_action_token),
+) -> dict[str, Any]:
+    user_id = str(token_payload.get("sub") or "")
+    headers = {"X-Actor-User-Id": user_id}
+    order = await _service_json(
+        "GET",
+        f"{SERVICES['marketplace']}/resources/orders/{order_id}",
+        headers=headers,
+    )
+    if not isinstance(order, dict) or str(order.get("user_id") or "") != user_id:
+        raise HTTPException(status_code=403, detail="Pedido nao pertence ao consumidor autenticado.")
+    if order.get("status") not in {"paid", "accepted", "in_progress", "delivered", "completed"}:
+        raise HTTPException(status_code=409, detail="Suporte fica disponivel apos a confirmacao do pedido.")
+
+    payload = order.get("payload") if isinstance(order.get("payload"), dict) else {}
+    support_case = await _service_json(
+        "POST",
+        f"{SERVICES['marketplace']}/valley/orders/{order_id}/support",
+        headers={
+            **headers,
+            "X-Idempotency-Key": body.idempotency_key,
+        },
+        payload={
+            "kind": body.kind,
+            "subject": body.subject,
+            "message": body.message,
+            "desired_resolution": body.desired_resolution,
+            "idempotency_key": body.idempotency_key,
+        },
+    )
+    if not isinstance(support_case, dict):
+        raise HTTPException(status_code=502, detail="O Marketplace retornou um caso invalido.")
+    return {
+        "id": str(support_case.get("id") or ""),
+        "order_id": str(order_id),
+        "kind": body.kind,
+        "status": str(support_case.get("status") or "open"),
+        "message": str(support_case.get("message") or "Caso registrado."),
+        "support_context": {
+            "offer_id": payload.get("offer_id") or payload.get("valley_offer_id"),
+            "store_id": payload.get("store_id"),
+            "company_id": payload.get("company_id"),
+        },
+    }
+
+
+@app.post(
     "/gateway/consumer/orders/{order_id}/reviews",
     status_code=201,
     dependencies=[Depends(rate_limiter)],
@@ -632,6 +694,38 @@ async def create_consumer_review(
         "comment": body.comment,
         "status": str(review.get("status") or "published"),
         "message": "Avaliacao publicada. Obrigado por compartilhar sua experiencia.",
+    }
+
+
+@app.get("/gateway/insights/commercial", dependencies=[Depends(rate_limiter)])
+async def commercial_insights() -> dict[str, Any]:
+    marketplace = await _service_json(
+        "GET",
+        f"{SERVICES['marketplace']}/valley/insights/commercial",
+        headers={"X-Actor-User-Id": str(UUID(int=0))},
+    )
+    crm = await _service_json(
+        "GET",
+        f"{SERVICES['crm']}/status",
+        headers={"X-Actor-User-Id": str(UUID(int=1)), "X-Actor-Roles": "auditor"},
+    )
+    bi = await _service_json(
+        "GET",
+        f"{SERVICES['bi']}/status",
+        headers={"X-Actor-User-Id": str(UUID(int=2)), "X-Actor-Roles": "auditor"},
+    )
+    if not isinstance(marketplace, dict):
+        raise HTTPException(status_code=502, detail="Resumo comercial indisponivel no Marketplace.")
+    if not isinstance(crm, dict) or not isinstance(bi, dict):
+        raise HTTPException(status_code=502, detail="Resumo comercial indisponivel nos modulos CRM/BI.")
+    return {
+        **marketplace,
+        "crm_records": crm.get("records", 0),
+        "crm_audit_events": crm.get("audit_events", 0),
+        "crm_outbox_events": crm.get("outbox_events", 0),
+        "bi_records": bi.get("records", 0),
+        "bi_audit_events": bi.get("audit_events", 0),
+        "bi_outbox_events": bi.get("outbox_events", 0),
     }
 
 

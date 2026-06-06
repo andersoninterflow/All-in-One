@@ -188,6 +188,33 @@ paths:
           description: Pedido pertence a outro consumidor
         '409':
           description: Pedido ainda nao foi concluido
+  /gateway/consumer/orders/{order_id}/support:
+    post:
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportCaseRequest'
+      responses:
+        '201':
+          description: Caso de suporte ou disputa registrado
+        '403':
+          description: Pedido pertence a outro consumidor
+        '409':
+          description: Pedido ainda nao permite suporte
+  /gateway/insights/commercial:
+    get:
+      responses:
+        '200':
+          description: Resumo comercial para CRM e BI
   /gateway/api-key/check:
     get:
       security: []
@@ -299,6 +326,27 @@ components:
             - string
             - 'null'
           maxLength: 1000
+        idempotency_key:
+          type: string
+          minLength: 8
+          maxLength: 120
+    SupportCaseRequest:
+      type: object
+      required: [kind, message, idempotency_key]
+      properties:
+        kind:
+          type: string
+          enum: [support, dispute]
+        subject:
+          type: string
+          maxLength: 200
+        message:
+          type: string
+          minLength: 5
+          maxLength: 1000
+        desired_resolution:
+          type: string
+          maxLength: 500
         idempotency_key:
           type: string
           minLength: 8

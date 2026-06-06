@@ -518,6 +518,9 @@ textarea.neo-input {
 .order-header .date { font-size: 13px; color: #536159; }
 .order-details { font-size: 14px; color: #17211c; display: flex; flex-direction: column; gap: 4px; }
 .review-action { align-self: flex-start; margin-top: 8px; }
+.support-kind { display: flex; gap: 8px; margin: 12px 0 16px; }
+.support-kind button { padding: 10px 12px; border: 2px solid #17211c; border-radius: 6px; background: #fff; font-weight: 700; cursor: pointer; }
+.support-kind button.selected { background: #c48700; color: #fff; border-color: #c48700; }
 .rating-field { border: 0; padding: 0; margin: 18px 0; }
 .rating-field legend { font-weight: 700; margin-bottom: 8px; }
 .rating-options { display: grid; grid-template-columns: repeat(5, minmax(40px, 1fr)); gap: 8px; }

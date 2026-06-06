@@ -346,6 +346,7 @@ Viabilizar contratação de serviços com agenda, aceite, execução e avaliaç�
 - Permitir pagamento seguro/escrow sandbox.
 - Permitir evidência de execução.
 - Permitir avaliação.
+- Permitir abertura de suporte ou disputa por pedido com rastreio e retorno.
 
 ### Incremento implementado em 6 de junho de 2026
 
@@ -356,6 +357,8 @@ Viabilizar contratação de serviços com agenda, aceite, execução e avaliaç�
   anti-burla, idempotência, auditoria e evento outbox
   `valley.review.created`.
 - A persistência PostgreSQL garante uma avaliação por consumidor e pedido.
+- O suporte/disputa registra `marketplace.dispute.created` ou
+  `support.ticket.created`, com visibilidade comercial em CRM/BI.
 
 ### Critério de aceite
 

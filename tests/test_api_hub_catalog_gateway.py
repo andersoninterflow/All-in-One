@@ -58,6 +58,26 @@ class FakeCatalogClient:
                     },
                 },
             )
+        if url.endswith("crm:8000/status"):
+            return FakeResponse(200, {"records": 3, "audit_events": 1, "outbox_events": 1})
+        if url.endswith("bi:8000/status"):
+            return FakeResponse(200, {"records": 2, "audit_events": 1, "outbox_events": 1})
+        if url.endswith("marketplace:8000/valley/insights/commercial"):
+            return FakeResponse(
+                200,
+                {
+                    "orders_total": 2,
+                    "orders_paid": 1,
+                    "orders_completed": 1,
+                    "reviews_total": 1,
+                    "average_rating": 5.0,
+                    "support_cases_total": 1,
+                    "support_cases_open": 1,
+                    "support_cases_resolved": 0,
+                    "conversion_rate_percent": 50.0,
+                    "source": "marketplace.commercial_insights",
+                },
+            )
         if url.endswith("marketplace:8000/resources/orders"):
             return FakeResponse(
                 200,
@@ -158,6 +178,8 @@ class FakeCatalogClient:
             return FakeResponse(200, {"id": "resource-created", "status": "paid"})
         if url.endswith("marketplace:8000/resources/reviews"):
             return FakeResponse(201, {"id": "review-created", "status": "published"})
+        if url.endswith("marketplace:8000/valley/orders/00000000-0000-4000-8000-000000000002/support"):
+            return FakeResponse(201, {"id": "support-created", "status": "open", "message": "Caso registrado."})
         return FakeResponse(201, {"id": "resource-created", "status": "created"})
 
 
@@ -430,3 +452,49 @@ def test_gateway_rejects_review_before_order_completion(monkeypatch) -> None:
 
     assert response.status_code == 409
     assert response.json()["detail"] == "A avaliacao fica disponivel apos a conclusao do pedido."
+
+
+def test_gateway_creates_support_case_for_owned_paid_order(monkeypatch) -> None:
+    fake_client = FakeCatalogClient()
+    monkeypatch.setattr(api_hub, "client", fake_client)
+    monkeypatch.setattr(api_hub, "redis_client", None)
+    client = TestClient(api_hub.app)
+    user_id = "11111111-1111-4111-8111-111111111111"
+    token = api_hub.jwt.encode({"sub": user_id}, api_hub.JWT_SECRET, algorithm="HS256")
+
+    response = client.post(
+        "/gateway/consumer/orders/00000000-0000-4000-8000-000000000002/support",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "kind": "support",
+            "subject": "Atraso na entrega",
+            "message": "Preciso de uma atualizacao do pedido.",
+            "desired_resolution": "Contato do fornecedor.",
+            "idempotency_key": "support-order-completed",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["kind"] == "support"
+    assert response.json()["status"] == "open"
+    support_call = fake_client.posts[-1]
+    assert support_call[0].endswith("marketplace:8000/valley/orders/00000000-0000-4000-8000-000000000002/support")
+    assert support_call[2]["X-Idempotency-Key"] == "support-order-completed"
+    assert support_call[1]["kind"] == "support"
+
+
+def test_gateway_returns_commercial_insights(monkeypatch) -> None:
+    fake_client = FakeCatalogClient()
+    monkeypatch.setattr(api_hub, "client", fake_client)
+    monkeypatch.setattr(api_hub, "redis_client", None)
+    client = TestClient(api_hub.app)
+
+    response = client.get("/gateway/insights/commercial")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["orders_total"] == 2
+    assert payload["reviews_total"] == 1
+    assert payload["support_cases_total"] == 1
+    assert payload["crm_records"] == 3
+    assert payload["bi_records"] == 2

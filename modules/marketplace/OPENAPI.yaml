@@ -149,6 +149,33 @@ paths:
       responses:
         '200':
           description: Transactional outbox domain events
+  /valley/orders/{order_id}/support:
+    post:
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportCaseRequest'
+      responses:
+        '201':
+          description: Support or dispute case created
+        '403':
+          description: Order does not belong to the authenticated customer
+        '409':
+          description: Order is not eligible for support yet
+  /valley/insights/commercial:
+    get:
+      responses:
+        '200':
+          description: Commercial metrics summary
 components:
   securitySchemes:
     bearerAuth:
@@ -210,3 +237,18 @@ components:
         payload:
           type: object
           additionalProperties: true
+    SupportCaseRequest:
+      type: object
+      required: [kind, message, idempotency_key]
+      properties:
+        kind:
+          type: string
+          enum: [support, dispute]
+        subject:
+          type: string
+        message:
+          type: string
+        desired_resolution:
+          type: string
+        idempotency_key:
+          type: string

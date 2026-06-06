@@ -183,6 +183,7 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
         )
     page.route("**/gateway/consumer/orders*", get_orders)
     submitted_reviews: list[dict] = []
+    submitted_support_cases: list[dict] = []
 
     def create_review(route: Route, request: Request) -> None:
         if request.method == "OPTIONS":
@@ -203,6 +204,26 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
         )
 
     page.route("**/gateway/consumer/orders/order-e2e/reviews*", create_review)
+
+    def create_support(route: Route, request: Request) -> None:
+        if request.method == "OPTIONS":
+            route.fulfill(status=204, headers={"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"})
+            return
+        submitted_support_cases.append(request.post_data_json)
+        route.fulfill(
+            status=201,
+            content_type="application/json",
+            headers={"Access-Control-Allow-Origin": "*"},
+            json={
+                "id": "support-e2e",
+                "order_id": "order-e2e",
+                "kind": "support",
+                "status": "open",
+                "message": "Caso registrado. Nossa equipe acompanha o retorno.",
+            },
+        )
+
+    page.route("**/gateway/consumer/orders/order-e2e/support*", create_support)
 
     # 2. Abrir o Valley Superapp e buscar a oferta criada
     page.goto(superapp_server, timeout=60000, wait_until="domcontentloaded")
@@ -302,3 +323,17 @@ def test_business_offer_appears_in_valley_and_triggers_checkout(page: Page, supe
     assert submitted_reviews[0]["rating"] == 5
     assert submitted_reviews[0]["comment"] == "Experiencia concluida com sucesso."
     assert submitted_reviews[0]["idempotency_key"].startswith("review-order-e2e-")
+    review_modal.locator(".actions").get_by_role("button", name="Fechar").click()
+
+    order_card.get_by_role("button", name="Abrir suporte").click()
+    support_modal = page.locator(".support-modal")
+    expect(support_modal).to_be_visible()
+    support_modal.get_by_role("button", name="Disputa").click()
+    support_modal.locator("#support-subject").fill("Atraso na entrega")
+    support_modal.locator("#support-message").fill("Preciso de uma atualizacao do pedido.")
+    support_modal.locator("#support-resolution").fill("Contato do fornecedor.")
+    support_modal.get_by_role("button", name="Registrar caso").click()
+    expect(support_modal.get_by_role("status")).to_contain_text("Caso registrado")
+    assert len(submitted_support_cases) == 1
+    assert submitted_support_cases[0]["kind"] == "dispute"
+    assert submitted_support_cases[0]["subject"] == "Atraso na entrega"

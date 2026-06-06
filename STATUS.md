@@ -1,5 +1,26 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-06 Suporte, Disputa e Metrics CRM/BI
+
+### Concluido neste ciclo
+
+- Criado o recurso `marketplace.disputes` para registrar suporte ou disputa
+  vinculada ao pedido com `case_type`, mensagem e resolucao desejada.
+- O Marketplace passou a expor `POST /valley/orders/{order_id}/support` e
+  `GET /valley/insights/commercial`.
+- O API Hub passou a orquestrar a abertura de suporte/disputa e consolidar
+  indicadores comerciais com dados do Marketplace, CRM e BI.
+- O Valley ganhou modal de suporte/disputa dentro de `Meus Pedidos`.
+- O painel B2B passou a ler indicadores comerciais vivos em vez de cards
+  estaticos.
+- A jornada E2E agora cobre compra, avaliacao e abertura de suporte/disputa.
+
+### Proximos passos naturais
+
+- Adicionar resolucao/fechamento de disputas no fluxo operacional do Business.
+- Espelhar os indicadores comerciais em BI com series historicas e filtros.
+- Integrar notificacoes de cambio de status para suporte e disputa.
+
 ## STATUS OPERACIONAL - 2026-06-06 Avaliacao Pos-Conclusao Valley
 
 ### Concluido neste ciclo

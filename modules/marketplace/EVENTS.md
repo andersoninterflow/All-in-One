@@ -7,6 +7,7 @@
 - `marketplace.order.created`
 - `marketplace.order.paid`
 - `marketplace.order.delivered`
+- `marketplace.dispute.created`
 - `valley.review.created`
 - `valley.pepitas.granted`
 

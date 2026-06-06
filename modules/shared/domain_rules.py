@@ -253,6 +253,16 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         protected_content=True,
         immutable=True,
     ),
+    ("marketplace", "disputes"): ResourceRule(
+        ("order_id", "case_type", "message"),
+        initial_status="open",
+        protected_content=True,
+        transitions={
+            "triage": Transition(frozenset({"open"}), "under_review", APPROVER_ROLES, True, "support.ticket.triaged"),
+            "resolve": Transition(frozenset({"open", "under_review"}), "resolved", APPROVER_ROLES, True, "support.ticket.resolved"),
+            "close": Transition(frozenset({"open", "under_review", "resolved"}), "closed", APPROVER_ROLES, True, "support.ticket.closed"),
+        },
+    ),
     ("stock", "suppliers"): ResourceRule(
         ("company_id", "company_status"), initial_status="pending_validation", transitions=review_flow("stock.supplier")
     ),
@@ -437,6 +447,7 @@ def event_for_create(module: str, resource_type: str) -> str:
         ("finance", "valley_gold_ledger_entries"): "valley.gold.ledger.posted",
         ("marketplace", "orders"): "marketplace.order.created",
         ("marketplace", "reviews"): "valley.review.created",
+        ("marketplace", "disputes"): "support.ticket.created",
         ("marketplace", "pepita_grants"): "valley.pepitas.granted",
         ("stock", "discount_quotes"): "valley.stock.discount.quoted",
         ("delivery", "delivery_requests"): "delivery.request.created",

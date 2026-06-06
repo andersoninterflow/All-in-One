@@ -50,6 +50,7 @@ CUSTOMIZED_ARTIFACTS = {
     "modules/api_hub/main.py",
     "modules/erp/main.py",
     "modules/services/main.py",
+    "modules/marketplace/main.py",
     # Dockerfiles copiam o pacote completo do modulo para preservar imports locais.
     "modules/identity/Dockerfile",
     "modules/finance/Dockerfile",
@@ -59,6 +60,7 @@ CUSTOMIZED_ARTIFACTS = {
     "modules/finance/EVENTS.md",
     "contracts/finance.md",
     "modules/api_hub/OPENAPI.yaml",
+    "modules/marketplace/OPENAPI.yaml",
     # Apps Valley ja possuem estado operacional proprio alem do scaffold inicial.
     "apps/valley/README.md",
     "apps/valley/STATUS.md",

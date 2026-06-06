@@ -19,6 +19,7 @@ TABLES = {
     "products": "marketplace.products",
     "orders": "marketplace.orders",
     "reviews": "marketplace.reviews",
+    "disputes": "marketplace.disputes",
     "pepita_grants": "marketplace.pepita_grants",
 }
 SOFT_DELETABLE = frozenset({"stores", "products", "orders"})
@@ -178,6 +179,30 @@ class MarketplacePostgresStore:
                     idempotency_key,
                 ),
             ).fetchone()
+        if resource_type == "disputes":
+            return connection.execute(
+                """INSERT INTO marketplace.disputes
+                   (id, user_id, order_id, store_id, company_id, offer_id, case_type, subject, message,
+                    desired_resolution, status, metadata, created_by, updated_by, idempotency_key)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+                (
+                    resource_id,
+                    user_id,
+                    payload["order_id"],
+                    payload.get("store_id"),
+                    payload.get("company_id"),
+                    payload.get("offer_id"),
+                    payload["case_type"],
+                    payload.get("subject"),
+                    payload["message"],
+                    payload.get("desired_resolution"),
+                    status,
+                    metadata,
+                    actor,
+                    actor,
+                    idempotency_key,
+                ),
+            ).fetchone()
         if resource_type == "pepita_grants":
             return connection.execute(
                 """INSERT INTO marketplace.pepita_grants
@@ -251,6 +276,12 @@ class MarketplacePostgresStore:
         if resource_type == "orders":
             return connection.execute(
                 """UPDATE marketplace.orders SET status = %s, metadata = %s, updated_by = %s, updated_at = NOW()
+                   WHERE id = %s RETURNING *""",
+                (status, metadata, actor, resource_id),
+            ).fetchone()
+        if resource_type == "disputes":
+            return connection.execute(
+                """UPDATE marketplace.disputes SET status = %s, metadata = %s, updated_by = %s, updated_at = NOW()
                    WHERE id = %s RETURNING *""",
                 (status, metadata, actor, resource_id),
             ).fetchone()

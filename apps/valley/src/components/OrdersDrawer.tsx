@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import SupportModal from './SupportModal'
 import ReviewModal from './ReviewModal'
 
 interface OrderItem {
@@ -37,6 +38,7 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [reviewOrder, setReviewOrder] = useState<OrderItem | null>(null)
+  const [supportOrder, setSupportOrder] = useState<OrderItem | null>(null)
   const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
@@ -80,6 +82,29 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
     return payload
   }
 
+  const submitSupport = async (kind: 'support' | 'dispute', subject: string, message: string, desiredResolution: string) => {
+    if (!supportOrder) throw new Error('Selecione um pedido para abrir suporte.')
+    const response = await fetch(`${API_HUB_URL}/gateway/consumer/orders/${supportOrder.id}/support`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        kind,
+        subject: subject || null,
+        message,
+        desired_resolution: desiredResolution || null,
+        idempotency_key: `support-${supportOrder.id}-${window.crypto.randomUUID()}`,
+      }),
+    })
+    const payload = await response.json()
+    if (!response.ok) {
+      throw new Error(payload.detail || 'Nao foi possivel registrar o caso.')
+    }
+    return payload
+  }
+
   return (
     <>
       <div className="drawer-overlay" onClick={onClose} role="presentation">
@@ -111,6 +136,14 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
                     <p>Status: {statusMap[item.status] || item.status}</p>
                     {item.amount_brl && <p className="price">Valor: R$ {Number(item.amount_brl).toFixed(2).replace('.', ',')}</p>}
                     {item.scheduled_at && <p className="schedule">Agendado para: {new Date(item.scheduled_at).toLocaleString()}</p>}
+                    {['paid', 'accepted', 'in_progress', 'delivered', 'completed'].includes(item.status) && (
+                      <button
+                        className="btn-secondary review-action"
+                        onClick={() => setSupportOrder(item)}
+                      >
+                        Abrir suporte
+                      </button>
+                    )}
                     {['delivered', 'completed'].includes(item.status) && (
                       <button
                         className="btn-secondary review-action"
@@ -133,6 +166,13 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
           orderTitle={reviewOrder.title}
           onClose={() => setReviewOrder(null)}
           onSubmit={submitReview}
+        />
+      )}
+      {supportOrder && (
+        <SupportModal
+          orderTitle={supportOrder.title}
+          onClose={() => setSupportOrder(null)}
+          onSubmit={submitSupport}
         />
       )}
     </>

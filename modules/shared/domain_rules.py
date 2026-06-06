@@ -237,7 +237,7 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         transitions=catalog_offer_flow("marketplace.product"),
     ),
     ("marketplace", "orders"): ResourceRule(
-        ("store_id", "total_brl", "escrow_id"),
+        ("total_brl",),
         initial_status="created",
         protected_content=True,
         monetary_fields=("total_brl",),
@@ -292,7 +292,7 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
         ("category",), initial_status="pending_review", protected_content=True, transitions=catalog_offer_flow("services.provider")
     ),
     ("services", "service_contracts"): ResourceRule(
-        ("provider_user_id", "escrow_id", "visit_price_brl"),
+        ("visit_price_brl",),
         protected_content=True,
         monetary_fields=("visit_price_brl", "contracted_price_brl"),
         transitions={
@@ -369,7 +369,7 @@ RULE_OVERRIDES: dict[tuple[str, str], ResourceRule] = {
     ("document", "documents"): ResourceRule(("storage_key", "filename"), sensitive=True, transitions=lifecycle_flow("document")),
     ("hr", "employees"): ResourceRule(("company_id", "employment_type"), sensitive=True, transitions=review_flow("hr.employee")),
     ("health", "patients"): ResourceRule(("health_identifier",), sensitive=True),
-    ("health", "appointments"): ResourceRule(("patient_id", "professional_user_id", "scheduled_at"), sensitive=True, transitions=catalog_offer_flow("health.appointment")),
+    ("health", "appointments"): ResourceRule(("scheduled_at",), sensitive=True, transitions=catalog_offer_flow("health.appointment")),
     ("vision", "devices"): ResourceRule(("device_fingerprint",), sensitive=True, transitions=lifecycle_flow("vision.device")),
     ("legal", "cases"): ResourceRule(("case_number",), sensitive=True, monetary_fields=("risk_brl",), transitions=lifecycle_flow("legal.case")),
     ("property", "properties"): ResourceRule(("address", "property_type"), transitions=catalog_offer_flow("property")),

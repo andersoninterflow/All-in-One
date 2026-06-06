@@ -147,11 +147,12 @@ class MarketplacePostgresStore:
         if resource_type == "orders":
             return connection.execute(
                 """INSERT INTO marketplace.orders
-                   (id, user_id, store_id, escrow_id, total_brl, commission_brl, status, metadata, created_by, updated_by, idempotency_key)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+                   (id, user_id, store_id, escrow_id, total_brl, commission_brl, status, metadata, created_by, updated_by, idempotency_key, offer_id, company_id)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
                 (
-                    resource_id, user_id, payload["store_id"], payload.get("escrow_id"), payload["total_brl"],
+                    resource_id, user_id, payload.get("store_id"), payload.get("escrow_id"), payload.get("total_brl", 0),
                     payload.get("commission_brl", 0), status, metadata, actor, actor, idempotency_key,
+                    payload.get("offer_id"), payload.get("company_id")
                 ),
             ).fetchone()
         if resource_type == "pepita_grants":

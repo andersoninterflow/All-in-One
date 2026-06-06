@@ -18,6 +18,19 @@ interface OrdersDrawerProps {
 
 const API_HUB_URL = import.meta.env.VITE_API_HUB_URL ?? ''
 
+const statusMap: Record<string, string> = {
+  created: 'Aguardando pagamento',
+  awaiting_payment: 'Aguardando pagamento',
+  paid: 'Pagamento aprovado',
+  accepted: 'Pedido aceito',
+  in_progress: 'Em andamento',
+  delivered: 'Entregue',
+  completed: 'Concluido',
+  cancelled: 'Cancelado',
+  refunded: 'Reembolsado',
+  disputed: 'Em disputa',
+}
+
 const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({ onClose, token }) => {
   const [items, setItems] = useState<OrderItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,7 +82,7 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
                   </div>
                   <div className="order-details">
                     <strong>{item.title}</strong>
-                    <p>Status: {item.status}</p>
+                    <p>Status: {statusMap[item.status] || item.status}</p>
                     {item.amount_brl && <p className="price">Valor: R$ {Number(item.amount_brl).toFixed(2).replace('.', ',')}</p>}
                     {item.scheduled_at && <p className="schedule">Agendado para: {new Date(item.scheduled_at).toLocaleString()}</p>}
                   </div>

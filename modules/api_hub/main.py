@@ -606,6 +606,8 @@ async def create_catalog_action(
             {
                 **common,
                 "offer_title": offer.get("title"),
+                "offer_id": body.offer_id,
+                "company_id": offer.get("business_id"),
                 "store_id": str(store_id),
                 "escrow_id": f"pending:{body.idempotency_key}",
                 "total_brl": price,
@@ -645,6 +647,8 @@ async def create_catalog_action(
             {
                 **common,
                 "offer_title": offer.get("title"),
+                "offer_id": body.offer_id,
+                "company_id": offer.get("business_id"),
                 "patient_id": str(body.customer_user_id),
                 "professional_user_id": str(professional_id),
                 "scheduled_at": body.scheduled_at,
@@ -664,12 +668,14 @@ async def create_catalog_action(
             {
                 **common,
                 "offer_title": offer.get("title"),
+                "offer_id": body.offer_id,
+                "company_id": offer.get("business_id"),
                 "provider_user_id": str(provider_id),
                 "escrow_id": f"pending:{body.idempotency_key}",
                 "visit_price_brl": price,
                 "contracted_price_brl": price,
                 "scope": body.note or offer.get("title") or "Solicitacao pelo Valley",
-                "requested_at": body.scheduled_at,
+                "scheduled_at": body.scheduled_at,
             },
         )
         target_module = "services"

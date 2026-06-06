@@ -188,10 +188,10 @@ function App() {
     if (selectedCompanyCategory) params.append('company_category', selectedCompanyCategory)
     if (selectedBusinessActivity) params.append('business_activity', selectedBusinessActivity)
 
-    fetch(`${API_HUB_URL}/gateway/catalog/offers?${params.toString()}`)
+    fetch(`${API_HUB_URL}/gateway/business/valley/catalog/offers?${params.toString()}`)
       .then(async res => {
         if (!res.ok) throw new Error(`Falha HTTP ${res.status}`)
-        return res.json() as Promise<CatalogResponse>
+        return res.json()
       })
       .then(data => {
         setOffers(data.data ?? [])

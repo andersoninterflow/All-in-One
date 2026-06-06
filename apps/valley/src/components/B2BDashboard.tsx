@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import CalendarWidget from './CalendarWidget';
+import OfferWizard from './OfferWizard';
 
 export default function B2BDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar'>('overview');
+  const [showWizard, setShowWizard] = useState(false);
 
   return (
     <div className="b2b-dashboard" style={{ padding: '2rem', background: '#f8fafc', minHeight: '100vh' }}>
@@ -20,6 +22,12 @@ export default function B2BDashboard() {
             onClick={() => setActiveTab('calendar')}
           >
             Agenda
+          </button>
+          <button 
+            style={{ padding: '0.5rem 1rem', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+            onClick={() => setShowWizard(true)}
+          >
+            + Publicar Oferta
           </button>
         </div>
       </header>
@@ -49,6 +57,8 @@ export default function B2BDashboard() {
       {activeTab === 'calendar' && (
         <CalendarWidget />
       )}
+
+      {showWizard && <OfferWizard onClose={() => setShowWizard(false)} />}
     </div>
   );
 }

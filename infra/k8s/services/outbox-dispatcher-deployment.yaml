@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: outbox-dispatcher
+  name: outbox-dispatcher
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: outbox-dispatcher
+  template:
+    metadata:
+      labels:
+        app: outbox-dispatcher
+    spec:
+      containers:
+      - env:
+        - name: ALL_IN_ONE_OUTBOX_POSTGRES_DSN
+          value: ${ALL_IN_ONE_OUTBOX_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+        - name: ALL_IN_ONE_RABBITMQ_URL
+          value: ${ALL_IN_ONE_RABBITMQ_URL:-amqp://all_in_one:local-development-only@rabbitmq:5672/%2F}
+        - name: ALL_IN_ONE_OUTBOX_EXCHANGE
+          value: ${ALL_IN_ONE_OUTBOX_EXCHANGE:-all-in-one.domain}
+        - name: ALL_IN_ONE_OUTBOX_BATCH_SIZE
+          value: ${ALL_IN_ONE_OUTBOX_BATCH_SIZE:-100}
+        - name: ALL_IN_ONE_OUTBOX_POLL_SECONDS
+          value: ${ALL_IN_ONE_OUTBOX_POLL_SECONDS:-1}
+        image: gcr.io/all-in-one-498012/outbox-dispatcher:latest
+        name: outbox-dispatcher

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api-hub
+  name: api-hub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-hub
+  template:
+    metadata:
+      labels:
+        app: api-hub
+    spec:
+      containers:
+      - env:
+        - name: ALL_IN_ONE_STORAGE_DIR
+          value: /data
+        - name: ALL_IN_ONE_API_HUB_POSTGRES_DSN
+          value: ${ALL_IN_ONE_API_HUB_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+        - name: ALL_IN_ONE_REDIS_URL
+          value: ${ALL_IN_ONE_REDIS_URL:-redis://redis:6379/0}
+        - name: IDENTITY_SERVICE_URL
+          value: ${IDENTITY_SERVICE_URL:-http://identity:8000}
+        - name: BUSINESS_SERVICE_URL
+          value: ${BUSINESS_SERVICE_URL:-http://business:8000}
+        - name: FINANCE_SERVICE_URL
+          value: ${FINANCE_SERVICE_URL:-http://finance:8000}
+        - name: MARKETPLACE_SERVICE_URL
+          value: ${MARKETPLACE_SERVICE_URL:-http://marketplace:8000}
+        - name: STOCK_SERVICE_URL
+          value: ${STOCK_SERVICE_URL:-http://stock:8000}
+        - name: SERVICES_SERVICE_URL
+          value: ${SERVICES_SERVICE_URL:-http://services:8000}
+        - name: HEALTH_SERVICE_URL
+          value: ${HEALTH_SERVICE_URL:-http://health:8000}
+        - name: DELIVERY_SERVICE_URL
+          value: ${DELIVERY_SERVICE_URL:-http://delivery:8000}
+        - name: MOBILITY_SERVICE_URL
+          value: ${MOBILITY_SERVICE_URL:-http://mobility:8000}
+        - name: JOBS_SERVICE_URL
+          value: ${JOBS_SERVICE_URL:-http://jobs:8000}
+        - name: PROPERTY_SERVICE_URL
+          value: ${PROPERTY_SERVICE_URL:-http://property:8000}
+        image: gcr.io/all-in-one-498012/api-hub:latest
+        name: api-hub
+        ports:
+        - containerPort: 8000

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: wms
+  name: wms
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wms
+  template:
+    metadata:
+      labels:
+        app: wms
+    spec:
+      containers:
+      - env:
+        - name: ALL_IN_ONE_STORAGE_DIR
+          value: /data
+        - name: ALL_IN_ONE_WMS_POSTGRES_DSN
+          value: ${ALL_IN_ONE_WMS_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+        image: gcr.io/all-in-one-498012/wms:latest
+        name: wms
+        ports:
+        - containerPort: 8000

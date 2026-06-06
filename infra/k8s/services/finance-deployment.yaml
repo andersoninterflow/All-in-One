@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: finance
+  name: finance
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: finance
+  template:
+    metadata:
+      labels:
+        app: finance
+    spec:
+      containers:
+      - env:
+        - name: ALL_IN_ONE_STORAGE_DIR
+          value: /data
+        - name: ALL_IN_ONE_FINANCE_POSTGRES_DSN
+          value: ${ALL_IN_ONE_FINANCE_POSTGRES_DSN:-postgresql://all_in_one:local-development-only@postgres:5432/all_in_one}
+        image: gcr.io/all-in-one-498012/finance:latest
+        name: finance
+        ports:
+        - containerPort: 8000

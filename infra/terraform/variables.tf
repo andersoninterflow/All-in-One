@@ -21,3 +21,9 @@ variable "environment" {
   type        = string
   default     = "prod"
 }
+
+variable "alloydb_password" {
+  description = "Initial password for the AlloyDB postgres user"
+  type        = string
+  sensitive   = true
+}

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rabbitmq
+  name: rabbitmq
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: ${RABBITMQ_DEFAULT_USER:-all_in_one}
+        - name: RABBITMQ_DEFAULT_PASS
+          value: ${RABBITMQ_DEFAULT_PASS:-local-development-only}
+        image: gcr.io/all-in-one-498012/rabbitmq:latest
+        name: rabbitmq
+        ports:
+        - containerPort: 5672

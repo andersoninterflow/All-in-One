@@ -32,13 +32,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_auto_sync.ps1 -A
 - `config/stitch/screen_manifest.json` e `config/stitch/sync_state.json` sao o estado autoritativo para sincronia Stitch e devem ser preservados entre agentes.
 - Segredos como `STITCH_API_KEY` devem permanecer apenas em variaveis de ambiente, GitHub Actions Secrets ou cofres externos; nunca versionar segredos.
 
-## Integracoes Google desativadas ate segunda ordem
+## Integracoes Google ativas
 
-- As configuracoes relacionadas a Google SDK, Google AI Studio, Google Cloud, AlloyDB, Google Code CLI, Gemini CLI e Google Stitch devem permanecer no projeto, mas desativadas ate ordem explicita do usuario.
-- Excecao obrigatoria: Gemini Code Assist deve continuar ativo no Antigravity/editor.
+- Google SDK, Google AI Studio, Google Cloud, AlloyDB, Google Code CLI, Gemini CLI, Gemini Code Assist e Google Stitch estao ativos por ordem explicita do usuario.
 - A politica obrigatoria fica em `config/autonomy/google_integrations_policy.json`.
-- Nao executar discover, sync, autenticacao, instalacao, atualizacao ou inicializacao automatica de ferramentas Google enquanto `enabled=false`.
-- Docker, VS Code, Antigravity, workflows e scripts devem manter `GOOGLE_INTEGRATIONS_ENABLED=false`, `ALLOYDB_ENABLED=false` e `STITCH_REMOTE_SYNC_ENABLED=false`; `GEMINI_CODE_ASSIST_ENABLED=true` permanece permitido.
+- Discover, sync e operacoes Google podem executar quando credenciais legitimas estiverem disponiveis fora do Git.
+- Docker, VS Code, Antigravity, workflows e scripts devem manter as flags Google, AlloyDB, Gemini e Stitch ativas.
+- Nao contornar billing, IAM, compliance, enforcement ou suspensao administrativa do provedor.
 
 ## Sincronizacao Marketplace Valley
 

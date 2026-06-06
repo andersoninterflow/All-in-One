@@ -107,6 +107,11 @@
           "screen_id": "17575573767254115776",
           "name": "Business - Auditoria E Permissoes",
           "branding_version": "2026-06-01"
+        },
+        "entity_catalog_offers": {
+          "screen_id": "2688191728529672791",
+          "name": "Business - Catalog Offers",
+          "branding_version": "2026-06-01"
         }
       },
       "project_id": "17923603857789960283"

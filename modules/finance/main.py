@@ -1,6 +1,6 @@
 from pathlib import Path
 import sys
-from fastapi import Request, HTTPException, Depends
+from fastapi import Body, Depends, HTTPException, Request
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))

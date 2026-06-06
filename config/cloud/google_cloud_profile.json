@@ -1,0 +1,33 @@
+{
+  "version": "2026-06-06",
+  "enabled": true,
+  "project_environment_variable": "GOOGLE_CLOUD_PROJECT",
+  "default_region": "us-central1",
+  "default_zone": "us-central1-a",
+  "required_apis": [
+    "aiplatform.googleapis.com",
+    "alloydb.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "compute.googleapis.com",
+    "container.googleapis.com",
+    "iam.googleapis.com",
+    "run.googleapis.com",
+    "secretmanager.googleapis.com",
+    "serviceusage.googleapis.com",
+    "sqladmin.googleapis.com"
+  ],
+  "restorable_resources": [
+    "compute_instances_terminated",
+    "cloud_sql_instances_never"
+  ],
+  "safety": {
+    "requires_authenticated_gcloud": true,
+    "requires_explicit_project": true,
+    "allow_delete": false,
+    "allow_billing_change": false,
+    "allow_policy_bypass": false,
+    "secrets_outside_git": true
+  }
+}

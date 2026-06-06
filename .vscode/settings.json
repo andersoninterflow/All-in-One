@@ -11,6 +11,15 @@
     "editor.formatOnSave":  true,
     "yaml.validate":  true,
     "terminal.integrated.defaultProfile.windows":  "PowerShell",
+    "terminal.integrated.env.windows":  {
+                                             "GOOGLE_INTEGRATIONS_ENABLED":  "true",
+                                             "GOOGLE_CLOUD_ENABLED":  "true",
+                                             "GOOGLE_AI_STUDIO_ENABLED":  "true",
+                                             "GOOGLE_CODE_CLI_ENABLED":  "true",
+                                             "ALLOYDB_ENABLED":  "true",
+                                             "GEMINI_CODE_ASSIST_ENABLED":  "true",
+                                             "STITCH_REMOTE_SYNC_ENABLED":  "true"
+                                         },
     "terminal.integrated.profiles.windows":  {
                                                  "PowerShell":  {
                                                                     "source":  "PowerShell"

@@ -69,7 +69,7 @@ python scripts/stitch_auto_sync.py --require-remote
 ```
 
 A sincronizacao persistente fica em `.github/workflows/stitch-sync.yml`. Ela roda
-em `workflow_dispatch`, a cada 6 horas e em pushes que alterem catalogo,
+em `workflow_dispatch`, nos dias uteis e em pushes que alterem catalogo,
 politica, manifesto, branding ou scripts Stitch. O workflow usa somente
 `secrets.STITCH_API_KEY`, executa `scripts/stitch_auto_sync.py --require-remote`
 e commita `config/stitch/sync_state.json` quando o Stitch retorna IDs remotos.

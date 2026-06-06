@@ -39,13 +39,6 @@ interface CatalogFacets {
   business_activities: FacetOption[]
 }
 
-interface CatalogResponse {
-  data: Offer[]
-  total: number
-  partial: boolean
-  facets: CatalogFacets
-}
-
 interface CatalogActionResponse {
   message: string
   next_step: string
@@ -188,7 +181,7 @@ function App() {
     if (selectedCompanyCategory) params.append('company_category', selectedCompanyCategory)
     if (selectedBusinessActivity) params.append('business_activity', selectedBusinessActivity)
 
-    fetch(`${API_HUB_URL}/gateway/business/valley/catalog/offers?${params.toString()}`)
+    fetch(`${API_HUB_URL}/gateway/catalog/offers?${params.toString()}`)
       .then(async res => {
         if (!res.ok) throw new Error(`Falha HTTP ${res.status}`)
         return res.json()

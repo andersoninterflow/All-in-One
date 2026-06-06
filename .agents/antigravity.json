@@ -1,16 +1,8 @@
 {
   "name": "antigravity",
   "description": "Agente de desenvolvimento avançado com acesso aos servidores MCP.",
-  "mcp_servers": ["docker", "cloudflare-api", "context7", "figma", "linear", "playwright", "terraform"],
+  "mcp_servers": ["docker", "cloudflare-api", "cloudrun", "context7", "figma", "gke-oss", "linear", "playwright", "stitch", "terraform"],
   "disabled_mcp_servers": [
-    {
-      "name": "stitch",
-      "reason": "Integracoes Google/Stitch desativadas ate segunda ordem, preservando configuracao para retomada futura."
-    },
-    {
-      "name": "StitchMCP",
-      "reason": "Alias para o diretório MCP oficial do Stitch."
-    },
     {
       "name": "arize-tracing-assistant",
       "reason": "Desativado para estabilidade do ambiente local, evitando timeouts."

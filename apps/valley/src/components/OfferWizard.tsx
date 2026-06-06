@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const API_HUB_URL = import.meta.env.VITE_API_HUB_URL || 'http://localhost:8000';
 
@@ -16,7 +16,9 @@ export default function OfferWizard({ onClose }: { onClose: () => void }) {
     source_module: 'marketplace'
   });
 
-  const updateForm = (key: string, value: any) => {
+  type OfferForm = typeof formData
+
+  const updateForm = <Key extends keyof OfferForm>(key: Key, value: OfferForm[Key]) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 

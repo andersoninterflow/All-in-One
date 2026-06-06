@@ -16,6 +16,19 @@
    `STITCH_API_KEY` apenas no ambiente local/CI.
 Para o agente de IA Superdesign, configure `OPENROUTER_API_KEY` no seu ambiente local
 e aponte a URL base para `https://openrouter.ai/api/v1`.
+   As integracoes Google estao ativas. Defina `GOOGLE_CLOUD_PROJECT` e autentique
+   legitimamente o SDK antes de diagnosticar ou reativar recursos:
+
+   ```bash
+   python3 scripts/google_cloud_control.py status
+   python3 scripts/google_cloud_control.py activate --project SEU_PROJETO
+   ```
+
+   `activate` habilita as APIs declaradas em
+   `config/cloud/google_cloud_profile.json`, inicia somente instancias Compute
+   Engine em `TERMINATED` e restaura Cloud SQL com `activationPolicy=NEVER`.
+   O comando nao altera billing, nao exclui recursos e nao contorna IAM,
+   compliance ou suspensao administrativa.
 2. Execute `docker compose -f infra/docker/docker-compose.yml up --build`.
 3. Aplique migrations automaticamente pelo container `migrations` ou rode
    `psql` em ambiente limpo.

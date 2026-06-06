@@ -1,10 +1,10 @@
 {
   "version": "2026-06-05",
   "language": "pt-BR",
-  "enabled": false,
-  "disabled_until": "segunda_ordem_explicita_do_usuario",
+  "enabled": true,
+  "reactivated_at": "2026-06-06",
   "scope": "workspace",
-  "reason": "Google SDK, Google AI Studio, Google Cloud, AlloyDB, Google Code CLI, Gemini CLI e Stitch devem permanecer configurados, mas desativados em todos os locais do projeto. A extensao Gemini Code Assist permanece ativa no Antigravity/editor por ordem explicita do usuario.",
+  "reason": "Google SDK, Google AI Studio, Google Cloud, AlloyDB, Google Code CLI, Gemini CLI, Gemini Code Assist e Google Stitch MCP foram reativados por ordem explicita do usuario.",
   "affected_integrations": [
     "google_sdk",
     "google_ai_studio",
@@ -15,36 +15,28 @@
     "gemini_cli_ubuntu",
     "google_stitch_mcp"
   ],
-  "explicit_exceptions": [
-    {
-      "name": "gemini_code_assist",
-      "enabled": true,
-      "scope": "antigravity_editor",
-      "reason": "O usuario determinou que a extensao Gemini Code Assist deve continuar ativa aqui no Antigravity."
-    }
-  ],
+  "explicit_exceptions": [],
   "rules": [
     "Manter arquivos, contratos, documentacao e estado versionado para retomada futura.",
-    "Nao executar sincronizacao remota Stitch, Google Cloud SDK, Google AI Studio, AlloyDB, Gemini CLI ou Google Code CLI ate nova ordem explicita.",
-    "Nao instalar, atualizar, autenticar ou inicializar ferramentas Google automaticamente.",
+    "Permitir sincronizacao remota Stitch, Google Cloud SDK, Google AI Studio, AlloyDB, Gemini CLI e Google Code CLI quando credenciais legitimas estiverem disponiveis.",
+    "Autenticacao deve ocorrer por login legitimo ou variaveis de ambiente, GitHub Actions Secrets e cofres externos.",
     "Nao expor STITCH_API_KEY, GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_API_KEY, GEMINI_API_KEY ou credenciais equivalentes em arquivos versionados.",
-    "Workflows, Docker Compose, Antigravity, VS Code e validadores devem refletir o estado desativado.",
-    "Documentos historicos podem citar Google como referencia, mas configuracoes executaveis devem permanecer inativas."
+    "Workflows, Docker Compose, Antigravity, VS Code e validadores devem refletir o estado ativo.",
+    "Nao contornar suspensao administrativa, bloqueio de billing, enforcement, IAM ou compliance do provedor."
   ],
   "runtime_environment": {
-    "GOOGLE_INTEGRATIONS_ENABLED": "false",
-    "GOOGLE_CLOUD_ENABLED": "false",
-    "GOOGLE_AI_STUDIO_ENABLED": "false",
-    "GOOGLE_CODE_CLI_ENABLED": "false",
-    "ALLOYDB_ENABLED": "false",
+    "GOOGLE_INTEGRATIONS_ENABLED": "true",
+    "GOOGLE_CLOUD_ENABLED": "true",
+    "GOOGLE_AI_STUDIO_ENABLED": "true",
+    "GOOGLE_CODE_CLI_ENABLED": "true",
+    "ALLOYDB_ENABLED": "true",
     "GEMINI_CODE_ASSIST_ENABLED": "true",
-    "STITCH_REMOTE_SYNC_ENABLED": "false"
+    "STITCH_REMOTE_SYNC_ENABLED": "true"
   },
-  "reactivation_requirements": [
-    "ordem explicita do usuario",
-    "atualizar esta politica para enabled=true",
-    "reativar config/autonomy/stitch_mcp_policy.json",
-    "reativar workflow .github/workflows/stitch-sync.yml",
-    "rodar validadores e testes focados antes do push"
+  "activation_requirements": [
+    "credenciais validas fora do Git",
+    "billing e IAM regulares para operacoes Google Cloud",
+    "validadores e testes focados aprovados antes do push",
+    "operacoes destrutivas continuam proibidas sem ordem explicita"
   ]
 }

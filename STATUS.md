@@ -1,5 +1,32 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-06-06 Reativacao Google, Stitch e AlloyDB
+
+### Concluido neste ciclo
+
+- Revogada por ordem explicita a suspensao temporaria de Google SDK, Google
+  Cloud, Google AI Studio, Google Code CLI, Gemini CLI, AlloyDB e Stitch.
+- Politicas versionadas, Docker Compose, terminal VS Code, Antigravity,
+  alinhamento multiagente e workflow Stitch agora exigem estado ativo.
+- MCPs Google `stitch`, `cloudrun` e `gke-oss` foram ativados no Antigravity;
+  apenas MCPs nao Google isolados por estabilidade permanecem desativados.
+- Configuracoes locais Stitch passaram a referenciar `STITCH_API_KEY` por
+  ambiente, removendo credencial literal do arquivo de configuracao Gemini.
+- Criado perfil seguro `config/cloud/google_cloud_profile.json` e controlador
+  para diagnosticar e reativar Compute Engine/Cloud SQL permitidos, habilitando
+  APIs de Cloud Run, GKE, AlloyDB, Vertex AI, Build e Secret Manager.
+- Sincronizacao Stitch online validada e concluida: 25 de 25 projetos e 180 de
+  180 telas, incluindo `Business - Catalog Offers`, sem branding pendente.
+- A ativacao nao autoriza exclusao, alteracao de billing, contorno de IAM,
+  enforcement, compliance ou suspensao administrativa.
+
+### Estado de credenciais
+
+- `STITCH_API_KEY` existe no ambiente de usuario e nao foi versionada.
+- Google Cloud SDK esta instalado, mas ainda nao apresenta conta ativa nem
+  projeto selecionado; operacoes remotas Cloud permanecem prontas e exigem
+  `gcloud auth login` legitimo e `GOOGLE_CLOUD_PROJECT`.
+
 ## STATUS OPERACIONAL - 2026-06-05 Historico do Consumidor e Pagamento Sandbox
 
 ### Concluido neste ciclo

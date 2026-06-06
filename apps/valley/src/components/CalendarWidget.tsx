@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const API_HUB_URL = import.meta.env.VITE_API_HUB_URL ?? '';
 

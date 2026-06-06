@@ -1,9 +1,8 @@
 {
   "version": "2026-06-05",
   "language": "pt-BR",
-  "enabled": false,
-  "disabled_until": "segunda_ordem_explicita_do_usuario",
-  "disabled_reason": "Integracoes Google/Stitch preservadas, mas desativadas por solicitacao do usuario.",
+  "enabled": true,
+  "reactivated_at": "2026-06-06",
   "scope": "workspace",
   "server_name": "stitch",
   "endpoint": "https://stitch.googleapis.com/mcp",
@@ -16,14 +15,14 @@
     "Accept": "application/json"
   },
   "validation_command": "python3 scripts/validate_stitch_mcp_config.py",
-  "online_validation_command": "desativado temporariamente ate segunda ordem",
+  "online_validation_command": "python3 scripts/validate_stitch_mcp_config.py --require-secret",
   "rules": [
-    "O servidor MCP Stitch permanece configurado neste workspace, mas desativado ate segunda ordem.",
+    "O servidor MCP Stitch permanece configurado e ativo neste workspace.",
     "A configuracao deve seguir o endpoint da documentacao oficial do Stitch MCP.",
     "A configuracao persistente deve existir em ~/.codex/config.toml ou no arquivo apontado por CODEX_CONFIG_FILE.",
     "A URL oficial do servidor deve ser https://stitch.googleapis.com/mcp.",
     "A chave deve ser enviada por env_http_headers usando STITCH_API_KEY.",
     "Credenciais reais nao podem ser gravadas em arquivos versionados, manifestos, prompts, logs ou documentacao.",
-    "Discover e sync estao desativados ate segunda ordem e nao devem exigir STITCH_API_KEY durante este periodo."
+    "Discover e sync exigem STITCH_API_KEY somente no ambiente de execucao, nunca em arquivo versionado."
   ]
 }

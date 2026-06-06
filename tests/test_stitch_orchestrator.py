@@ -100,14 +100,14 @@ def test_stitch_auto_sync_dry_run_is_safe_and_does_not_require_remote_secret() -
     assert summary["expected_screens"] > 0
 
 
-def test_stitch_remote_sync_workflow_is_preserved_but_disabled() -> None:
+def test_stitch_remote_sync_workflow_is_active_and_secret_driven() -> None:
     workflow = (ROOT / ".github" / "workflows" / "stitch-sync.yml").read_text(encoding="utf-8")
     assert "workflow_dispatch:" in workflow
-    assert "schedule:" not in workflow
-    assert "branches: [main]" not in workflow
-    assert "if: ${{ false }}" in workflow
-    assert 'STITCH_REMOTE_SYNC_ENABLED: "false"' in workflow
+    assert "schedule:" in workflow
+    assert "branches: [main]" in workflow
+    assert "if: ${{ false }}" not in workflow
+    assert 'STITCH_REMOTE_SYNC_ENABLED: "true"' in workflow
     assert "secrets.STITCH_API_KEY" in workflow
-    assert "python scripts/stitch_auto_sync.py --require-remote" not in workflow
+    assert "python scripts/stitch_auto_sync.py --require-remote" in workflow
     assert "--require-complete" not in workflow
     assert "config/stitch/sync_state.json" in workflow

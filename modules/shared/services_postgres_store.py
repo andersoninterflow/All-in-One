@@ -135,11 +135,12 @@ class ServicesPostgresStore:
         if resource_type == "service_contracts":
             return connection.execute(
                 """INSERT INTO services.service_contracts
-                   (id, user_id, provider_user_id, escrow_id, visit_price_brl, contracted_price_brl, status, metadata, created_by, updated_by, idempotency_key)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
+                   (id, user_id, provider_user_id, escrow_id, visit_price_brl, contracted_price_brl, offer_id, company_id, scheduled_at, status, metadata, created_by, updated_by, idempotency_key)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
                 (
-                    resource_id, user_id, payload["provider_user_id"], payload["escrow_id"],
-                    payload["visit_price_brl"], payload.get("contracted_price_brl"),
+                    resource_id, user_id, payload.get("provider_user_id"), payload.get("escrow_id"),
+                    payload.get("visit_price_brl"), payload.get("contracted_price_brl"),
+                    payload.get("offer_id"), payload.get("company_id"), payload.get("scheduled_at"),
                     status, metadata, actor, actor, idempotency_key,
                 ),
             ).fetchone()

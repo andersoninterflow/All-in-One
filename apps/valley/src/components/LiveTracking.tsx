@@ -6,17 +6,26 @@ export default function LiveTracking({ deliveryId = 'del-123' }) {
   const [logs, setLogs] = useState<string[]>([]);
   const [position, setPosition] = useState({ lat: -23.5505, lng: -46.6333 });
   const [connected, setConnected] = useState(false);
+  const positionRef = React.useRef(position);
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   useEffect(() => {
     const ws = new WebSocket(`${WEBSOCKET_URL}/ws/tracking/${deliveryId}`);
+    let intervalId: ReturnType<typeof setInterval>;
 
     ws.onopen = () => {
       setConnected(true);
       setLogs(prev => [...prev, `[SISTEMA] Conectado ao rastreamento: ${deliveryId}`]);
       // Ping mock para simular GPS enviando dados
-      setInterval(() => {
+      intervalId = setInterval(() => {
         if(ws.readyState === WebSocket.OPEN) {
-           ws.send(JSON.stringify({ lat: position.lat + (Math.random() * 0.001), lng: position.lng + (Math.random() * 0.001) }));
+           ws.send(JSON.stringify({ 
+             lat: positionRef.current.lat + (Math.random() * 0.001), 
+             lng: positionRef.current.lng + (Math.random() * 0.001) 
+           }));
         }
       }, 5000);
     };
@@ -41,7 +50,10 @@ export default function LiveTracking({ deliveryId = 'del-123' }) {
       setLogs(prev => [...prev, `[SISTEMA] Desconectado do servidor.`]);
     };
 
-    return () => ws.close();
+    return () => {
+      clearInterval(intervalId);
+      ws.close();
+    };
   }, [deliveryId]);
 
   return (

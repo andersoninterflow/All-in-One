@@ -36,8 +36,8 @@ export default function CalendarWidget() {
       setMessage(`Sucesso! Horário ${selectedSlot} reservado.`);
       setSlots(slots.filter(s => s !== selectedSlot));
       setSelectedSlot(null);
-    } catch (err: any) {
-      setMessage(`Erro: ${err.message}`);
+    } catch (err: unknown) {
+      setMessage(`Erro: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 

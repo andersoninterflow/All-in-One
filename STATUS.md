@@ -1,5 +1,29 @@
 # Status Operacional
 
+## STATUS OPERACIONAL - 2026-07-22 Politica de Custos e Servicos Pagos
+
+### Concluido neste ciclo
+
+- Criada a politica obrigatoria `config/autonomy/paid_services_policy.json`
+  para evitar bloqueio de desenvolvimento por ausencia de servicos pagos.
+- Criado o backlog tecnico `config/autonomy/paid_services_pending.json` com
+  pendencias por integracao contendo servico, finalidade, custo estimado,
+  beneficios, impacto, prioridade e recomendacao tecnica.
+- Criado o script `scripts/sync_paid_services_pending.py` para gerar e
+  atualizar automaticamente a lista de pendencias a partir da matriz de
+  provedores.
+- O gate `scripts/validate_repository.py` passou a validar a existencia e o
+  contrato minimo da politica e do backlog de servicos pagos.
+- README atualizado com referencia operacional para a nova politica.
+
+### Proximos passos naturais
+
+- Rodar `python3 scripts/sync_paid_services_pending.py` sempre que houver
+  alteracao na matriz `config/integrations/provider_matrix.json`.
+- Manter marcacao de status `Status: Revisao futura` ou
+  `Status: Implementacao futura (Servico Pago)` nas capacidades com custo
+  externo.
+
 ## STATUS OPERACIONAL - 2026-06-06 Suporte, Disputa e Metrics CRM/BI
 
 ### Concluido neste ciclo

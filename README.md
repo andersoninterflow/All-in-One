@@ -64,6 +64,17 @@ obrigatorias (DNS/HTTPS/CORS/headers/cache/logs/monitoramento) e proibicao de
 segredos no Git. O gate `python3 scripts/validate_repository.py` verifica esse
 contrato automaticamente antes da sincronizacao.
 
+## Politica de custos e servicos pagos
+
+A diretriz obrigatoria de custo fica em
+`config/autonomy/paid_services_policy.json` e o backlog tecnico de servicos
+pagos fica em `config/autonomy/paid_services_pending.json`.
+
+Sempre que uma integracao depender de plano pago/licenca/billing/API paga,
+o projeto deve manter alternativa de desenvolvimento (free/mock/stub/emulador),
+com recurso isolado, parametrizado e desabilitado por padrao. A sincronizacao
+do backlog pode ser refeita com `python3 scripts/sync_paid_services_pending.py`.
+
 ## Identidade e integridade
 
 `identity.users.id` e o vinculo central dos recursos de dominio. Wallets,

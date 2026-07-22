@@ -14,6 +14,9 @@ apos aprovacao manual das alteracoes financeiras, de identidade ou saude.
   ambiente local e confirma `/health` nas 13 APIs FastAPI principais.
 - `scripts/check_generated_artifacts.ps1` e `scripts/check_generated_artifacts.py`: executam scaffold/validadores e falham
   se algum artefato gerado alterar a arvore de trabalho sem commit; a versao Python cobre CI/Linux sem PowerShell.
+- `scripts/validate_repository.py`: valida politicas obrigatorias de autonomia,
+  incluindo a diretriz persistente do dominio `brasildesconto.com.br` em
+  `config/autonomy/brasildesconto_domain_policy.json`.
 - `.github/workflows/git-sync.yml`: executa a verificacao de sincronizacao da
   `main` em eventos de push e sob demanda.
 - `.github/workflows/compose-health.yml`: executa o healthcheck Docker Compose

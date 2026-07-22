@@ -9,12 +9,14 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts.validate_brasildesconto_domain_policy import validate_brasildesconto_domain_policy
 from scripts.validate_stitch_mcp_config import validate_stitch_mcp_config
 
 CATALOG = json.loads((ROOT / "config" / "module_catalog.json").read_text(encoding="utf-8"))
 STITCH_MANIFEST = ROOT / "config" / "stitch" / "screen_manifest.json"
 STITCH_MCP_POLICY = ROOT / "config" / "autonomy" / "stitch_mcp_policy.json"
 MULTI_AGENT_SYNC_POLICY = ROOT / "config" / "autonomy" / "multi_agent_sync_policy.json"
+BRASILDESCONTO_DOMAIN_POLICY = ROOT / "config" / "autonomy" / "brasildesconto_domain_policy.json"
 GOOGLE_INTEGRATIONS_POLICY = ROOT / "config" / "autonomy" / "google_integrations_policy.json"
 GOOGLE_CLOUD_PROFILE = ROOT / "config" / "cloud" / "google_cloud_profile.json"
 STITCH_SYNC_WORKFLOW = ROOT / ".github" / "workflows" / "stitch-sync.yml"
@@ -326,6 +328,11 @@ def main() -> int:
             fail("Politica Google deve manter GEMINI_CODE_ASSIST_ENABLED=true no Antigravity/editor.", errors)
         if runtime.get("STITCH_REMOTE_SYNC_ENABLED") != "true":
             fail("Politica Google deve manter STITCH_REMOTE_SYNC_ENABLED=true.", errors)
+    if not BRASILDESCONTO_DOMAIN_POLICY.is_file():
+        fail("Politica obrigatoria do dominio brasildesconto.com.br ausente.", errors)
+    else:
+        for error in validate_brasildesconto_domain_policy(ROOT):
+            fail(error, errors)
     if not GOOGLE_CLOUD_PROFILE.is_file():
         fail("Perfil Google Cloud ativo ausente: config/cloud/google_cloud_profile.json", errors)
     else:

@@ -89,6 +89,10 @@ Pedidos de compra podem ser autorizados em ambiente de desenvolvimento por
 4. cria a retencao sandbox;
 5. marca o pedido como pago somente depois das etapas anteriores.
 
+No front-end Valley, esse passo pode ser concluido tanto na sequencia imediata
+do checkout quanto no historico `Meus Pedidos`, permitindo retomar pedidos em
+`created`/`awaiting_payment` sem recriar a compra.
+
 Esse fluxo nao movimenta dinheiro real. A interface deve sempre apresentar o
 termo `sandbox`, e clientes nao podem informar valor, vendedor ou beneficiario
 como fonte de verdade. A transicao do pedido permanece registrada pelo fluxo de

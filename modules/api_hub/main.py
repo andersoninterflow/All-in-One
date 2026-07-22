@@ -871,7 +871,7 @@ async def authorize_catalog_payment(
             "order_id": str(body.order_id),
             "message": "Pagamento ja confirmado anteriormente.",
         }
-    if order.get("status") != "created":
+    if order.get("status") not in {"created", "awaiting_payment"}:
         raise HTTPException(status_code=409, detail="Este pedido nao aceita pagamento no estado atual.")
 
     payload = order.get("payload") if isinstance(order.get("payload"), dict) else {}

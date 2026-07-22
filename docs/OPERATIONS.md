@@ -16,7 +16,9 @@ apos aprovacao manual das alteracoes financeiras, de identidade ou saude.
   se algum artefato gerado alterar a arvore de trabalho sem commit; a versao Python cobre CI/Linux sem PowerShell.
 - `scripts/validate_repository.py`: valida politicas obrigatorias de autonomia,
   incluindo a diretriz persistente do dominio `brasildesconto.com.br` em
-  `config/autonomy/brasildesconto_domain_policy.json`.
+  `config/autonomy/brasildesconto_domain_policy.json`. A validacao do arquivo
+  local `~/.codex/config.toml` e opcional por padrao e so vira bloqueante
+  quando `REQUIRE_CODEX_CONFIG=1`.
 - `.github/workflows/git-sync.yml`: executa a verificacao de sincronizacao da
   `main` em eventos de push e sob demanda.
 - `.github/workflows/compose-health.yml`: executa o healthcheck Docker Compose

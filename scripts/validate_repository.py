@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -110,6 +111,8 @@ REQUIRED_MULTI_AGENT_RULES = [
     "STATUS.md",
 ]
 
+TRUE_VALUES = {"1", "true", "yes", "on"}
+
 
 def fail(message: str, errors: list[str]) -> None:
     errors.append(message)
@@ -117,6 +120,7 @@ def fail(message: str, errors: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
+    require_codex_config = os.getenv("REQUIRE_CODEX_CONFIG", "").strip().lower() in TRUE_VALUES
     modules = CATALOG["modules"]
     slugs = {module["slug"] for module in modules}
     if len(slugs) != 25:
@@ -289,7 +293,7 @@ def main() -> int:
     if not STITCH_MCP_POLICY.is_file():
         fail("Politica obrigatoria do MCP Stitch ausente.", errors)
     else:
-        for error in validate_stitch_mcp_config(require_secret=False):
+        for error in validate_stitch_mcp_config(require_secret=False, require_codex_config=require_codex_config):
             fail(error, errors)
         stitch_policy = json.loads(STITCH_MCP_POLICY.read_text(encoding="utf-8"))
         if stitch_policy.get("enabled") is not True:

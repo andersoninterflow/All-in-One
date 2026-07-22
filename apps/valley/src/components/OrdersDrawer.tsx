@@ -16,6 +16,7 @@ interface OrdersDrawerProps {
   isOpen: boolean
   onClose: () => void
   token: string | null
+  onPaymentSuccess?: () => void
 }
 
 const API_HUB_URL = import.meta.env.VITE_API_HUB_URL ?? ''
@@ -33,13 +34,19 @@ const statusMap: Record<string, string> = {
   disputed: 'Em disputa',
 }
 
-const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({ onClose, token }) => {
+const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string; onPaymentSuccess?: () => void }> = ({
+  onClose,
+  token,
+  onPaymentSuccess,
+}) => {
   const [items, setItems] = useState<OrderItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [reviewOrder, setReviewOrder] = useState<OrderItem | null>(null)
   const [supportOrder, setSupportOrder] = useState<OrderItem | null>(null)
   const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set())
+  const [payingOrderId, setPayingOrderId] = useState<string | null>(null)
+  const [paymentFeedback, setPaymentFeedback] = useState<Record<string, { ok: boolean; message: string }>>({})
 
   useEffect(() => {
     fetch(`${API_HUB_URL}/gateway/consumer/orders`, {
@@ -105,6 +112,55 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
     return payload
   }
 
+  const payPendingOrder = async (item: OrderItem) => {
+    setPayingOrderId(item.id)
+    setPaymentFeedback(current => {
+      const next = { ...current }
+      delete next[item.id]
+      return next
+    })
+    try {
+      const response = await fetch(`${API_HUB_URL}/gateway/payments/sandbox/authorize`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          order_id: item.id,
+          method: 'pix_sandbox',
+          idempotency_key: `payment-${item.id}`,
+        }),
+      })
+      const payload = await response.json()
+      if (!response.ok) {
+        throw new Error(payload.detail || 'Nao foi possivel autorizar o pagamento.')
+      }
+
+      setItems(current => current.map(order => (
+        order.id === item.id ? { ...order, status: 'paid' } : order
+      )))
+      setPaymentFeedback(current => ({
+        ...current,
+        [item.id]: {
+          ok: true,
+          message: payload.message || 'Pagamento sandbox confirmado.',
+        },
+      }))
+      onPaymentSuccess?.()
+    } catch (err) {
+      setPaymentFeedback(current => ({
+        ...current,
+        [item.id]: {
+          ok: false,
+          message: err instanceof Error ? err.message : 'Falha ao autorizar pagamento.',
+        },
+      }))
+    } finally {
+      setPayingOrderId(null)
+    }
+  }
+
   return (
     <>
       <div className="drawer-overlay" onClick={onClose} role="presentation">
@@ -136,6 +192,20 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
                     <p>Status: {statusMap[item.status] || item.status}</p>
                     {item.amount_brl && <p className="price">Valor: R$ {Number(item.amount_brl).toFixed(2).replace('.', ',')}</p>}
                     {item.scheduled_at && <p className="schedule">Agendado para: {new Date(item.scheduled_at).toLocaleString()}</p>}
+                    {['created', 'awaiting_payment'].includes(item.status) && (
+                      <button
+                        className="btn-primary review-action"
+                        onClick={() => payPendingOrder(item)}
+                        disabled={payingOrderId === item.id}
+                      >
+                        {payingOrderId === item.id ? 'Processando...' : 'Pagar com PIX'}
+                      </button>
+                    )}
+                    {paymentFeedback[item.id] && (
+                      <p className={`action-feedback ${paymentFeedback[item.id].ok ? 'success' : 'error'}`} role="status">
+                        {paymentFeedback[item.id].message}
+                      </p>
+                    )}
                     {['paid', 'accepted', 'in_progress', 'delivered', 'completed'].includes(item.status) && (
                       <button
                         className="btn-secondary review-action"
@@ -179,9 +249,9 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
   )
 }
 
-const OrdersDrawer: React.FC<OrdersDrawerProps> = ({ isOpen, onClose, token }) => {
+const OrdersDrawer: React.FC<OrdersDrawerProps> = ({ isOpen, onClose, token, onPaymentSuccess }) => {
   if (!isOpen || !token) return null
-  return <OrdersDrawerContent onClose={onClose} token={token} />
+  return <OrdersDrawerContent onClose={onClose} token={token} onPaymentSuccess={onPaymentSuccess} />
 }
 
 export default OrdersDrawer

@@ -68,3 +68,14 @@ def test_requires_secret_when_active_policy_requests_remote_validation(tmp_path:
     monkeypatch.delenv("STITCH_API_KEY", raising=False)
     errors = validate_stitch_mcp_config(config_path=valid_config(tmp_path), require_secret=True, root=Path.cwd())
     assert errors == ["Variavel obrigatoria ausente no ambiente: STITCH_API_KEY"]
+
+
+def test_skips_codex_config_when_not_required(tmp_path: Path) -> None:
+    missing_config = tmp_path / "config.toml"
+    errors = validate_stitch_mcp_config(
+        config_path=missing_config,
+        require_codex_config=False,
+        root=Path.cwd(),
+    )
+    assert all("Config Codex ausente" not in error for error in errors)
+    assert all("[mcp_servers.stitch]" not in error for error in errors)

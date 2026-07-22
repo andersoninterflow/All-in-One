@@ -416,6 +416,10 @@ function App() {
         isOpen={isOrdersOpen}
         onClose={() => setIsOrdersOpen(false)}
         token={auth.token}
+        onPaymentSuccess={() => {
+          setIsPaymentOpen(false)
+          setPaymentIntent(null)
+        }}
       />
     </>
   )

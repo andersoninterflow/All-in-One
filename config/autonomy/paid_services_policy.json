@@ -1,0 +1,42 @@
+{
+  "version": "2026-07-22",
+  "language": "pt-BR",
+  "enabled": true,
+  "scope": "workspace",
+  "objective": "Manter implementacao, testes, validacao e deploy de desenvolvimento funcionais sem obrigar contratacao de servicos pagos.",
+  "detection": {
+    "required": true,
+    "signals": [
+      "plano_pago",
+      "licenca_comercial",
+      "assinatura",
+      "cobranca_por_uso",
+      "billing_account",
+      "api_paga",
+      "marketplace_pago"
+    ]
+  },
+  "non_blocking_rules": [
+    "Nao tornar servico pago requisito obrigatorio para inicializacao do ambiente.",
+    "Nao bloquear build, testes ou deploy de desenvolvimento por ausencia de servico pago.",
+    "Manter funcionalidade isolada, parametrizada e desabilitada por padrao quando depender de custo externo.",
+    "Garantir alternativa local para desenvolvimento: plano free, mock, stub, emulador ou simulacao."
+  ],
+  "implementation_contract": {
+    "default_mode": "optional_off_by_default",
+    "feature_flag_required": true,
+    "required_status_labels": [
+      "Status: Revisao futura",
+      "Status: Implementacao futura (Servico Pago)"
+    ],
+    "technical_backlog_file": "config/autonomy/paid_services_pending.json"
+  },
+  "approval_criteria": {
+    "pr_cannot_fail_only_for_missing_paid_service": true,
+    "required_conditions": [
+      "alternativa_funcional_para_desenvolvimento",
+      "documentacao_da_limitacao",
+      "pendencia_tecnica_registrada"
+    ]
+  }
+}

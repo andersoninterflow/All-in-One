@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -18,6 +19,8 @@ STITCH_MCP_POLICY = ROOT / "config" / "autonomy" / "stitch_mcp_policy.json"
 MULTI_AGENT_SYNC_POLICY = ROOT / "config" / "autonomy" / "multi_agent_sync_policy.json"
 BRASILDESCONTO_DOMAIN_POLICY = ROOT / "config" / "autonomy" / "brasildesconto_domain_policy.json"
 GOOGLE_INTEGRATIONS_POLICY = ROOT / "config" / "autonomy" / "google_integrations_policy.json"
+PAID_SERVICES_POLICY = ROOT / "config" / "autonomy" / "paid_services_policy.json"
+PAID_SERVICES_PENDING = ROOT / "config" / "autonomy" / "paid_services_pending.json"
 GOOGLE_CLOUD_PROFILE = ROOT / "config" / "cloud" / "google_cloud_profile.json"
 STITCH_SYNC_WORKFLOW = ROOT / ".github" / "workflows" / "stitch-sync.yml"
 BRAND_IDENTITY = ROOT / "config" / "branding" / "brand_identity.json"
@@ -108,6 +111,8 @@ REQUIRED_MULTI_AGENT_RULES = [
     "STATUS.md",
 ]
 
+TRUE_VALUES = {"1", "true", "yes", "on"}
+
 
 def fail(message: str, errors: list[str]) -> None:
     errors.append(message)
@@ -115,6 +120,7 @@ def fail(message: str, errors: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
+    require_codex_config = os.getenv("REQUIRE_CODEX_CONFIG", "").strip().lower() in TRUE_VALUES
     modules = CATALOG["modules"]
     slugs = {module["slug"] for module in modules}
     if len(slugs) != 25:
@@ -188,6 +194,7 @@ def main() -> int:
         "check_generated_artifacts.ps1",
         "check_generated_artifacts.py",
         "multi_agent_sync_guard.py",
+        "sync_paid_services_pending.py",
     ]:
         if not (ROOT / "scripts" / script).is_file():
             fail(f"Gate operacional ausente: {script}", errors)
@@ -286,7 +293,7 @@ def main() -> int:
     if not STITCH_MCP_POLICY.is_file():
         fail("Politica obrigatoria do MCP Stitch ausente.", errors)
     else:
-        for error in validate_stitch_mcp_config(require_secret=False):
+        for error in validate_stitch_mcp_config(require_secret=False, require_codex_config=require_codex_config):
             fail(error, errors)
         stitch_policy = json.loads(STITCH_MCP_POLICY.read_text(encoding="utf-8"))
         if stitch_policy.get("enabled") is not True:
@@ -328,6 +335,58 @@ def main() -> int:
             fail("Politica Google deve manter GEMINI_CODE_ASSIST_ENABLED=true no Antigravity/editor.", errors)
         if runtime.get("STITCH_REMOTE_SYNC_ENABLED") != "true":
             fail("Politica Google deve manter STITCH_REMOTE_SYNC_ENABLED=true.", errors)
+    if not PAID_SERVICES_POLICY.is_file():
+        fail("Politica obrigatoria de custos/servicos pagos ausente.", errors)
+    else:
+        paid_policy = json.loads(PAID_SERVICES_POLICY.read_text(encoding="utf-8"))
+        if paid_policy.get("enabled") is not True:
+            fail("Politica de custos/servicos pagos deve permanecer enabled=true.", errors)
+        implementation_contract = paid_policy.get("implementation_contract", {})
+        labels = set(implementation_contract.get("required_status_labels", []))
+        expected_labels = {
+            "Status: Revisao futura",
+            "Status: Implementacao futura (Servico Pago)",
+        }
+        if labels != expected_labels:
+            fail("Politica de custos/servicos pagos deve manter labels obrigatorias de status.", errors)
+        if implementation_contract.get("technical_backlog_file") != "config/autonomy/paid_services_pending.json":
+            fail("Politica de custos/servicos pagos deve apontar para config/autonomy/paid_services_pending.json.", errors)
+        approval = paid_policy.get("approval_criteria", {})
+        if approval.get("pr_cannot_fail_only_for_missing_paid_service") is not True:
+            fail("Politica de custos/servicos pagos deve impedir bloqueio de PR apenas por ausencia de servico pago.", errors)
+    if not PAID_SERVICES_PENDING.is_file():
+        fail("Backlog tecnico de servicos pagos ausente: config/autonomy/paid_services_pending.json", errors)
+    else:
+        pending_payload = json.loads(PAID_SERVICES_PENDING.read_text(encoding="utf-8"))
+        if pending_payload.get("source") != "config/integrations/provider_matrix.json":
+            fail("Backlog de servicos pagos deve usar provider_matrix como fonte.", errors)
+        required_fields = {
+            "integration_key",
+            "nome_servico",
+            "finalidade",
+            "custo_estimado",
+            "beneficios",
+            "impacto_da_nao_utilizacao",
+            "prioridade",
+            "recomendacao_tecnica",
+            "status",
+            "alternativa_gratuita_ou_local",
+        }
+        status_values = {
+            "Status: Revisao futura",
+            "Status: Implementacao futura (Servico Pago)",
+        }
+        items = pending_payload.get("items", [])
+        if not items:
+            fail("Backlog de servicos pagos deve conter ao menos uma pendencia.", errors)
+        for item in items:
+            if required_fields - set(item):
+                fail(f"Backlog de servicos pagos incompleto: {item.get('integration_key', 'sem_chave')}", errors)
+                continue
+            if item["status"] not in status_values:
+                fail(f"Status invalido no backlog de servicos pagos: {item['integration_key']}", errors)
+            if item["prioridade"] not in {"alta", "media", "baixa"}:
+                fail(f"Prioridade invalida no backlog de servicos pagos: {item['integration_key']}", errors)
     if not BRASILDESCONTO_DOMAIN_POLICY.is_file():
         fail("Politica obrigatoria do dominio brasildesconto.com.br ausente.", errors)
     else:

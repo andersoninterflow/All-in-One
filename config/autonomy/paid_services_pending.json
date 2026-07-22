@@ -1,0 +1,116 @@
+{
+  "version": "2026-07-22",
+  "language": "pt-BR",
+  "generated_at": "2026-07-22T01:33:27.333139+00:00",
+  "source": "config/integrations/provider_matrix.json",
+  "items": [
+    {
+      "integration_key": "identity_kyc_kyb",
+      "nome_servico": "Unico",
+      "finalidade": "KYC, KYB, OCR documental, liveness e validacao de representante legal",
+      "custo_estimado": "Variavel por validacao (normalmente por consulta/documento)",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "alta",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "usar verificacao manual auditada e simulador local ate liberar sandbox oficial"
+    },
+    {
+      "integration_key": "finance_pix_psp",
+      "nome_servico": "Efipay/Gerencianet",
+      "finalidade": "Pix, boleto, cartao, split, escrow, refund e conciliacao",
+      "custo_estimado": "Variavel por transacao (taxa por pagamento, saque ou split)",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "alta",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "simulador local para escrow/split e sandbox gratuito do PSP quando disponivel"
+    },
+    {
+      "integration_key": "fiscal_nfse_nfe",
+      "nome_servico": "NFE.io",
+      "finalidade": "NFS-e, NF-e, recibos, cancelamento fiscal e consulta de status",
+      "custo_estimado": "Variavel por documento fiscal emitido",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "media",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "emitir apenas recibo interno em sandbox ate homologacao fiscal por municipio/UF"
+    },
+    {
+      "integration_key": "jobs_ctps_official",
+      "nome_servico": "integrador autorizado gov.br quando disponivel",
+      "finalidade": "validacao oficial ou autorizada de vinculos de trabalho e preservacao de evidencia",
+      "custo_estimado": "Sob consulta com integrador autorizado",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "media",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "manter importador PDF local com hash imutavel e aviso de nao verificacao externa"
+    },
+    {
+      "integration_key": "maps_routing_tracking",
+      "nome_servico": "Google Maps Platform",
+      "finalidade": "geocoding, rotas, ETA, tracking, distancia, mapa e comprovante logistico",
+      "custo_estimado": "Variavel por rota, geocoding e tracking",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "media",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "OSRM local ou calculadora deterministica para testes sem custo variavel"
+    },
+    {
+      "integration_key": "health_telemedicine_prescription",
+      "nome_servico": "Memed",
+      "finalidade": "teleconsulta, assinatura/prescricao digital, consentimento e trilha clinica",
+      "custo_estimado": "Variavel por assinatura/consulta/documento",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "media",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "fluxo interno de consentimento e consulta presencial ate homologar provedor"
+    },
+    {
+      "integration_key": "api_hub_oauth_webhooks",
+      "nome_servico": "Keycloak",
+      "finalidade": "OAuth2/OIDC, API keys, webhooks assinados, rate limit e sandbox de parceiros",
+      "custo_estimado": "Plano por tenant ou por MAU/requisicao",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "alta",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "Keycloak local e API key versionada apenas como hash com valor externo ao Git"
+    },
+    {
+      "integration_key": "stock_supplier_catalog",
+      "nome_servico": "fornecedores homologados por vertical",
+      "finalidade": "catalogo fornecedor, preco, disponibilidade, pedido fornecedor e tracking",
+      "custo_estimado": "Sob contrato com fornecedor/hub parceiro",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "baixa",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "CSV/manual e fixture local ate fornecedor liberar sandbox"
+    },
+    {
+      "integration_key": "ai_agent_superdesign",
+      "nome_servico": "Google Gemini API",
+      "finalidade": "Agente de design e codificacao assistida via LLM",
+      "custo_estimado": "Variavel por token/chamada de modelo",
+      "beneficios": "Permite evolucao de sandbox para homologacao/producao com fornecedor real.",
+      "impacto_da_nao_utilizacao": "Sem contratacao, o projeto segue funcional em modo sandbox/local; a limitacao fica na homologacao/producao desta capacidade.",
+      "prioridade": "media",
+      "recomendacao_tecnica": "Manter adapter sandbox local ativo, feature flag desligada por padrao e habilitar em ambiente pago apenas apos homologacao, previsibilidade de custo e compliance.",
+      "status": "Status: Implementacao futura (Servico Pago)",
+      "alternativa_gratuita_ou_local": "utilizar modelos gratuitos via OpenRouter em ambiente de dev"
+    }
+  ]
+}

@@ -33,3 +33,10 @@ dns_records = [
   }
 ]
 ```
+
+## Dominio brasildesconto.com.br
+
+Quando houver mudanca de dominio/subdominio para `brasildesconto.com.br`, a
+atividade deve seguir `config/autonomy/brasildesconto_domain_policy.json`.
+Esse contrato exige Terraform como fonte declarativa, sincronizacao com
+Cloudflare e validacao automatica no gate `python3 scripts/validate_repository.py`.

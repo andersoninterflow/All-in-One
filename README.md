@@ -55,6 +55,15 @@ para gerar o contrato local; `discover` e `sync` exigem credencial Stitch
 rotacionada fornecida via secret local. Veja
 [docs/STITCH_FRONTEND.md](docs/STITCH_FRONTEND.md).
 
+## Diretriz de dominio brasildesconto.com.br
+
+Toda alteracao que envolva `brasildesconto.com.br` deve seguir o contrato
+versionado em `config/autonomy/brasildesconto_domain_policy.json`, com
+automacao priorizada por Terraform, sincronizacao com Cloudflare, validacoes
+obrigatorias (DNS/HTTPS/CORS/headers/cache/logs/monitoramento) e proibicao de
+segredos no Git. O gate `python3 scripts/validate_repository.py` verifica esse
+contrato automaticamente antes da sincronizacao.
+
 ## Identidade e integridade
 
 `identity.users.id` e o vinculo central dos recursos de dominio. Wallets,

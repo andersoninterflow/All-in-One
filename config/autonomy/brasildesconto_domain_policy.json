@@ -1,0 +1,87 @@
+{
+  "version": "2026-07-22",
+  "language": "pt-BR",
+  "enabled": true,
+  "scope": "workspace",
+  "domain": "brasildesconto.com.br",
+  "objective": "Garantir que alteracoes de dominio sejam implementadas por automacao versionada e sincronizadas entre Terraform, GitHub e Cloudflare.",
+  "principles": [
+    "infraestrutura_como_codigo",
+    "automacao",
+    "reprodutibilidade",
+    "idempotencia",
+    "seguranca",
+    "documentacao_automatica"
+  ],
+  "terraform": {
+    "required": true,
+    "import_existing_resources": true,
+    "prevent_orphan_resources": true,
+    "prevent_drift": true,
+    "validate_before_apply": true
+  },
+  "cloudflare": {
+    "required": true,
+    "dns_record_types": [
+      "A",
+      "AAAA",
+      "CNAME",
+      "TXT",
+      "MX",
+      "SRV",
+      "CAA",
+      "NS",
+      "PTR"
+    ],
+    "validate_proxy_mode": true,
+    "validate_ssl_mode": true,
+    "validate_certificates": true,
+    "validate_cache_rules": true,
+    "validate_waf": true,
+    "validate_zero_trust_when_enabled": true,
+    "validate_pages_when_enabled": true,
+    "validate_workers_when_enabled": true,
+    "validate_r2_when_enabled": true,
+    "validate_turnstile_when_enabled": true
+  },
+  "development_environment": {
+    "configure_primary_domain": true,
+    "configure_subdomains": true,
+    "configure_api_urls": true,
+    "configure_oauth_callbacks": true,
+    "configure_cors": true,
+    "configure_environment_variables": true,
+    "configure_certificates_when_applicable": true,
+    "update_documentation": true
+  },
+  "validation": {
+    "required_checks": [
+      "dns_resolution",
+      "https",
+      "certificates",
+      "apis",
+      "redirects",
+      "cors",
+      "security_headers",
+      "cache",
+      "application_health",
+      "logs",
+      "monitoring"
+    ]
+  },
+  "security": {
+    "forbid_plaintext_secrets": true,
+    "forbid_secret_files_in_git": true,
+    "approved_secret_stores": [
+      "github_actions_secrets",
+      "protected_ci_cd_variables",
+      "external_vault"
+    ]
+  },
+  "required_docs": [
+    "README.md",
+    "docs/DEPLOYMENT.md",
+    "docs/OPERATIONS.md",
+    "CHANGELOG.md"
+  ]
+}

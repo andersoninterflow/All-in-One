@@ -38,6 +38,14 @@ e aponte a URL base para `https://openrouter.ai/api/v1`.
    e `python scripts/validate_stitch_mcp_config.py`; com credencial segura
    disponivel, `sync` cria um projeto Stitch por modulo.
 
+### Diretriz permanente de dominio (brasildesconto.com.br)
+
+Quando a atividade envolver `brasildesconto.com.br`, aplique a politica
+`config/autonomy/brasildesconto_domain_policy.json` antes da sincronizacao.
+Esse contrato exige automacao IaC, alinhamento Cloudflare/Terraform, revisao de
+DNS/SSL/WAF/Cache/Zero Trust (quando aplicavel), validacao de CORS/callbacks
+OAuth e documentacao atualizada.
+
 ## Producao
 
 Os manifests Kubernetes sao uma base declarativa, nao um deploy autorizado.

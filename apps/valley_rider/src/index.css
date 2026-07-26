@@ -49,7 +49,15 @@ body {
   border-radius: 20px;
   color: var(--accent-success);
   font-weight: 700;
+  font-family: inherit;
+  font-size: inherit;
   border: 1px solid var(--accent-success);
+  cursor: pointer;
+  outline: none;
+}
+
+.status-toggle:focus-visible {
+  box-shadow: 0 0 0 2px var(--bg-dark), 0 0 0 4px var(--accent-success);
 }
 
 .map-placeholder {
@@ -154,8 +162,16 @@ body {
   padding: 1rem 0;
   color: var(--text-muted);
   font-size: 0.875rem;
-  cursor: pointer;
+  font-family: inherit;
+  background: transparent;
+  border: none;
   border-top: 3px solid transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.nav-tab:focus-visible {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .nav-tab.active {

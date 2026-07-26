@@ -18,6 +18,14 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Create config dir
+        run: mkdir -p /home/runner/.codex && cat <<EOF > /home/runner/.codex/config.toml
+[mcp_servers.stitch]
+url = "https://stitch.googleapis.com/mcp"
+env_http_headers = { "X-Goog-Api-Key" = "STITCH_API_KEY" }
+http_headers = { "Accept" = "application/json" }
+EOF
+
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 

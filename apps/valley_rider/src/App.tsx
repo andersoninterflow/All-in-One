@@ -11,9 +11,12 @@ function App() {
         <div style={{ fontWeight: 800, fontSize: '1.25rem' }}>
           <span style={{ color: 'var(--accent-rider)' }}>V</span> Rider
         </div>
-        <div 
+        <button
           className="status-toggle" 
           onClick={() => setIsOnline(!isOnline)}
+          role="switch"
+          aria-checked={isOnline}
+          aria-label={isOnline ? "Ficar offline" : "Ficar online"}
           style={{
             background: isOnline ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)',
             color: isOnline ? 'var(--accent-success)' : '#e74c3c',
@@ -25,7 +28,7 @@ function App() {
             background: isOnline ? 'var(--accent-success)' : '#e74c3c' 
           }}></div>
           {isOnline ? 'ONLINE' : 'OFFLINE'}
-        </div>
+        </button>
       </header>
 
       {tab === 'home' && (
@@ -110,16 +113,31 @@ function App() {
         </div>
       )}
 
-      <nav className="bottom-nav">
-        <div className={`nav-tab ${tab === 'home' ? 'active' : ''}`} onClick={() => setTab('home')}>
-          🚗<br/>Corridas
-        </div>
-        <div className={`nav-tab ${tab === 'earnings' ? 'active' : ''}`} onClick={() => setTab('earnings')}>
-          💰<br/>Ganhos
-        </div>
-        <div className={`nav-tab ${tab === 'profile' ? 'active' : ''}`} onClick={() => setTab('profile')}>
-          👤<br/>Perfil
-        </div>
+      <nav className="bottom-nav" role="tablist">
+        <button
+          className={`nav-tab ${tab === 'home' ? 'active' : ''}`}
+          onClick={() => setTab('home')}
+          role="tab"
+          aria-selected={tab === 'home'}
+        >
+          <span aria-hidden="true">🚗</span><br/>Corridas
+        </button>
+        <button
+          className={`nav-tab ${tab === 'earnings' ? 'active' : ''}`}
+          onClick={() => setTab('earnings')}
+          role="tab"
+          aria-selected={tab === 'earnings'}
+        >
+          <span aria-hidden="true">💰</span><br/>Ganhos
+        </button>
+        <button
+          className={`nav-tab ${tab === 'profile' ? 'active' : ''}`}
+          onClick={() => setTab('profile')}
+          role="tab"
+          aria-selected={tab === 'profile'}
+        >
+          <span aria-hidden="true">👤</span><br/>Perfil
+        </button>
       </nav>
     </div>
   )

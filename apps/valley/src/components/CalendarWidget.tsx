@@ -7,6 +7,7 @@ export default function CalendarWidget() {
   const [loading, setLoading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // Mock fetch for provider time-slots
@@ -25,6 +26,7 @@ export default function CalendarWidget() {
 
   const handleReserve = async () => {
     if (!selectedSlot) return;
+    setIsSubmitting(true);
     try {
       const res = await fetch(`${API_HUB_URL}/services/providers/mock-provider/reserve-slot`, {
         method: 'POST',
@@ -38,6 +40,8 @@ export default function CalendarWidget() {
       setSelectedSlot(null);
     } catch (err: unknown) {
       setMessage(`Erro: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,6 +61,7 @@ export default function CalendarWidget() {
               <button
                 key={slot}
                 onClick={() => setSelectedSlot(slot)}
+                aria-pressed={selectedSlot === slot}
                 style={{
                   padding: '0.5rem 1rem',
                   border: `2px solid ${selectedSlot === slot ? '#3b82f6' : '#e2e8f0'}`,
@@ -71,10 +76,10 @@ export default function CalendarWidget() {
           </div>
           <button 
             onClick={handleReserve}
-            disabled={!selectedSlot}
-            style={{ padding: '0.75rem 1.5rem', background: selectedSlot ? '#3b82f6' : '#94a3b8', color: 'white', border: 'none', borderRadius: '4px', cursor: selectedSlot ? 'pointer' : 'not-allowed' }}
+            disabled={!selectedSlot || isSubmitting}
+            style={{ padding: '0.75rem 1.5rem', background: (selectedSlot && !isSubmitting) ? '#3b82f6' : '#94a3b8', color: 'white', border: 'none', borderRadius: '4px', cursor: (selectedSlot && !isSubmitting) ? 'pointer' : 'not-allowed' }}
           >
-            Bloquear Horário
+            {isSubmitting ? 'Bloqueando...' : 'Bloquear Horário'}
           </button>
         </div>
       )}

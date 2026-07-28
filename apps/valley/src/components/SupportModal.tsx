@@ -44,9 +44,9 @@ export default function SupportModal({ orderTitle, onClose, onSubmit }: SupportM
         </header>
         <div className="modal-body">
           <strong>{orderTitle}</strong>
-          <div className="support-kind">
-            <button type="button" className={kind === 'support' ? 'selected' : ''} onClick={() => setKind('support')}>Suporte</button>
-            <button type="button" className={kind === 'dispute' ? 'selected' : ''} onClick={() => setKind('dispute')}>Disputa</button>
+          <div className="support-kind" role="group" aria-label="Tipo de solicitacao">
+            <button type="button" aria-pressed={kind === 'support'} className={kind === 'support' ? 'selected' : ''} onClick={() => setKind('support')}>Suporte</button>
+            <button type="button" aria-pressed={kind === 'dispute'} className={kind === 'dispute' ? 'selected' : ''} onClick={() => setKind('dispute')}>Disputa</button>
           </div>
           <label className="form-group" htmlFor="support-subject">
             <span>Assunto</span>
@@ -85,7 +85,7 @@ export default function SupportModal({ orderTitle, onClose, onSubmit }: SupportM
           <div className="actions">
             <button className="btn-secondary" onClick={onClose}>{feedback && !failed ? 'Fechar' : 'Voltar'}</button>
             {(!feedback || failed) && (
-              <button className="btn-primary" disabled={submitting} onClick={submit}>
+              <button className="btn-primary" disabled={submitting} aria-busy={submitting} onClick={submit}>
                 {submitting ? 'Enviando...' : 'Registrar caso'}
               </button>
             )}

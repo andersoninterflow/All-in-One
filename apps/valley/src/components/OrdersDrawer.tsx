@@ -139,6 +139,7 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
                     {['paid', 'accepted', 'in_progress', 'delivered', 'completed'].includes(item.status) && (
                       <button
                         className="btn-secondary review-action"
+                        aria-label={"Abrir suporte para " + item.title}
                         onClick={() => setSupportOrder(item)}
                       >
                         Abrir suporte
@@ -148,6 +149,7 @@ const OrdersDrawerContent: React.FC<{ onClose: () => void; token: string }> = ({
                       <button
                         className="btn-secondary review-action"
                         disabled={reviewedOrders.has(item.id)}
+                        aria-label={(reviewedOrders.has(item.id) ? 'Avaliacao enviada para ' : 'Avaliar ') + item.title}
                         onClick={() => setReviewOrder(item)}
                       >
                         {reviewedOrders.has(item.id) ? 'Avaliacao enviada' : 'Avaliar'}

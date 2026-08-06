@@ -1,3 +1,4 @@
+ALTER TABLE marketplace.reviews ADD COLUMN IF NOT EXISTS store_id UUID REFERENCES marketplace.stores(id);
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS marketplace.reviews (

@@ -1,3 +1,5 @@
+ALTER TABLE audit.logs ADD COLUMN IF NOT EXISTS correlation_id UUID;
+ALTER TABLE audit.domain_events ADD COLUMN IF NOT EXISTS next_retry_at TIMESTAMPTZ;
 -- Migration 016: Indices de Performance para Outbox, Auditoria e Ledger
 -- Data: 2026-06-01
 

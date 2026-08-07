@@ -1,0 +1,3 @@
+## 2024-05-16 - Repeated Buttons in List Views Need Contextual ARIA Labels
+**Learning:** In list views (like order history), screen reader users experience a disjointed experience when multiple rows contain identically labeled action buttons (e.g., "Avaliar", "Abrir suporte") without surrounding context. When tabbing, it just says "button, Avaliar", not knowing which item it applies to.
+**Action:** When working on lists or table rows with repeated action buttons, always append contextual data (like `item.title` or ID) to the `aria-label` (e.g., `aria-label={\`Avaliar \${item.title}\`}`). This provides unique, descriptive context and resolves WCAG 2.1 SC 2.4.4 Link Purpose (In Context).

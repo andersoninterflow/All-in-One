@@ -22,7 +22,7 @@ jobs:
         run: |
           echo "Aguardando serviços essenciais iniciarem..."
           # O healthcheck nativo do docker-compose cuidará da orquestração real, aqui damos fôlego ao runner.
-          sleep 30
+          sleep 60
 
       - name: Stop services
         if: always()

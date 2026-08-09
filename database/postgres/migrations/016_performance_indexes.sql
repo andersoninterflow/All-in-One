@@ -7,6 +7,7 @@ ON audit.domain_events (created_at, status)
 WHERE status = 'pending';
 
 -- 2. Rastreabilidade Transversal (Busca por Correlation ID em Logs e Eventos)
+
 CREATE INDEX IF NOT EXISTS idx_audit_logs_correlation ON audit.logs (correlation_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_correlation ON audit.domain_events (correlation_id);
 

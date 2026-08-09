@@ -17,5 +17,5 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip==26.1.2
       - run: pip install -r requirements-dev.txt pip-audit bandit
-      - run: pip-audit --local || true
-      - run: bandit -r modules/shared scripts workers -q || true
+      - run: pip-audit --local
+      - run: bandit -r modules/shared scripts workers -q

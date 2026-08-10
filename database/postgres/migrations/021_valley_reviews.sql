@@ -1,5 +1,26 @@
 BEGIN;
 
+-- Dependemos de marketplace.stores definido antes de prosseguir
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'marketplace' AND table_name = 'stores') THEN
+        CREATE TABLE marketplace.stores (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id UUID NOT NULL REFERENCES identity.users(id),
+            company_id UUID NOT NULL REFERENCES business.companies(id),
+            name VARCHAR(200) NOT NULL,
+            published_at TIMESTAMPTZ,
+            status VARCHAR(40) NOT NULL DEFAULT 'pending_validation',
+            metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            deleted_at TIMESTAMPTZ,
+            created_by UUID REFERENCES identity.users(id),
+            updated_by UUID REFERENCES identity.users(id)
+        );
+    END IF;
+END $$;
+
 CREATE TABLE IF NOT EXISTS marketplace.reviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES identity.users(id),

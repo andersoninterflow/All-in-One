@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE audit.domain_events ADD COLUMN IF NOT EXISTS next_retry_at TIMESTAMPTZ;
+
+COMMIT;

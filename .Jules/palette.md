@@ -1,0 +1,3 @@
+## 2024-10-23 - Contextual ARIA labels in lists
+**Learning:** Repetitive action buttons like 'Abrir suporte' or 'Avaliar' in lists without specific ARIA labels make it difficult for screen reader users to identify which item the action applies to.
+**Action:** Always append the item's title or identifier to the `aria-label` of action buttons in repeated list structures to provide unique context for screen readers.

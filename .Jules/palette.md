@@ -1,0 +1,3 @@
+## 2024-08-15 - Contextual ARIA labels in repeating elements
+**Learning:** In lists of items (like order histories), repeated action buttons (e.g., 'Abrir suporte', 'Avaliar') without unique labels make it impossible for screen reader users to distinguish which item they are acting upon, as the screen reader merely announces "Abrir suporte, button" repeatedly.
+**Action:** Append the item's title or unique identifier to the button's `aria-label` attribute using template literals (e.g., `aria-label={\`Abrir suporte para ${item.title}\`}`) whenever rendering repeated actions within a mapped list.

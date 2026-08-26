@@ -1,0 +1,3 @@
+## 2024-08-26 - Contexto Dinâmico para Leitores de Tela em Listas de Pedidos
+**Learning:** Botões de ação repetidos em listas (como os de "Abrir suporte" ou "Avaliar" em históricos de pedidos) sem `aria-label` perdem completamente o contexto para usuários de leitores de tela. O usuário ouvirá apenas "Abrir suporte" várias vezes seguidas, sem saber a qual pedido o botão se refere.
+**Action:** Sempre anexar o título, nome ou identificador único do item correspondente aos atributos `aria-label` nesses botões utilizando template literals (ex: `aria-label={\`Abrir suporte para ${item.title}\`}`).

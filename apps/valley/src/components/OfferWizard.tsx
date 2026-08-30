@@ -59,7 +59,7 @@ export default function OfferWizard({ onClose }: { onClose: () => void }) {
       <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           <h2>Publicar Nova Oferta - Passo {step} de 11</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+          <button onClick={onClose} aria-label="Fechar" style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
         </div>
 
         {step === 1 && (

@@ -1,0 +1,3 @@
+## 2024-05-25 - Contextual ARIA labels in repeated lists
+**Learning:** Repeated action buttons (like 'Abrir suporte' or 'Avaliar') in lists of items need unique, contextual descriptions for screen readers, otherwise they sound repetitive and lack context.
+**Action:** Use template literals to append the item's title or identifier to the `aria-label` (e.g., `aria-label={\`Abrir suporte para \${item.title}\`}`) on action buttons inside list iterations.

@@ -1,0 +1,3 @@
+## 2024-10-25 - Contextual ARIA labels for list actions
+**Learning:** Screen reader users lose context when navigating lists with repeated action buttons (like "Abrir suporte" or "Avaliar") unless the label includes the specific item identifier.
+**Action:** Use template literals to append the item title/identifier to aria-label attributes on repeated action buttons within lists (e.g., aria-label={`Abrir suporte para ${item.title}`}).

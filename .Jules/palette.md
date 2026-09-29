@@ -1,0 +1,3 @@
+## 2024-05-23 - Contextual ARIA labels in lists
+**Learning:** In lists of items with repeated actions (like order histories), generic button labels like "Abrir suporte" or "Avaliar" are read out by screen readers without the surrounding context, causing confusion. Furthermore, conditional states in these buttons (e.g., "Avaliar" vs "Avaliacao enviada") need their ARIA labels synchronized with the visual state.
+**Action:** Always append the item's title or identifier to ARIA labels on repeated action buttons using template literals, and ensure the ARIA label dynamically matches the visual text state.

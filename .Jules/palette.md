@@ -1,0 +1,3 @@
+## 2026-10-04 - Contextual ARIA labels on repeated list actions
+**Learning:** When rendering repeated list items (like order histories), generic action buttons ("Abrir suporte", "Avaliar") lack context for screen reader users when navigated out of context. Also, dynamic button text (e.g. changing "Avaliar" to "Avaliacao enviada") requires the `aria-label` to be dynamically synced to avoid contradicting the visual state.
+**Action:** Always use template literals to append the item's unique identifier/title to the `aria-label` of action buttons within loops (e.g. `aria-label={\`Abrir suporte para ${item.title}\`}`).

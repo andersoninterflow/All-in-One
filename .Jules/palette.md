@@ -1,0 +1,3 @@
+## 2026-10-09 - Contextual ARIA Labels in Lists
+**Learning:** Repeated action buttons (like "Abrir suporte") in lists lack uniqueness for screen readers, and dynamic text states (like "Avaliar" vs "Avaliacao enviada") must be dynamically matched in their aria-labels without assuming correct grammatical accents (matching existing UI text).
+**Action:** Always append item identifiers via template literals (e.g., `aria-label={\`Abrir suporte para ${item.title}\`}`) and match conditional UI text exactly for ARIA labels in mapped lists.

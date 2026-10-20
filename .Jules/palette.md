@@ -1,0 +1,3 @@
+## 2023-10-24 - Contextual ARIA labels for list actions
+**Learning:** In lists of items (like order histories), repeated action buttons (e.g., 'Abrir suporte', 'Avaliar') without contextual ARIA labels sound identical to screen reader users, causing confusion about which item the action applies to.
+**Action:** Always append the item's title/identifier to the `aria-label` of repeated buttons using template literals to provide unique, descriptive context for screen readers.

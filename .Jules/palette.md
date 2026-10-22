@@ -1,0 +1,3 @@
+## 2024-10-22 - Contextual ARIA labels for repeated list actions
+**Learning:** Repeated action buttons (like 'Abrir suporte' or 'Avaliar') in lists create ambiguity for screen reader users if they share the exact same visible text but act on different items. Dynamic states on these buttons further complicate this if the ARIA label contradicts the visual state.
+**Action:** Append the item title to the ARIA label using template literals (e.g. `aria-label={\`Abrir suporte para ${item.title}\`}`) and ensure any conditional text states are matched dynamically in the ARIA label to maintain consistency between visual and structural meaning.

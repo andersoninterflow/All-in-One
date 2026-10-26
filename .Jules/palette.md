@@ -1,0 +1,3 @@
+## 2024-05-24 - Contextual ARIA labels in Lists
+**Learning:** Repeated action buttons in lists (like order histories) need contextual ARIA labels appending the item's identifier (e.g., `aria-label={\`Abrir suporte para ${item.title}\`}`). Furthermore, if the button has dynamic text states (e.g., `{hasReviewed ? 'Sent' : 'Review'}`), the `aria-label` must dynamically match those same conditional states to prevent contradicting the visual label for screen readers.
+**Action:** Always append contextual information to ARIA labels for repeated list items and ensure dynamic ARIA labels match the dynamic visual text states.

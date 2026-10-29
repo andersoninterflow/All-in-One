@@ -1,0 +1,3 @@
+## 2023-10-29 - Contextual ARIA labels for dynamic text buttons
+**Learning:** When appending contextual ARIA labels to buttons with dynamic text states (e.g., `{hasReviewed ? 'Sent' : 'Review'}`), the `aria-label` must dynamically match the same conditional states to prevent contradicting the visual label for screen readers. Using template literals allows us to attach specific item identifiers seamlessly.
+**Action:** When adding ARIA labels to list item actions, always check if the visual text is dynamic, and mirror that logic in the ARIA label, appending the specific item title/identifier using template literals (e.g., `aria-label={reviewedOrders.has(item.id) ? \`Avaliacao enviada para ${item.title}\` : \`Avaliar ${item.title}\`}`).

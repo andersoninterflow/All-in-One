@@ -1,0 +1,3 @@
+## 2024-11-02 - Contextual ARIA labels in dynamic lists
+**Learning:** Repeated action buttons in lists (like "Abrir suporte" and "Avaliar" in an order history) require contextual ARIA labels (e.g. including the item title) because a screen reader user tabbing through the page will otherwise hear identical announcements for every button, losing context.
+**Action:** When implementing lists with repeated actions, use template literals to dynamically append the item's title or identifier to the action's `aria-label`, ensuring to match existing conditional label logic (like "Avaliacao enviada" vs "Avaliar").
